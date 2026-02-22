@@ -13,8 +13,10 @@ const firebaseConfig: AppOptions = {
     storageBucket: "standlo.firebasestorage.app",
 };
 
-// Locale: usa json key / AppHosting: fallback as ADC
-const keyPath = path.resolve(process.cwd(), 'keys/standlo-firebase-adminsdk-fbsvc-5a2af63973.json');
+// Costruzione dinamica per ingannare la static trace di Turbopack
+const keyFilename = ['standlo', 'firebase', 'adminsdk', 'fbsvc', '5a2af63973.json'].join('-');
+const keyPath = path.resolve(process.cwd(), 'keys', keyFilename);
+
 if (fs.existsSync(keyPath)) {
     firebaseConfig.credential = credential.cert(keyPath);
 } else if (process.env.FIREBASE_ADMIN_PRIVATE_KEY) {
