@@ -1,0 +1,50 @@
+{
+  "name": "standlo.com",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "rm -rf .next && rm -rf node_modules/.cache && next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "deploy:functions": "node scripts/DeployFunctions.mjs",
+    "validate": "rm -rf node_modules && npm i && npm run lint && npm run build && npm audit",
+    "cloud": "npx tsx scripts/deploy.ts",
+    "cloud:validate": "npx tsx scripts/deploy.ts --validate-only"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.1",
+    "firebase-functions": "^7.0.5",
+    "lucide-react": "^0.575.0",
+    "next": "16.1.6",
+    "next-firebase-auth-edge": "^1.11.5",
+    "next-intl": "^4.8.3",
+    "next-themes": "^0.4.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-google-autocomplete": "^2.7.5",
+    "react-hook-form": "^7.71.2",
+    "tailwind-merge": "^3.5.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/google.maps": "^3.58.1",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9.39.3",
+    "eslint-config-next": "^16.1.6",
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "minimatch": "^10.2.1",
+    "@eslint/config-array": "^0.19.0"
+  }
+}

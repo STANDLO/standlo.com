@@ -1,0 +1,40 @@
+{
+    "Auth": {
+        "Login": {
+            "title": "Inicia sesión en STANDLO",
+            "description": "Ingresa tus credenciales para acceder al portal operativo.",
+            "emailLabel": "Correo electrónico",
+            "emailPlaceholder": "mario.rossi@empresa.es",
+            "passwordLabel": "Contraseña",
+            "submitButton": "Ingresar",
+            "dividerText": "O continuar con",
+            "footerNote": "* El acceso puede requerir verificación en dos pasos (MFA SMS) para roles administrativos.",
+            "noAccountText": "¿No tienes cuenta?",
+            "registerAction": "Regístrate"
+        },
+        "Register": {
+            "title": "Crear Cuenta de Cliente",
+            "description": "El registro abierto está reservado exclusivamente para clientes. Los socios y proveedores son invitados.",
+            "nameLabel": "Nombre de Empresa o Contacto",
+            "namePlaceholder": "Fiera Milano Spa",
+            "emailLabel": "Correo Empresarial",
+            "emailPlaceholder": "contacto@empresa.es",
+            "passwordLabel": "Contraseña",
+            "submitButton": "Registrarse como Cliente",
+            "dividerText": "O",
+            "continueGoogle": "Continuar con Google",
+            "yesAccountText": "¿Ya tienes una cuenta?",
+            "loginAction": "Inicia sesión"
+        }
+    },
+    "components": {
+        "auth": {
+            "logout": "Cerrar sesión"
+        },
+        "roles": {
+            "customer": "Cliente",
+            "manager": "Manager",
+            "designer": "Diseñador"
+        }
+    }
+}

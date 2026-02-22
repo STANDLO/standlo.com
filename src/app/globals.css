@@ -1,0 +1,583 @@
+@import "tailwindcss";
+
+@theme {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 10% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 10% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 10% 4%;
+
+    /* PRIMARY: #003399 (H:220 S:100% L:30%) */
+    --primary: 220 100% 30%;
+    --primary-foreground: 0 0% 100%;
+
+    /* SECONDARY: #FFCC00 (H:48 S:100% L:50%) */
+    --secondary: 48 100% 50%;
+    --secondary-foreground: 220 100% 15%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 10% 4%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 220 100% 30%;
+
+    --radius: 0.5rem;
+  }
+
+  /* Supporto Tema Scuro tramite preferenza OS o classe .dark */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: 220 60% 4%;
+      --foreground: 0 0% 98%;
+      --card: 220 60% 6%;
+      --card-foreground: 0 0% 98%;
+      --popover: 220 60% 4%;
+      --popover-foreground: 0 0% 98%;
+
+      /* PRIMARY: #003399 leggermente più luminoso su fondo scuro */
+      --primary: 220 100% 45%;
+      --primary-foreground: 0 0% 100%;
+
+      /* SECONDARY: #FFCC00 (H:48 S:100% L:50%) */
+      --secondary: 48 100% 45%;
+      --secondary-foreground: 220 100% 10%;
+
+      --muted: 220 60% 15%;
+      --muted-foreground: 220 10% 65%;
+      --accent: 220 60% 15%;
+      --accent-foreground: 0 0% 98%;
+      --destructive: 0 62% 30%;
+      --destructive-foreground: 0 0% 98%;
+
+      --border: 220 60% 15%;
+      --input: 220 60% 15%;
+      --ring: 220 100% 45%;
+    }
+  }
+
+  .dark {
+    --background: 220 60% 4%;
+    --foreground: 0 0% 98%;
+    --card: 220 60% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 220 60% 4%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 220 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 48 100% 45%;
+    --secondary-foreground: 220 100% 10%;
+    --muted: 220 60% 15%;
+    --muted-foreground: 220 10% 65%;
+    --accent: 220 60% 15%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 60% 15%;
+    --input: 220 60% 15%;
+    --ring: 220 100% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+
+  /* UI Card Semantic Classes */
+  .ui-card {
+    @apply rounded-xl border bg-card text-card-foreground shadow-sm;
+  }
+
+  .ui-card-header {
+    @apply flex flex-col space-y-1.5 p-6;
+  }
+
+  .ui-card-title {
+    @apply font-semibold leading-none tracking-tight;
+  }
+
+  .ui-card-description {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .ui-card-content {
+    @apply p-6 pt-0;
+  }
+
+  .ui-card-footer {
+    @apply flex items-center p-6 pt-0;
+  }
+
+  /* UI Button Semantic Classes */
+  .ui-btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1;
+  }
+
+  .ui-btn-primary {
+    @apply bg-primary text-primary-foreground focus-visible:ring-ring hover:bg-primary/90;
+  }
+
+  .ui-btn-primary-muted {
+    @apply bg-primary/20 text-primary-foreground/80 focus-visible:ring-ring cursor-not-allowed;
+  }
+
+  .ui-btn-primary-readonly {
+    @apply bg-primary text-primary-foreground opacity-50 focus-visible:ring-ring cursor-default pointer-events-none;
+  }
+
+  .ui-btn-secondary {
+    @apply bg-secondary text-secondary-foreground focus-visible:ring-secondary hover:bg-secondary/80;
+  }
+
+  .ui-btn-secondary-muted {
+    @apply bg-secondary/20 text-secondary-foreground/80 focus-visible:ring-secondary cursor-not-allowed;
+  }
+
+  .ui-btn-secondary-readonly {
+    @apply bg-secondary text-secondary-foreground opacity-50 focus-visible:ring-secondary cursor-default pointer-events-none;
+  }
+
+  .ui-btn-outline {
+    @apply border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground;
+  }
+
+  /* UI Input Semantic Classes */
+  .ui-input {
+    @apply flex w-full rounded-md border text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1;
+  }
+
+  .ui-input-primary {
+    @apply border-input bg-transparent px-3 py-1 focus-visible:ring-ring;
+  }
+
+  .ui-input-primary-muted {
+    @apply border-input bg-primary/5 px-3 py-1 focus-visible:ring-ring opacity-70 cursor-not-allowed;
+  }
+
+  .ui-input-primary-readonly {
+    @apply border-transparent bg-transparent px-0 py-1 ring-0 cursor-default focus-visible:ring-0 shadow-none;
+  }
+
+  .ui-input-secondary {
+    @apply border-input bg-transparent px-3 py-1 focus-visible:ring-secondary;
+  }
+
+  .ui-input-secondary-muted {
+    @apply border-input bg-secondary/5 px-3 py-1 focus-visible:ring-secondary opacity-70 cursor-not-allowed;
+  }
+
+  .ui-input-secondary-readonly {
+    @apply border-transparent bg-transparent px-0 py-1 ring-0 cursor-default focus-visible:ring-0 shadow-none text-secondary-foreground;
+  }
+
+  .ui-input-wrapper {
+    @apply space-y-2;
+  }
+
+  .ui-input-label {
+    @apply text-sm font-medium leading-none;
+  }
+
+  /* Layout Specific Semantic Classes */
+  .layout-header-main {
+    @apply sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60;
+  }
+
+  .layout-container {
+    @apply container mx-auto flex h-14 items-center justify-between px-4;
+  }
+
+  .layout-nav-links {
+    @apply flex items-center gap-4 text-sm font-medium;
+  }
+
+  .layout-footer-main {
+    @apply border-t py-6 md:py-0;
+  }
+
+  .layout-footer-container {
+    @apply container mx-auto flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row px-4;
+  }
+
+  .layout-main-body {
+    @apply flex-1 flex flex-col items-center justify-center;
+  }
+
+  .layout-public-root {
+    @apply relative flex min-h-screen flex-col;
+  }
+
+  .layout-auth-wrapper {
+    @apply w-full max-w-sm px-4;
+  }
+
+  .layout-auth-form {
+    @apply space-y-4;
+  }
+
+  .layout-auth-field {
+    @apply space-y-2;
+  }
+
+  .layout-auth-label {
+    @apply text-sm font-medium leading-none;
+  }
+
+  .layout-auth-divider {
+    @apply relative my-6;
+  }
+
+  .layout-auth-divider-line-container {
+    @apply absolute inset-0 flex items-center;
+  }
+
+  .layout-auth-divider-line {
+    @apply w-full border-t;
+  }
+
+  .layout-auth-divider-text-container {
+    @apply relative flex justify-center text-xs uppercase;
+  }
+
+  .layout-auth-divider-text {
+    @apply bg-card px-2 text-muted-foreground;
+  }
+
+  .layout-auth-social-grid {
+    @apply grid grid-cols-3 gap-2;
+  }
+
+  .layout-auth-footer-note {
+    @apply text-xs text-center text-muted-foreground mt-4;
+  }
+
+  .layout-w-full {
+    @apply w-full;
+  }
+
+  /* Forms Semantic Classes */
+  .ui-form {
+    @apply space-y-6;
+  }
+
+  .ui-error-banner {
+    @apply p-3 text-sm text-destructive bg-destructive/10 rounded-md;
+  }
+
+  .ui-form-grid {
+    @apply grid grid-cols-1 md:grid-cols-12 gap-4;
+  }
+
+  .ui-form-field {
+    @apply flex flex-col gap-1.5;
+  }
+
+  .ui-textarea {
+    @apply flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .ui-error-message {
+    @apply text-xs text-destructive;
+  }
+
+  .ui-form-actions {
+    @apply flex justify-end gap-3 pt-4 border-t;
+  }
+
+  .ui-required-mark {
+    @apply text-destructive ml-1;
+  }
+
+  /* Lists / Table Semantic Classes */
+  .ui-list-container {
+    @apply w-full;
+  }
+
+  .ui-list-wrapper {
+    @apply rounded-md border bg-card;
+  }
+
+  .ui-table {
+    @apply w-full caption-bottom text-sm relative;
+  }
+
+  .ui-table-thead {
+    @apply [&_tr]:border-b bg-muted/50 text-muted-foreground w-full;
+  }
+
+  .ui-table-tr {
+    @apply border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted;
+  }
+
+  .ui-table-th {
+    @apply h-10 px-4 text-left align-middle font-medium;
+  }
+
+  .ui-table-tbody {
+    @apply [&_tr:last-child]:border-0;
+  }
+
+  .ui-table-td {
+    @apply p-4 align-middle;
+  }
+
+  .ui-table-skeleton {
+    @apply h-4 w-full animate-pulse bg-muted rounded;
+  }
+
+  .ui-table-empty {
+    @apply p-4 text-center text-muted-foreground h-24;
+  }
+
+  .ui-pagination-container {
+    @apply flex items-center justify-between px-2 mt-4;
+  }
+
+  .ui-pagination-text {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .ui-pagination-actions {
+    @apply flex items-center space-x-2;
+  }
+
+  /* Lookup Input Semantic Classes */
+  .ui-lookup-container {
+    @apply relative w-full;
+  }
+
+  .ui-lookup-trigger {
+    @apply flex items-center gap-2;
+  }
+
+  .ui-lookup-input {
+    @apply flex-1 cursor-default bg-muted/20;
+  }
+
+  .ui-lookup-popover {
+    @apply absolute top-12 z-50 w-full rounded-md border bg-popover shadow-md outline-none;
+  }
+
+  .ui-lookup-searchbar {
+    @apply p-2 border-b;
+  }
+
+  .ui-lookup-search-input {
+    @apply h-8;
+  }
+
+  .ui-lookup-results {
+    @apply p-2 max-h-[200px] overflow-y-auto;
+  }
+
+  .ui-lookup-item {
+    @apply px-2 py-1.5 text-sm rounded hover:bg-muted cursor-pointer transition-colors;
+  }
+
+  .ui-lookup-footer {
+    @apply p-2 border-t;
+  }
+
+  .ui-lookup-btn {
+    @apply w-full h-8 text-xs;
+  }
+
+  /* Layout Protected Semantic Classes */
+  .layout-protected-root {
+    @apply flex min-h-screen w-full flex-col bg-muted/40;
+  }
+
+  .layout-main-wrapper {
+    @apply flex flex-1 overflow-hidden;
+  }
+
+  .layout-mobile-overlay {
+    @apply fixed inset-0 z-20 bg-black/80 md:hidden;
+  }
+
+  .layout-content-area {
+    @apply flex-1 overflow-y-auto w-full md:w-[calc(100%-16rem)] relative;
+  }
+
+  .layout-content-container {
+    @apply mx-auto max-w-6xl p-4 md:p-8;
+  }
+
+  /* Header Protected Semantic Classes */
+  .layout-header-protected {
+    @apply sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border bg-background px-4 md:px-6;
+  }
+
+  .layout-header-group {
+    @apply flex items-center gap-4;
+  }
+
+  .layout-header-brand {
+    @apply hidden md:flex font-bold text-primary tracking-tight text-xl;
+  }
+
+  .layout-header-user-info {
+    @apply hidden md:flex flex-col items-end text-sm;
+  }
+
+  .layout-header-user-role {
+    @apply text-muted-foreground text-xs;
+  }
+
+  .layout-header-mobile-btn {
+    @apply md:hidden border-none;
+  }
+
+  .layout-avatar-btn {
+    @apply rounded-full bg-secondary/20 text-foreground;
+  }
+
+  .layout-logout-btn {
+    @apply hidden md:flex;
+  }
+
+  /* Sidebar Semantic Classes */
+  .layout-sidebar-wrapper {
+    @apply fixed inset-y-0 left-0 z-30 w-64 md:z-0 md:block md:static transition-transform duration-300;
+  }
+
+  .layout-sidebar {
+    @apply fixed inset-y-0 left-0 z-30 w-64 -translate-x-full border-r border-border bg-background transition-transform duration-300 md:relative md:translate-x-0;
+  }
+
+  .layout-sidebar-mobile-header {
+    @apply flex h-16 items-center border-b border-border px-6 md:hidden;
+  }
+
+  .layout-sidebar-brand {
+    @apply font-bold text-primary tracking-tight text-xl;
+  }
+
+  .layout-sidebar-nav-area {
+    @apply flex-1 overflow-y-auto py-4;
+  }
+
+  .layout-sidebar-nav {
+    @apply grid gap-1 px-4;
+  }
+
+  .layout-sidebar-category {
+    @apply mb-4 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground;
+  }
+
+  /* Dashboard Pages Semantic Classes */
+  .ui-dashboard-wrapper {
+    @apply space-y-6;
+  }
+
+  .ui-dashboard-header {
+    @apply flex flex-col;
+  }
+
+  .ui-dashboard-title {
+    @apply text-3xl font-bold tracking-tight text-primary;
+  }
+
+  .ui-dashboard-subtitle {
+    @apply text-muted-foreground mt-2;
+  }
+
+  .ui-dashboard-grid-4 {
+    @apply grid gap-4 md:grid-cols-2 lg:grid-cols-4;
+  }
+
+  .ui-dashboard-grid-3 {
+    @apply grid gap-4 md:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .ui-dashboard-grid-2 {
+    @apply grid gap-4 md:grid-cols-2;
+  }
+
+  .ui-dashboard-card {
+    @apply rounded-xl border bg-card text-card-foreground shadow p-6;
+  }
+
+  .ui-dashboard-card-title {
+    @apply tracking-tight text-sm font-medium mb-2;
+  }
+
+  .ui-dashboard-card-value {
+    @apply text-2xl font-bold;
+  }
+
+  /* Auth & Onboarding Pages Semantic Classes */
+  .layout-auth-page {
+    @apply flex w-full min-h-[calc(100vh-200px)] items-center justify-center p-4;
+  }
+
+  .layout-onboarding-page {
+    @apply min-h-screen flex items-center justify-center bg-muted/30 py-12 px-4 sm:px-6 lg:px-8;
+  }
+
+  .layout-onboarding-card {
+    @apply w-full max-w-xl space-y-8 bg-card p-8 rounded-xl shadow-lg border;
+  }
+
+  .layout-onboarding-title {
+    @apply mt-2 text-3xl font-bold tracking-tight text-foreground text-center;
+  }
+
+  .layout-onboarding-subtitle {
+    @apply mt-2 text-sm text-muted-foreground text-center;
+  }
+
+  .layout-onboarding-footer {
+    @apply mt-6 text-center text-xs text-muted-foreground;
+  }
+}

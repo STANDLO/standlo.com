@@ -1,0 +1,45 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // =========================================================================
+    // UTILITÀ GLOBALI
+    // =========================================================================
+
+    // Validazione Firebase App Check (Previene accessi da client non ufficiali come cURL/Postman)
+    function hasAppCheck() {
+      return request.app != null;
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Un utente può accedere solo se l'ID Organizzazione nel token JWT corrisponde a quello del Record IT
+    function isOrgMember(orgId) {
+      return isAuthenticated() && request.auth.token.orgId == orgId;
+    }
+
+    // Evita rigorosamente che vengano letti record cestinati (Soft Delete)
+    function isNotDeleted(resource) {
+      return !('deletedAt' in resource.data) || resource.data.deletedAt == null;
+    }
+
+    // =========================================================================
+    // REGOLA ARCHITETTURALE DI BASE (Valida per tutte le collection del CRM)
+    // =========================================================================
+
+    match /{collection}/{document=**} {
+      
+      // I Client (Frontend React) possono unicamente fare READ operations,
+      // proteggendo il traffico con AppCheck e limitandosi ai dati della propria Org.
+      allow read: if hasAppCheck() && isOrgMember(resource.data.orgId) && isNotDeleted(resource);
+      
+      // In questa architettura "Cloud Function / ServerAction First",
+      // NON fideremo mai del Frontend per la scrittura o validazione. 
+      // Qualsiasi Mutation sarà filtrata via API (Zod) -> Firebase Admin SDK (che ignora le rules).
+      allow write: if false; 
+    }
+  }
+}

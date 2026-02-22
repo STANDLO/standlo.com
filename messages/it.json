@@ -1,0 +1,55 @@
+{
+    "Auth": {
+        "Login": {
+            "title": "Accedi a STANDLO",
+            "description": "Inserisci le tue credenziali per accedere al portale operativo.",
+            "emailLabel": "Email",
+            "emailPlaceholder": "mario.rossi@azienda.it",
+            "passwordLabel": "Password",
+            "submitButton": "Accedi",
+            "dividerText": "Oppure continua con",
+            "footerNote": "* L'accesso potrebbe richiedere una verifica in due passaggi (MFA SMS) per i ruoli amministrativi.",
+            "noAccountText": "Non hai un account?",
+            "registerAction": "Registrati"
+        },
+        "Register": {
+            "title": "Crea Account Customer",
+            "description": "La registrazione libera è riservata esclusivamente ai clienti (Customer). Partner e fornitori vengono invitati.",
+            "nameLabel": "Nome Azienda o Referente",
+            "namePlaceholder": "Fiera Milano Spa",
+            "emailLabel": "Email Aziendale",
+            "emailPlaceholder": "contact@azienda.it",
+            "passwordLabel": "Password",
+            "submitButton": "Registrati come Cliente",
+            "dividerText": "Oppure",
+            "continueGoogle": "Continua con Google",
+            "yesAccountText": "Hai già un account?",
+            "loginAction": "Accedi"
+        },
+        "Onboarding": {
+            "title": "Completa il tuo Profilo B2B",
+            "subtitle": "Per continuare ad utilizzare Standlo, abbiamo bisogno di alcune informazioni obbligatorie per la fatturazione.",
+            "roleLabel": "Seleziona il tuo ruolo",
+            "vatLabel": "Partita IVA",
+            "sdiLabel": "Codice SDI",
+            "ibanLabel": "IBAN",
+            "addressLabel": "Indirizzo Sede Legale",
+            "submitButton": "Completa Profilo"
+        }
+    },
+    "Components": {
+        "InputPlace": {
+            "placeholder": "Cerca un indirizzo con Google..."
+        }
+    },
+    "components": {
+        "auth": {
+            "logout": "Esci"
+        },
+        "roles": {
+            "customer": "Cliente",
+            "manager": "Manager",
+            "designer": "Designer"
+        }
+    }
+}

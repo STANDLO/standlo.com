@@ -1,0 +1,40 @@
+{
+    "Auth": {
+        "Login": {
+            "title": "Log in to STANDLO",
+            "description": "Enter your credentials to access the operational portal.",
+            "emailLabel": "Email",
+            "emailPlaceholder": "mario.rossi@company.com",
+            "passwordLabel": "Password",
+            "submitButton": "Login",
+            "dividerText": "Or continue with",
+            "footerNote": "* Access may require a two-step verification (MFA SMS) for administrative roles.",
+            "noAccountText": "Don't have an account?",
+            "registerAction": "Sign Up"
+        },
+        "Register": {
+            "title": "Create Customer Account",
+            "description": "Open registration is reserved exclusively for customers. Partners and suppliers are invited.",
+            "nameLabel": "Company Name or Contact",
+            "namePlaceholder": "Fiera Milano Spa",
+            "emailLabel": "Business Email",
+            "emailPlaceholder": "contact@company.com",
+            "passwordLabel": "Password",
+            "submitButton": "Register as Customer",
+            "dividerText": "Or",
+            "continueGoogle": "Continue with Google",
+            "yesAccountText": "Already have an account?",
+            "loginAction": "Log in"
+        }
+    },
+    "components": {
+        "auth": {
+            "logout": "Log out"
+        },
+        "roles": {
+            "customer": "Customer",
+            "manager": "Manager",
+            "designer": "Designer"
+        }
+    }
+}
