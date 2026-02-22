@@ -2,16 +2,21 @@
 # Gestisce l'injection delle var. d'ambiente tramite Secret Manager.
 envVersion: v2
 
-env_variables:
-  # Public Firebase Environment Details (Safe to include here or mapped via Google Cloud Build secrets)
-  NEXT_PUBLIC_FIREBASE_API_KEY: "AIzaSyB-TnLFaRDiBVWROctTgldpeuuEXSsjDl0"
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "standlo.firebaseapp.com"
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID: "standlo"
-  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "standlo.firebasestorage.app"
-  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "260543824513"
-  NEXT_PUBLIC_FIREBASE_APP_ID: "1:260543824513:web:06b4226418896a81ad8380"
-  NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: "G-Q4M5ZC0CYH"
 env:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyB-TnLFaRDiBVWROctTgldpeuuEXSsjDl0"
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "standlo.firebaseapp.com"
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "standlo"
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "standlo.firebasestorage.app"
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "260543824513"
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:260543824513:web:06b4226418896a81ad8380"
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: "G-Q4M5ZC0CYH"
   - variable: NEXT_PUBLIC_RECAPTCHA_SITE_KEY
     secret: RECAPTCHA_SITE_KEY
   - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
