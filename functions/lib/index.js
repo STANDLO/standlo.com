@@ -1,11 +1,44 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.beforeSignIn = exports.beforeCreate = void 0;
+exports.webInterface = exports.brain = exports.firestoreGateway = exports.choreography = exports.orchestrator = exports.beforeSignIn = exports.beforeCreate = void 0;
 const identity_1 = require("firebase-functions/v2/identity");
-const admin = require("firebase-admin");
+const admin = __importStar(require("firebase-admin"));
 const firestore_1 = require("firebase-admin/firestore");
 const app = admin.initializeApp();
-const db = (0, firestore_1.getFirestore)(app, "default");
+const db = (0, firestore_1.getFirestore)(app, "standlo"); // Enterprise Named Database
 const REGION = "europe-west4";
 /**
  * Triggered before a new user account is created.
@@ -16,21 +49,20 @@ exports.beforeCreate = (0, identity_1.beforeUserCreated)({ region: REGION }, asy
     if (!user || (!user.uid && !user.email))
         return {};
     const existingClaims = user.customClaims || {};
-    // Tutti gli utenti, sia da Email che da Social, nascono "pending"
-    // Fino a quando non compileranno l'onboarding obbligatorio.
     const role = "pending";
-    // Default dinamico per il mapping in Firestore e nel JWT
-    const claims = Object.assign(Object.assign({}, existingClaims), { role: role, orgId: null, orgName: null, userId: user.uid, userName: user.displayName || null, locale: existingClaims.locale || "it", theme: existingClaims.theme || "light", fairIds: existingClaims.fairIds || [] // Array of logistic hubs
-     });
-    // Auto-provisioning: Creiamo SOLO l'utente radice silente (active: false)
+    // Build raw claims
+    const rawClaims = Object.assign(Object.assign({}, existingClaims), { role: role, onboarding: false, active: true, orgId: null, orgName: null, locale: existingClaims.locale || "en", theme: existingClaims.theme || "light", fairIds: existingClaims.fairIds || [] });
+    // Strip undefined values which crash Firestore AND Identity Platform. 
+    // We also strip nulls to avoid issues with reserved constraints just in case.
+    const safeClaims = Object.fromEntries(Object.entries(rawClaims).filter(([, v]) => v !== undefined && v !== null));
     try {
         const userRef = db.collection("users").doc(user.uid);
         await userRef.set({
             email: user.email || null,
             displayName: user.displayName || null,
             phoneNumber: user.phoneNumber || null,
-            active: false, // Inattivo finché non completa onboarding
-            claims: claims,
+            active: false,
+            claims: safeClaims,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
@@ -38,12 +70,9 @@ exports.beforeCreate = (0, identity_1.beforeUserCreated)({ region: REGION }, asy
     }
     catch (error) {
         console.error(`Error provisioning Firestore User doc for ${user.uid}:`, error);
-        // We still allow registration to proceed even if DB sync fails
-        // ma l'onboarding forzerà poi un re-sync salvifico.
     }
-    // Embed the claims directly into the JWT token
     return {
-        customClaims: claims
+        customClaims: safeClaims
     };
 });
 /**
@@ -59,11 +88,9 @@ exports.beforeSignIn = (0, identity_1.beforeUserSignedIn)({ region: REGION }, as
         const userDoc = await db.collection("users").doc(user.uid).get();
         if (userDoc.exists) {
             const userData = userDoc.data();
-            // If soft deleted/banned
-            if ((userData === null || userData === void 0 ? void 0 : userData.active) === false) {
-                // In a blocking function, throwing an HttpsError blocks the sign in
-                throw new Error("auth/user-disabled"); // Identity platform intercepts this
-            }
+            // We do NOT block on "active: false" because that is the default state for users
+            // before they complete the mandatory onboarding form.
+            // Banned users should be disabled directly via Firebase Auth Admin (user.disabled).
             if (userData === null || userData === void 0 ? void 0 : userData.claims) {
                 return {
                     customClaims: userData.claims
@@ -73,10 +100,20 @@ exports.beforeSignIn = (0, identity_1.beforeUserSignedIn)({ region: REGION }, as
     }
     catch (error) {
         console.error(`Error reading real-time claims for user ${user.uid}:`, error);
-        if (error instanceof Error && error.message === "auth/user-disabled") {
-            throw error;
-        }
     }
     return {};
 });
+// ============================================================================
+// GATEWAY ARCHITECTURE (5-Gateways Pattern)
+// ============================================================================
+var orchestrator_1 = require("./gateways/orchestrator");
+Object.defineProperty(exports, "orchestrator", { enumerable: true, get: function () { return orchestrator_1.orchestrator; } });
+var choreography_1 = require("./gateways/choreography");
+Object.defineProperty(exports, "choreography", { enumerable: true, get: function () { return choreography_1.choreography; } });
+var firestore_2 = require("./gateways/firestore"); // Prevent naming collisions with 'firebase-admin/firestore' export
+Object.defineProperty(exports, "firestoreGateway", { enumerable: true, get: function () { return firestore_2.firestore; } });
+var brain_1 = require("./gateways/brain");
+Object.defineProperty(exports, "brain", { enumerable: true, get: function () { return brain_1.brain; } });
+var webInterface_1 = require("./gateways/webInterface");
+Object.defineProperty(exports, "webInterface", { enumerable: true, get: function () { return webInterface_1.webInterface; } });
 //# sourceMappingURL=index.js.map

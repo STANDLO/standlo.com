@@ -1,6 +1,8 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, AppCheck } from "firebase/app-check";
+import { getStorage } from "firebase/storage";
+import { getFunctions } from "firebase/functions";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -40,5 +42,7 @@ if (typeof window !== "undefined") {
 }
 
 const auth = getAuth(app);
+const storage = getStorage(app);
+const functions = getFunctions(app, "europe-west4"); // Default region for KalexAI functions
 
-export { app, auth, appCheck };
+export { app, auth, appCheck, storage, functions };

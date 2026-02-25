@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 
 const app = admin.initializeApp();
-const db = getFirestore(app, "default");
+const db = getFirestore(app, "standlo"); // Enterprise Named Database
 
 const REGION = "europe-west4";
 
@@ -17,33 +17,35 @@ export const beforeCreate = beforeUserCreated({ region: REGION }, async (event) 
     if (!user || (!user.uid && !user.email)) return {};
 
     const existingClaims = user.customClaims || {};
-    // Tutti gli utenti, sia da Email che da Social, nascono "pending"
-    // Fino a quando non compileranno l'onboarding obbligatorio.
     const role = "pending";
 
-    // Default dinamico per il mapping in Firestore e nel JWT
-    const claims: Record<string, string | boolean | string[] | null | undefined> = {
+    // Build raw claims
+    const rawClaims: Record<string, string | boolean | string[] | null | undefined> = {
         ...existingClaims,
-        role: role as string,
-        onboarding: false, // Explicit onboarding state boolean
-        orgId: null,      // Sarà creato dall'onboarding
+        role: role,
+        onboarding: false,
+        active: true,
+        orgId: null,
         orgName: null,
-        userId: user.uid,
-        userName: user.displayName || null,
-        locale: existingClaims.locale || "it", // Default locale base
-        theme: existingClaims.theme || "light", // Default theme base
-        fairIds: existingClaims.fairIds || [] // Array of logistic hubs
+        locale: existingClaims.locale || "en",
+        theme: existingClaims.theme || "light",
+        fairIds: existingClaims.fairIds || []
     };
 
-    // Auto-provisioning: Creiamo SOLO l'utente radice silente (active: false)
+    // Strip undefined values which crash Firestore AND Identity Platform. 
+    // We also strip nulls to avoid issues with reserved constraints just in case.
+    const safeClaims = Object.fromEntries(
+        Object.entries(rawClaims).filter(([, v]) => v !== undefined && v !== null)
+    );
+
     try {
         const userRef = db.collection("users").doc(user.uid);
         await userRef.set({
             email: user.email || null,
             displayName: user.displayName || null,
             phoneNumber: user.phoneNumber || null,
-            active: false, // Inattivo finché non completa onboarding
-            claims: claims,
+            active: false,
+            claims: safeClaims,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
@@ -51,13 +53,10 @@ export const beforeCreate = beforeUserCreated({ region: REGION }, async (event) 
         console.log(`Successfully provisioned initial User document for ${user.uid} with role: pending`);
     } catch (error) {
         console.error(`Error provisioning Firestore User doc for ${user.uid}:`, error);
-        // We still allow registration to proceed even if DB sync fails
-        // ma l'onboarding forzerà poi un re-sync salvifico.
     }
 
-    // Embed the claims directly into the JWT token
     return {
-        customClaims: claims
+        customClaims: safeClaims
     };
 });
 
@@ -76,11 +75,9 @@ export const beforeSignIn = beforeUserSignedIn({ region: REGION }, async (event)
         if (userDoc.exists) {
             const userData = userDoc.data();
 
-            // If soft deleted/banned
-            if (userData?.active === false) {
-                // In a blocking function, throwing an HttpsError blocks the sign in
-                throw new Error("auth/user-disabled"); // Identity platform intercepts this
-            }
+            // We do NOT block on "active: false" because that is the default state for users
+            // before they complete the mandatory onboarding form.
+            // Banned users should be disabled directly via Firebase Auth Admin (user.disabled).
 
             if (userData?.claims) {
                 return {
@@ -90,10 +87,17 @@ export const beforeSignIn = beforeUserSignedIn({ region: REGION }, async (event)
         }
     } catch (error) {
         console.error(`Error reading real-time claims for user ${user.uid}:`, error);
-        if (error instanceof Error && error.message === "auth/user-disabled") {
-            throw error;
-        }
     }
 
     return {};
 });
+
+// ============================================================================
+// GATEWAY ARCHITECTURE (5-Gateways Pattern)
+// ============================================================================
+export { orchestrator } from "./gateways/orchestrator";
+export { choreography } from "./gateways/choreography";
+export { firestore as firestoreGateway } from "./gateways/firestore"; // Prevent naming collisions with 'firebase-admin/firestore' export
+export { brain } from "./gateways/brain";
+export { webInterface } from "./gateways/webInterface";
+

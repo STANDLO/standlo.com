@@ -12,7 +12,7 @@ interface InputLocalizedProps extends Omit<InputProps, "value" | "onChange"> {
 }
 
 export function InputLocalized({ value, onChange, label, error, className, ...props }: InputLocalizedProps) {
-    const [selectedLang, setSelectedLang] = React.useState<"it" | "en" | "es">("it");
+    const [selectedLang, setSelectedLang] = React.useState<"it" | "es">("it");
 
     const internalValue = value || { it: "" };
 
@@ -29,7 +29,7 @@ export function InputLocalized({ value, onChange, label, error, className, ...pr
                         {label} {selectedLang === "it" && <span className="text-destructive">*</span>}
                     </label>
                     <div className="flex gap-1">
-                        {(["it", "en", "es"] as const).map((lang) => (
+                        {(["it", "es"] as const).map((lang) => (
                             <button
                                 key={lang}
                                 type="button"

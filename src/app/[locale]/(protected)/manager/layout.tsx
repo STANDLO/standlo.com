@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { LayoutProtected } from "@/components/layout/LayoutProtected";
-import { LayoutDashboard, Users, Construction, Wrench, Settings } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 export default async function ManagerLayout({ children }: { children: ReactNode }) {
@@ -14,28 +13,28 @@ export default async function ManagerLayout({ children }: { children: ReactNode 
         {
             label: "Dashboard",
             href: "/manager",
-            icon: LayoutDashboard,
+            icon: "LayoutDashboard",
             matchPattern: "/manager/dashboard"
         },
         {
             label: "Progetti",
             href: "/manager/projects",
-            icon: Construction
+            icon: "Construction"
         },
         {
             label: "Produzione",
             href: "/manager/production",
-            icon: Wrench
+            icon: "Wrench"
         },
         {
             label: "Clienti",
             href: "/manager/customers",
-            icon: Users
+            icon: "Users"
         },
         {
             label: "Impostazioni",
             href: "/manager/settings",
-            icon: Settings
+            icon: "Settings"
         }
     ];
 

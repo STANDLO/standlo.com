@@ -2,20 +2,21 @@ import * as React from "react"
 import { Link } from "@/i18n/routing"
 import { Button } from "@/components/ui/Button"
 import { useTranslations } from "next-intl"
+import { Logo } from "@/components/ui/Logo"
 
 export function PublicHeader() {
-    const t = useTranslations("Auth.Login")
+    const t = useTranslations("Auth")
 
     return (
         <header className="layout-header-main">
             <div className="layout-container">
-                <div className="flex items-center gap-2">
-                    <Link href="/" className="font-bold text-xl text-primary tracking-tight">
-                        STANDLO
+                <div className="layout-header-brand-group">
+                    <Link href="/" className="layout-header-brand-link">
+                        <Logo size="m" />
                     </Link>
                 </div>
                 <nav className="layout-nav-links">
-                    <Link href="/auth/login" className="transition-colors hover:text-primary">
+                    <Link href="/auth/login" className="layout-header-nav-link">
                         {t("submitButton")}
                     </Link>
                     <Link href="/auth/register">

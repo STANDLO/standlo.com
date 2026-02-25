@@ -1,40 +1,133 @@
 {
+    "Dashboard": {
+        "Designer": {
+            "title": "Estudio de Diseño",
+            "subtitle": "Ver solicitudes de diseño y briefs de clientes de Standlo.",
+            "card1Title": "Nuevos Briefs"
+        },
+        "Customer": {
+            "title": "Dashboard del Cliente",
+            "subtitle": "Bienvenido a tu portal operativo STANDLO. Desde aquí puedes gestionar tus eventos, pedidos y equipo.",
+            "card1Title": "Pedidos Activos",
+            "card2Title": "Miembros del Equipo"
+        },
+        "Manager": {
+            "title": "Manager de Operaciones",
+            "subtitle": "Supervisa operaciones, gestiona proyectos complejos y monitoriza los flujos de trabajo de los socios.",
+            "card1Title": "Proyectos Activos",
+            "card2Title": "Por Facturar"
+        }
+    },
     "Auth": {
+        "Register": {
+            "title": "Crea tu Cuenta",
+            "description": "Únete a STANDLO para gestionar tus operaciones.",
+            "yesAccountText": "¿Ya tienes una cuenta?",
+            "loginAction": "Inicia sesión",
+            "nameLabel": "Nombre Completo",
+            "namePlaceholder": "Juan Pérez",
+            "submitButton": "Regístrate"
+        },
         "Login": {
             "title": "Inicia sesión en STANDLO",
-            "description": "Ingresa tus credenciales para acceder al portal operativo.",
-            "emailLabel": "Correo electrónico",
-            "emailPlaceholder": "mario.rossi@empresa.es",
-            "passwordLabel": "Contraseña",
-            "submitButton": "Ingresar",
-            "dividerText": "O continuar con",
-            "footerNote": "* El acceso puede requerir verificación en dos pasos (MFA SMS) para roles administrativos.",
-            "noAccountText": "¿No tienes cuenta?",
-            "registerAction": "Regístrate"
+            "subtitle": "Ingresa tus credenciales para acceder a tu cuenta.",
+            "submitButton": "Iniciar sesión",
+            "footerNote": "Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad."
         },
-        "Register": {
-            "title": "Crear Cuenta de Cliente",
-            "description": "El registro abierto está reservado exclusivamente para clientes. Los socios y proveedores son invitados.",
-            "nameLabel": "Nombre de Empresa o Contacto",
-            "namePlaceholder": "Fiera Milano Spa",
-            "emailLabel": "Correo Empresarial",
-            "emailPlaceholder": "contacto@empresa.es",
-            "passwordLabel": "Contraseña",
-            "submitButton": "Registrarse como Cliente",
-            "dividerText": "O",
-            "continueGoogle": "Continuar con Google",
-            "yesAccountText": "¿Ya tienes una cuenta?",
-            "loginAction": "Inicia sesión"
+        "continueGoogle": "Continuar con Google",
+        "continueGithub": "Continuar con GitHub",
+        "CardAuth": {
+            "copyright": "© {year} STANDLO. Todos los derechos reservados."
+        },
+        "title": "Inicia sesión en STANDLO",
+        "description": "Ingresa tus credenciales para acceder al portal operativo.",
+        "emailLabel": "Correo electrónico",
+        "emailPlaceholder": "mario.rossi@empresa.es",
+        "passwordLabel": "Contraseña",
+        "submitButton": "Ingresar",
+        "dividerText": "O continuar con",
+        "footerNote": "* El acceso puede requerir verificación en dos pasos (MFA SMS) para roles administrativos.",
+        "noAccountText": "¿No tienes cuenta?",
+        "registerAction": "Regístrate",
+        "Errors": {
+            "auth/email-already-in-use": "Este correo electrónico ya está asociado a una cuenta.",
+            "auth/invalid-credential": "Las credenciales introducidas no son correctas.",
+            "auth/user-not-found": "No se encontró ninguna cuenta para este correo electrónico.",
+            "auth/wrong-password": "La contraseña que ingresaste es incorrecta.",
+            "auth/weak-password": "La contraseña es demasiado débil (mínimo 6 caracteres).",
+            "auth/invalid-email": "La dirección de correo electrónico no es válida.",
+            "auth/too-many-requests": "Demasiados intentos fallidos. Por favor, inténtalo de nuevo más tarde.",
+            "auth/user-disabled": "Esta cuenta ha sido deshabilitada por el administrador.",
+            "auth/network-request-failed": "Error de red. Por favor, comprueba tu conexión.",
+            "auth/popup-closed-by-user": "La ventana de inicio de sesión se cerró antes de completar.",
+            "auth/account-exists-with-different-credential": "Ya tienes una cuenta con este correo vinculada a otro proveedor.",
+            "default": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo."
+        },
+        "VerifyEmail": {
+            "title": "Verifica tu dirección de Correo",
+            "description": "Hemos enviado un correo a la dirección asociada a tu cuenta. Haz clic en el enlace de confirmación para continuar.",
+            "checkStatusButton": "Ya he verificado, continuar",
+            "resendButton": "Enviar correo de nuevo",
+            "emailSentMessage": "¡Correo de verificación enviado correctamente!",
+            "errorMessage": "No pudimos confirmar tu correo. Por favor, inténtalo de nuevo más tarde.",
+            "notVerifiedMessage": "Tu correo aún no está verificado. Revisa tu bandeja de entrada o espera un momento."
+        }
+    },
+    "Register": {
+        "title": "Crear Cuenta de Cliente",
+        "description": "El registro abierto está reservado exclusivamente para clientes. Los socios y proveedores son invitados.",
+        "nameLabel": "Nombre de Empresa o Contacto",
+        "namePlaceholder": "Fiera Milano Spa",
+        "emailLabel": "Correo Empresarial",
+        "emailPlaceholder": "contacto@empresa.es",
+        "passwordLabel": "Contraseña",
+        "submitButton": "Registrarse como Cliente",
+        "dividerText": "O",
+        "continueGoogle": "Continuar con Google",
+        "yesAccountText": "¿Ya tienes una cuenta?",
+        "loginAction": "Inicia sesión"
+    },
+    "Onboarding": {
+        "title": "Completa tu Perfil B2B",
+        "subtitle": "Para continuar usando Standlo, necesitamos cierta información obligatoria para facturación.",
+        "orgNameLabel": "Razón Social",
+        "logoLabel": "Logotipo de la Empresa",
+        "roleLabel": "Selecciona tu rol",
+        "vatLabel": "Número de IVA",
+        "sdiLabel": "Código SDI",
+        "ibanLabel": "IBAN",
+        "addressLabel": "Dirección Sede Legal",
+        "submitButton": "Completar Perfil"
+    },
+    "Components": {
+        "InputPlace": {
+            "placeholder": "Busca una dirección con Google..."
         }
     },
     "components": {
         "auth": {
             "logout": "Cerrar sesión"
         },
+        "header": {
+            "organization_fallback": "Organización",
+            "user_fallback": "Usuario"
+        },
+        "footer": {
+            "copyright": "© {year} STANDLO. Plataforma para el montaje de ferias europeas.",
+            "terms": "Términos",
+            "privacy": "Privacidad"
+        },
         "roles": {
-            "customer": "Cliente",
-            "manager": "Manager",
-            "designer": "Diseñador"
+            "customer": "Expositor",
+            "provider": "Proveedor de Partes",
+            "manager": "Account Manager",
+            "designer": "Diseñador",
+            "carpenter": "Carpintero",
+            "builder": "Ensamblador",
+            "painter": "Pintor",
+            "technician": "Técnico",
+            "driver": "Transportista",
+            "promoter": "Promotor"
         }
     }
 }

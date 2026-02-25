@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { LayoutProtected } from "@/components/layout/LayoutProtected";
-import { LayoutDashboard, PenTool, CheckSquare } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 export default async function DesignerLayout({ children }: { children: ReactNode }) {
@@ -13,18 +12,18 @@ export default async function DesignerLayout({ children }: { children: ReactNode
         {
             label: "Dashboard",
             href: "/designer",
-            icon: LayoutDashboard,
+            icon: "LayoutDashboard",
             matchPattern: "/designer/dashboard"
         },
         {
             label: "Design Assegnati",
             href: "/designer/tasks",
-            icon: PenTool
+            icon: "PenTool"
         },
         {
             label: "Revisioni",
             href: "/designer/reviews",
-            icon: CheckSquare
+            icon: "CheckSquare"
         }
     ];
 

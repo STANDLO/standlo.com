@@ -1,9 +1,9 @@
 import { BaseRepository } from "../src/core/repository";
-import { BaseEntity, LocalizedString } from "../src/core/schemas";
+import { BaseEntity } from "../src/core/schemas";
 
 // 1. Definiamo un mockup di Entità per i test (es. un Progetto)
 export interface MockProject extends BaseEntity {
-    name: LocalizedString;
+    name: string;
     status: 'draft' | 'active';
 }
 
@@ -25,14 +25,16 @@ async function runSeed() {
 
         console.log("1. Creazione di un nuovo record...");
         const newProject = await repo.create(orgId, {
-            name: { it: "Progetto Fiera Milano", en: "Milan Exhibition Project" },
+            name: "Progetto Fiera Milano",
+            code: "PRJ-001",
+            version: 1,
             status: "draft"
         }, userId);
         console.log("   ✅ Creato:", newProject.id);
 
         console.log("2. Lettura del record appena creato...");
         const fetchedProject = await repo.getById(orgId, newProject.id!);
-        console.log("   ✅ Letto:", fetchedProject?.name.it);
+        console.log("   ✅ Letto:", fetchedProject?.name);
 
         console.log("3. Aggiornamento del record...");
         const updatedProject = await repo.update(orgId, newProject.id!, {

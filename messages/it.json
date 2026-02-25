@@ -1,55 +1,127 @@
 {
     "Auth": {
-        "Login": {
-            "title": "Accedi a STANDLO",
-            "description": "Inserisci le tue credenziali per accedere al portale operativo.",
-            "emailLabel": "Email",
-            "emailPlaceholder": "mario.rossi@azienda.it",
-            "passwordLabel": "Password",
-            "submitButton": "Accedi",
-            "dividerText": "Oppure continua con",
-            "footerNote": "* L'accesso potrebbe richiedere una verifica in due passaggi (MFA SMS) per i ruoli amministrativi.",
-            "noAccountText": "Non hai un account?",
-            "registerAction": "Registrati"
-        },
         "Register": {
-            "title": "Crea Account Customer",
-            "description": "La registrazione libera è riservata esclusivamente ai clienti (Customer). Partner e fornitori vengono invitati.",
-            "nameLabel": "Nome Azienda o Referente",
-            "namePlaceholder": "Fiera Milano Spa",
-            "emailLabel": "Email Aziendale",
-            "emailPlaceholder": "contact@azienda.it",
-            "passwordLabel": "Password",
-            "submitButton": "Registrati come Cliente",
-            "dividerText": "Oppure",
-            "continueGoogle": "Continua con Google",
+            "title": "Crea il tuo Account",
+            "description": "Unisciti a STANDLO per gestire la tua operatività.",
             "yesAccountText": "Hai già un account?",
-            "loginAction": "Accedi"
+            "loginAction": "Accedi",
+            "nameLabel": "Nome Completo",
+            "namePlaceholder": "Mario Rossi",
+            "submitButton": "Registrati"
         },
-        "Onboarding": {
-            "title": "Completa il tuo Profilo B2B",
-            "subtitle": "Per continuare ad utilizzare Standlo, abbiamo bisogno di alcune informazioni obbligatorie per la fatturazione.",
-            "roleLabel": "Seleziona il tuo ruolo",
-            "vatLabel": "Partita IVA",
-            "sdiLabel": "Codice SDI",
-            "ibanLabel": "IBAN",
-            "addressLabel": "Indirizzo Sede Legale",
-            "submitButton": "Completa Profilo"
+        "CardAuth": {
+            "copyright": "© {year} STANDLO. Tutti i diritti riservati."
+        },
+        "title": "Accedi a STANDLO",
+        "description": "Inserisci le tue credenziali per accedere al portale operativo.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "mario.rossi@azienda.it",
+        "passwordLabel": "Password",
+        "submitButton": "Accedi",
+        "dividerText": "Oppure continua con",
+        "continueGoogle": "Continua con Google",
+        "continueGithub": "Continua con GitHub",
+        "footerNote": "* L'accesso potrebbe richiedere una verifica in due passaggi (MFA SMS) per i ruoli amministrativi.",
+        "noAccountText": "Non hai un account?",
+        "registerAction": "Registrati",
+        "Errors": {
+            "auth/email-already-in-use": "Questa email è già associata a un account.",
+            "auth/invalid-credential": "Le credenziali inserite non sono corrette.",
+            "auth/user-not-found": "Nessun account trovato per questa email.",
+            "auth/wrong-password": "La password inserita non è corretta.",
+            "auth/weak-password": "La password è troppo debole (minimo 6 caratteri).",
+            "auth/invalid-email": "L'indirizzo email inserito non è valido.",
+            "auth/too-many-requests": "Troppi tentativi falliti. Riprova più tardi.",
+            "auth/user-disabled": "Questo account è stato bloccato dall'amministratore.",
+            "auth/network-request-failed": "Errore di connessione. Controlla la tua rete.",
+            "auth/popup-closed-by-user": "La finestra di accesso è stata chiusa prima del completamento.",
+            "auth/account-exists-with-different-credential": "Hai già un account con questa email associato a un altro provider.",
+            "default": "Si è verificato un errore imprevisto. Ti preghiamo di riprovare."
+        },
+        "VerifyEmail": {
+            "title": "Verifica il tuo indirizzo Email",
+            "description": "Abbiamo inviato un'email all'indirizzo associato al tuo account. Clicca sul link di conferma per continuare.",
+            "checkStatusButton": "Ho verificato, continua",
+            "resendButton": "Invia di nuovo l'email",
+            "emailSentMessage": "Email di verifica inviata con successo!",
+            "errorMessage": "Non è stato possibile confermare l'email. Riprova più tardi.",
+            "notVerifiedMessage": "L'email non risulta ancora verificata. Controlla la posta o attendi qualche istante."
         }
+    },
+    "Register": {
+        "title": "Crea Account Customer",
+        "description": "La registrazione libera è riservata esclusivamente ai clienti (Customer). Partner e fornitori vengono invitati.",
+        "nameLabel": "Nome Azienda o Referente",
+        "namePlaceholder": "Fiera Milano Spa",
+        "emailLabel": "Email Aziendale",
+        "emailPlaceholder": "contact@azienda.it",
+        "passwordLabel": "Password",
+        "submitButton": "Registrati come Cliente",
+        "dividerText": "Oppure",
+        "continueGoogle": "Continua con Google",
+        "yesAccountText": "Hai già un account?",
+        "loginAction": "Accedi"
+    },
+    "Onboarding": {
+        "title": "Completa il tuo Profilo B2B",
+        "subtitle": "Per continuare ad utilizzare Standlo, abbiamo bisogno di alcune informazioni obbligatorie per la fatturazione.",
+        "orgNameLabel": "Ragione Sociale",
+        "logoLabel": "Logo Aziendale",
+        "roleLabel": "Seleziona il tuo ruolo",
+        "vatLabel": "Partita IVA",
+        "sdiLabel": "Codice SDI",
+        "ibanLabel": "IBAN",
+        "addressLabel": "Indirizzo Sede Legale",
+        "submitButton": "Completa Profilo"
     },
     "Components": {
         "InputPlace": {
             "placeholder": "Cerca un indirizzo con Google..."
         }
     },
+    "Dashboard": {
+        "Designer": {
+            "title": "Design Studio",
+            "subtitle": "Visualizza le richieste di progettazione e i brief dei clienti Standlo.",
+            "card1Title": "Nuovi Brief"
+        },
+        "Customer": {
+            "title": "Dashboard Cliente",
+            "subtitle": "Benvenuto nel tuo portale operativo STANDLO. Da qui puoi gestire i tuoi eventi, ordini e team.",
+            "card1Title": "Ordini Attivi",
+            "card2Title": "Membri Team"
+        },
+        "Manager": {
+            "title": "Manager Ops",
+            "subtitle": "Supervisiona le operation, gestisci i progetti complessi e monitora il workflow dei partner.",
+            "card1Title": "Progetti Attivi",
+            "card2Title": "Da Fatturare"
+        }
+    },
     "components": {
         "auth": {
             "logout": "Esci"
         },
+        "header": {
+            "organization_fallback": "Organizzazione",
+            "user_fallback": "Utente"
+        },
+        "footer": {
+            "copyright": "© {year} STANDLO. Piattaforma per l'allestimento fieristico europeo.",
+            "terms": "Termini",
+            "privacy": "Privacy"
+        },
         "roles": {
-            "customer": "Cliente",
-            "manager": "Manager",
-            "designer": "Designer"
+            "customer": "Espositore",
+            "provider": "Fornitore Parti",
+            "manager": "Account Manager",
+            "designer": "Progettista",
+            "carpenter": "Falegname",
+            "builder": "Allestitore",
+            "painter": "Pittore",
+            "technician": "Tecnico",
+            "driver": "Trasportatore",
+            "promoter": "Promoter"
         }
     }
 }

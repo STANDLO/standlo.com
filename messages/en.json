@@ -1,40 +1,133 @@
 {
+    "Dashboard": {
+        "Designer": {
+            "title": "Design Studio",
+            "subtitle": "View design requests and briefs from Standlo customers.",
+            "card1Title": "New Briefs"
+        },
+        "Customer": {
+            "title": "Customer Dashboard",
+            "subtitle": "Welcome to your STANDLO operational portal. From here you can manage your events, orders, and team.",
+            "card1Title": "Active Orders",
+            "card2Title": "Team Members"
+        },
+        "Manager": {
+            "title": "Ops Manager",
+            "subtitle": "Supervise operations, manage complex projects, and monitor partner workflows.",
+            "card1Title": "Active Projects",
+            "card2Title": "To Invoice"
+        }
+    },
     "Auth": {
+        "Register": {
+            "title": "Create an Account",
+            "description": "Join STANDLO to manage your operations.",
+            "yesAccountText": "Already have an account?",
+            "loginAction": "Log in",
+            "nameLabel": "Full Name",
+            "namePlaceholder": "John Doe",
+            "submitButton": "Register"
+        },
         "Login": {
             "title": "Log in to STANDLO",
-            "description": "Enter your credentials to access the operational portal.",
-            "emailLabel": "Email",
-            "emailPlaceholder": "mario.rossi@company.com",
-            "passwordLabel": "Password",
-            "submitButton": "Login",
-            "dividerText": "Or continue with",
-            "footerNote": "* Access may require a two-step verification (MFA SMS) for administrative roles.",
-            "noAccountText": "Don't have an account?",
-            "registerAction": "Sign Up"
+            "subtitle": "Enter your credentials to access your account.",
+            "submitButton": "Log in",
+            "footerNote": "By clicking continue, you agree to our Terms of Service and Privacy Policy."
         },
-        "Register": {
-            "title": "Create Customer Account",
-            "description": "Open registration is reserved exclusively for customers. Partners and suppliers are invited.",
-            "nameLabel": "Company Name or Contact",
-            "namePlaceholder": "Fiera Milano Spa",
-            "emailLabel": "Business Email",
-            "emailPlaceholder": "contact@company.com",
-            "passwordLabel": "Password",
-            "submitButton": "Register as Customer",
-            "dividerText": "Or",
-            "continueGoogle": "Continue with Google",
-            "yesAccountText": "Already have an account?",
-            "loginAction": "Log in"
+        "continueGoogle": "Continue with Google",
+        "continueGithub": "Continue with GitHub",
+        "CardAuth": {
+            "copyright": "© {year} STANDLO. All rights reserved."
+        },
+        "title": "Log in to STANDLO",
+        "description": "Enter your credentials to access the operational portal.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "mario.rossi@company.com",
+        "passwordLabel": "Password",
+        "submitButton": "Login",
+        "dividerText": "Or continue with",
+        "footerNote": "* Access may require a two-step verification (MFA SMS) for administrative roles.",
+        "noAccountText": "Don't have an account?",
+        "registerAction": "Sign Up",
+        "Errors": {
+            "auth/email-already-in-use": "This email is already associated with an account.",
+            "auth/invalid-credential": "The credentials provided are incorrect.",
+            "auth/user-not-found": "No account found for this email.",
+            "auth/wrong-password": "The password you entered is incorrect.",
+            "auth/weak-password": "The password is too weak (minimum 6 characters).",
+            "auth/invalid-email": "The email address is invalid.",
+            "auth/too-many-requests": "Too many failed attempts. Please try again later.",
+            "auth/user-disabled": "This account has been disabled by the administrator.",
+            "auth/network-request-failed": "Network error. Please check your connection.",
+            "auth/popup-closed-by-user": "The sign-in window was closed before completion.",
+            "auth/account-exists-with-different-credential": "You already have an account with this email linked to another provider.",
+            "default": "An unexpected error occurred. Please try again."
+        },
+        "VerifyEmail": {
+            "title": "Verify your Email address",
+            "description": "We sent an email to the address associated with your account. Please click the confirmation link to continue.",
+            "checkStatusButton": "I verified, continue",
+            "resendButton": "Resend Email",
+            "emailSentMessage": "Verification email sent successfully!",
+            "errorMessage": "Could not confirm your email right now. Please try again later.",
+            "notVerifiedMessage": "Your email is not verified yet. Please check your inbox or wait a moment."
+        }
+    },
+    "Register": {
+        "title": "Create Customer Account",
+        "description": "Open registration is reserved exclusively for customers. Partners and suppliers are invited.",
+        "nameLabel": "Company Name or Contact",
+        "namePlaceholder": "Fiera Milano Spa",
+        "emailLabel": "Business Email",
+        "emailPlaceholder": "contact@company.com",
+        "passwordLabel": "Password",
+        "submitButton": "Register as Customer",
+        "dividerText": "Or",
+        "continueGoogle": "Continue with Google",
+        "yesAccountText": "Already have an account?",
+        "loginAction": "Log in"
+    },
+    "Onboarding": {
+        "title": "Complete Your B2B Profile",
+        "subtitle": "To continue using Standlo, we need some mandatory information for billing.",
+        "orgNameLabel": "Company Name",
+        "logoLabel": "Company Logo",
+        "roleLabel": "Select your role",
+        "vatLabel": "VAT Number",
+        "sdiLabel": "SDI Code",
+        "ibanLabel": "IBAN",
+        "addressLabel": "Registered Office Address",
+        "submitButton": "Complete Profile"
+    },
+    "Components": {
+        "InputPlace": {
+            "placeholder": "Search an address with Google..."
         }
     },
     "components": {
         "auth": {
             "logout": "Log out"
         },
+        "header": {
+            "organization_fallback": "Organization",
+            "user_fallback": "User"
+        },
+        "footer": {
+            "copyright": "© {year} STANDLO. Platform for European exhibition building.",
+            "terms": "Terms",
+            "privacy": "Privacy"
+        },
         "roles": {
-            "customer": "Customer",
-            "manager": "Manager",
-            "designer": "Designer"
+            "customer": "Exhibitor",
+            "provider": "Parts Provider",
+            "manager": "Account Manager",
+            "designer": "Designer",
+            "carpenter": "Carpenter",
+            "builder": "Booth Builder",
+            "painter": "Painter",
+            "technician": "Technician",
+            "driver": "Driver",
+            "promoter": "Promoter"
         }
     }
 }

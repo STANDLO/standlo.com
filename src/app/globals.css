@@ -228,9 +228,34 @@
     @apply text-sm font-medium leading-none;
   }
 
+  /* Logo Semantic Classes */
+  .layout-logo-wrapper {
+    @apply relative flex items-center justify-center;
+  }
+
+  .layout-logo-light {
+    @apply block dark:hidden object-contain;
+  }
+
+  .layout-logo-dark {
+    @apply hidden dark:block object-contain;
+  }
+
   /* Layout Specific Semantic Classes */
   .layout-header-main {
     @apply sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60;
+  }
+
+  .layout-header-brand-group {
+    @apply flex items-center gap-2;
+  }
+
+  .layout-header-brand-link {
+    @apply flex items-center;
+  }
+
+  .layout-header-nav-link {
+    @apply transition-colors hover:text-primary;
   }
 
   .layout-container {
@@ -246,7 +271,19 @@
   }
 
   .layout-footer-container {
-    @apply container mx-auto flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row px-4;
+    @apply container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row;
+  }
+
+  .layout-footer-text {
+    @apply text-center text-sm leading-loose text-muted-foreground md:text-left;
+  }
+
+  .layout-footer-links {
+    @apply flex gap-4 text-sm text-muted-foreground;
+  }
+
+  .layout-footer-link {
+    @apply underline underline-offset-4 hover:text-primary;
   }
 
   .layout-main-body {
@@ -262,39 +299,39 @@
   }
 
   .layout-auth-form {
-    @apply space-y-4;
+    @apply flex flex-col gap-4;
   }
 
   .layout-auth-field {
-    @apply space-y-2;
+    @apply flex flex-col gap-1.5;
   }
 
   .layout-auth-label {
     @apply text-sm font-medium leading-none;
   }
 
+  .layout-auth-submit {
+    @apply w-full mt-2;
+  }
+
   .layout-auth-divider {
-    @apply relative my-6;
+    @apply relative my-4;
   }
 
   .layout-auth-divider-line-container {
     @apply absolute inset-0 flex items-center;
   }
 
-  .layout-auth-divider-line {
-    @apply w-full border-t;
-  }
-
-  .layout-auth-divider-text-container {
-    @apply relative flex justify-center text-xs uppercase;
-  }
-
   .layout-auth-divider-text {
     @apply bg-card px-2 text-muted-foreground;
   }
 
-  .layout-auth-social-grid {
-    @apply grid grid-cols-3 gap-2;
+  .layout-auth-social-group {
+    @apply grid grid-cols-2 gap-2;
+  }
+
+  .layout-auth-social-icon {
+    @apply mr-2 h-4 w-4;
   }
 
   .layout-auth-footer-note {
@@ -312,6 +349,34 @@
 
   .ui-error-banner {
     @apply p-3 text-sm text-destructive bg-destructive/10 rounded-md;
+  }
+
+  .layout-auth-card {
+    @apply mx-auto max-w-sm w-full;
+  }
+
+  .layout-auth-card-header {
+    @apply flex flex-col items-center text-center;
+  }
+
+  .layout-auth-logo {
+    @apply py-6;
+  }
+
+  .layout-auth-card-footer {
+    @apply flex-col gap-4;
+  }
+
+  .layout-auth-card-note {
+    @apply text-sm text-center text-muted-foreground;
+  }
+
+  .layout-auth-card-link {
+    @apply underline hover:text-primary transition-colors;
+  }
+
+  .layout-auth-card-copyright {
+    @apply text-xs text-center text-muted-foreground/60 w-full pt-4 border-t;
   }
 
   .ui-form-grid {
@@ -441,16 +506,12 @@
     @apply flex flex-1 overflow-hidden;
   }
 
-  .layout-mobile-overlay {
-    @apply fixed inset-0 z-20 bg-black/80 md:hidden;
-  }
-
   .layout-content-area {
-    @apply flex-1 overflow-y-auto w-full md:w-[calc(100%-16rem)] relative;
+    @apply flex-1 overflow-y-auto w-full relative;
   }
 
   .layout-content-container {
-    @apply mx-auto max-w-6xl p-4 md:p-8;
+    @apply mx-auto max-w-6xl p-4 md:p-8 w-full;
   }
 
   /* Header Protected Semantic Classes */
@@ -459,60 +520,11 @@
   }
 
   .layout-header-group {
-    @apply flex items-center gap-4;
+    @apply flex items-center;
   }
 
-  .layout-header-brand {
-    @apply hidden md:flex font-bold text-primary tracking-tight text-xl;
-  }
-
-  .layout-header-user-info {
-    @apply hidden md:flex flex-col items-end text-sm;
-  }
-
-  .layout-header-user-role {
-    @apply text-muted-foreground text-xs;
-  }
-
-  .layout-header-mobile-btn {
-    @apply md:hidden border-none;
-  }
-
-  .layout-avatar-btn {
-    @apply rounded-full bg-secondary/20 text-foreground;
-  }
-
-  .layout-logout-btn {
-    @apply hidden md:flex;
-  }
-
-  /* Sidebar Semantic Classes */
-  .layout-sidebar-wrapper {
-    @apply fixed inset-y-0 left-0 z-30 w-64 md:z-0 md:block md:static transition-transform duration-300;
-  }
-
-  .layout-sidebar {
-    @apply fixed inset-y-0 left-0 z-30 w-64 -translate-x-full border-r border-border bg-background transition-transform duration-300 md:relative md:translate-x-0;
-  }
-
-  .layout-sidebar-mobile-header {
-    @apply flex h-16 items-center border-b border-border px-6 md:hidden;
-  }
-
-  .layout-sidebar-brand {
-    @apply font-bold text-primary tracking-tight text-xl;
-  }
-
-  .layout-sidebar-nav-area {
-    @apply flex-1 overflow-y-auto py-4;
-  }
-
-  .layout-sidebar-nav {
-    @apply grid gap-1 px-4;
-  }
-
-  .layout-sidebar-category {
-    @apply mb-4 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground;
+  .layout-header-brand-link {
+    @apply flex items-center;
   }
 
   /* Dashboard Pages Semantic Classes */
@@ -524,12 +536,24 @@
     @apply flex flex-col;
   }
 
-  .ui-dashboard-title {
-    @apply text-3xl font-bold tracking-tight text-primary;
+  .layout-onboarding-logo {
+    @apply mb-4 mx-auto;
   }
 
-  .ui-dashboard-subtitle {
-    @apply text-muted-foreground mt-2;
+  .layout-onboarding-header-wrapper {
+    @apply text-center;
+  }
+
+  .layout-onboarding-title {
+    @apply text-2xl font-bold tracking-tight mb-2;
+  }
+
+  .layout-onboarding-subtitle {
+    @apply text-muted-foreground text-sm;
+  }
+
+  .layout-onboarding-content {
+    @apply mt-8;
   }
 
   .ui-dashboard-grid-4 {
@@ -554,6 +578,18 @@
 
   .ui-dashboard-card-value {
     @apply text-2xl font-bold;
+  }
+
+  .ui-dashboard-card-accent {
+    @apply border-l-4 border-l-primary;
+  }
+
+  .ui-text-accent {
+    @apply text-primary font-bold;
+  }
+
+  .ui-text-destructive {
+    @apply text-destructive;
   }
 
   /* Auth & Onboarding Pages Semantic Classes */

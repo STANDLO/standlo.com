@@ -37,6 +37,6 @@ if (getApps().length === 0) {
 }
 
 /**
- * Istanza Core di Firestore (Singleton) collegata al Database esplicito "default"
+ * Istanza Core di Firestore (Singleton) collegata al Database esplicito "standlo" (Enterprise)
  */
-export const db = getFirestore(getApp(), "default");
+export const db = getFirestore(getApp(), "standlo");

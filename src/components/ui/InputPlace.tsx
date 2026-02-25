@@ -18,10 +18,13 @@ interface InputPlaceProps extends Omit<React.InputHTMLAttributes<HTMLInputElemen
     value?: string;
     onPlaceSelect: (place: PlaceResult) => void;
     onChangeText?: (text: string) => void;
+    label?: string;
+    error?: string;
+    containerClassName?: string;
 }
 
 export const InputPlace = React.forwardRef<HTMLInputElement, InputPlaceProps>(
-    ({ className, value, onPlaceSelect, onChangeText, disabled, placeholder, ...props }, ref) => {
+    ({ className, value, onPlaceSelect, onChangeText, disabled, placeholder, label, error, containerClassName, id, ...props }, ref) => {
         const t = useTranslations("Components.InputPlace");
 
         // Assicurati che NEXT_PUBLIC_GOOGLE_MAPS_API_KEY sia definita in .env.local
@@ -31,18 +34,18 @@ export const InputPlace = React.forwardRef<HTMLInputElement, InputPlaceProps>(
             console.warn("InputPlace: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not defined. Autocomplete will not work.");
         }
 
-        return (
+        const inputElement = (
             <div className="relative w-full">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                 </div>
                 {/* 
-                  Usiamo "react-google-autocomplete" come wrapper. 
-                  Passiamo le classi standard del nostro Input Tailwind.
+                  Usiamo "react-google-autocomplete" passando l'apiKey per consentire l'auto-caricamento
+                  sicuro dello script Google Maps Places.
                 */}
                 <Autocomplete
-                    ref={ref as unknown as never}
                     apiKey={apiKey}
+                    ref={ref as unknown as never}
                     onPlaceSelected={(place: google.maps.places.PlaceResult) => {
                         if (!place || !place.address_components) return;
 
@@ -83,9 +86,23 @@ export const InputPlace = React.forwardRef<HTMLInputElement, InputPlaceProps>(
                     }}
                     disabled={disabled}
                     placeholder={placeholder || t("placeholder", { fallback: "Cerca un indirizzo..." })}
-                    className={`flex h-10 w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className || ''}`}
+                    className={`ui-input pl-10 h-10 ${error ? 'border-destructive focus-visible:ring-destructive' : ''} ${className || ''}`}
                     {...props}
                 />
+                {error && <span className="text-xs text-destructive font-medium mt-1">{error}</span>}
+            </div>
+        );
+
+        if (!label) {
+            return inputElement;
+        }
+
+        return (
+            <div className={`ui-input-wrapper ${containerClassName || ''}`}>
+                <label className="ui-input-label" htmlFor={id}>
+                    {label}
+                </label>
+                {inputElement}
             </div>
         );
     }

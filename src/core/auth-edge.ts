@@ -1,3 +1,10 @@
+const getFormattedPrivateKey = () => {
+    const key = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+    if (!key) return undefined;
+    // Pulisce doppie virgolette residue e assicura che gli "escaped new lines" diventino veri a capo.
+    return key.replace(/^"|"$/g, '').replace(/\\n/g, '\n');
+};
+
 export const authConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
     cookieName: "session",
@@ -12,9 +19,16 @@ export const authConfig = {
         sameSite: "lax" as const,
         maxAge: 12 * 60 * 60 * 24, // 12 days
     },
-    serviceAccount: {
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-        clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL || 'stub@standlo.iam.gserviceaccount.com',
-        privateKey: (process.env.FIREBASE_ADMIN_PRIVATE_KEY || 'stub').replace(/\\n/g, '\n'),
-    },
+    // Conditionally inject serviceAccount only if private key is present (Local Dev).
+    // On Google Cloud (App Hosting), it gets omitted and defaults automatically to ADC.
+    ...(process.env.FIREBASE_ADMIN_PRIVATE_KEY && process.env.FIREBASE_ADMIN_CLIENT_EMAIL
+        ? {
+            serviceAccount: {
+                projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+                clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+                privateKey: getFormattedPrivateKey()!,
+            }
+        }
+        : {}
+    ),
 };

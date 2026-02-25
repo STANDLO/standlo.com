@@ -7,9 +7,12 @@ import { z } from "zod";
 import { useTranslations } from "next-intl";
 
 import { UIFieldMeta } from "@/core/schemas";
+import { extractZodKeys } from "@/core/extractZodKeys";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useWarnIfUnsavedChanges } from "@/hooks/useWarnIfUnsavedChanges";
+import { InputLookup } from "./InputLookup";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface FormCreateProps<T extends z.ZodSchema<any>> {
@@ -76,44 +79,57 @@ export function FormCreate<T extends z.ZodSchema<any>>({
             )}
 
             <div className="ui-form-grid">
-                {fields.map((fieldMeta) => {
-                    const error = errors[fieldMeta.name];
-                    const colSpanClass = fieldMeta.colSpan ? `md:col-span-${fieldMeta.colSpan}` : "md:col-span-12";
+                {fields
+                    .filter((fieldMeta) => extractZodKeys(schema).includes(fieldMeta.name))
+                    .map((fieldMeta) => {
+                        const error = errors[fieldMeta.name];
+                        const colSpanClass = fieldMeta.colSpan ? `md:col-span-${fieldMeta.colSpan}` : "md:col-span-12";
 
-                    return (
-                        <div key={fieldMeta.name} className={`ui-form-field ${colSpanClass} ${fieldMeta.className || ""}`}>
-                            <label htmlFor={fieldMeta.name} className="ui-input-label">
-                                {fieldMeta.label || fieldMeta.name}
-                                {fieldMeta.required && <span className="ui-required-mark">*</span>}
-                            </label>
+                        return (
+                            <div key={fieldMeta.name} className={`ui-form-field ${colSpanClass} ${fieldMeta.className || ""}`}>
+                                <label htmlFor={fieldMeta.name} className="ui-input-label">
+                                    {fieldMeta.label || fieldMeta.name}
+                                    {fieldMeta.required && <span className="ui-required-mark">*</span>}
+                                </label>
 
-                            {/* Base text inputs. Expand this switch for more complex types like Localized, Select, etc. */}
-                            {fieldMeta.type === "textarea" ? (
-                                <textarea
-                                    {...register(fieldMeta.name as Path<z.infer<T>>)}
-                                    placeholder={fieldMeta.placeholder}
-                                    disabled={fieldMeta.disabled || isSubmitting}
-                                    readOnly={fieldMeta.readOnly}
-                                    className="ui-textarea"
-                                />
-                            ) : (
-                                <Input
-                                    id={fieldMeta.name}
-                                    {...register(fieldMeta.name as Path<z.infer<T>>)}
-                                    placeholder={fieldMeta.placeholder}
-                                    disabled={fieldMeta.disabled || isSubmitting}
-                                    readOnly={fieldMeta.readOnly}
-                                />
-                            )}
+                                {/* Base text inputs. Expand this switch for more complex types like Localized, Select, etc. */}
+                                {fieldMeta.type === "textarea" ? (
+                                    <textarea
+                                        {...register(fieldMeta.name as Path<z.infer<T>>)}
+                                        placeholder={fieldMeta.placeholder}
+                                        disabled={fieldMeta.disabled || isSubmitting}
+                                        readOnly={fieldMeta.readOnly}
+                                        className="ui-textarea"
+                                    />
+                                ) : fieldMeta.type === "lookup" && fieldMeta.lookupTarget ? (
+                                    <InputLookup
+                                        value={null} // TODO: collegare a RHF useController
+                                        onChange={(val) => {
+                                            console.log("Lookup selected:", val);
+                                        }}
+                                        target={fieldMeta.lookupTarget}
+                                        placeholder={fieldMeta.placeholder}
+                                        disabled={fieldMeta.disabled || isSubmitting}
+                                        readOnly={fieldMeta.readOnly}
+                                    />
+                                ) : (
+                                    <Input
+                                        id={fieldMeta.name}
+                                        {...register(fieldMeta.name as Path<z.infer<T>>)}
+                                        placeholder={fieldMeta.placeholder}
+                                        disabled={fieldMeta.disabled || isSubmitting}
+                                        readOnly={fieldMeta.readOnly}
+                                    />
+                                )}
 
-                            {error && (
-                                <span className="ui-error-message">
-                                    {(error.message as string) || "Invalid value"}
-                                </span>
-                            )}
-                        </div>
-                    );
-                })}
+                                {error && (
+                                    <span className="ui-error-message">
+                                        {(error.message as string) || "Invalid value"}
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    })}
             </div>
 
             <div className="ui-form-actions">
@@ -123,7 +139,7 @@ export function FormCreate<T extends z.ZodSchema<any>>({
                     </Button>
                 )}
                 <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "..." : t(submitLabel, { fallback: submitLabel })}
+                    {isSubmitting ? <Loader2 className="animate-spin" /> : t(submitLabel, { fallback: submitLabel })}
                 </Button>
             </div>
         </form>

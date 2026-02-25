@@ -1,0 +1,120 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.orchestrator = void 0;
+const https_1 = require("firebase-functions/v2/https");
+const admin = __importStar(require("firebase-admin"));
+const schemas_1 = require("../schemas");
+exports.orchestrator = (0, https_1.onCall)({
+    region: "europe-west4",
+    enforceAppCheck: true,
+    consumeAppCheckToken: true,
+}, async (request) => {
+    // 1. Mandatory Auth check
+    if (!request.auth) {
+        throw new https_1.HttpsError("unauthenticated", "User must be authenticated to access Orchestrator.");
+    }
+    const data = request.data;
+    const { correlationId, idempotencyKey, orgId, userId, roleId, entityId, actionId, payload } = data;
+    // Log the initiation of the workflow tracing it with correlationId
+    console.log(`[Orchestrator][${correlationId || 'no-corr-id'}] Action: ${actionId} on Entity: ${entityId} started by User: ${request.auth.uid}`);
+    console.log(`[Orchestrator] Details: orgId=${orgId}, userId=${userId}, roleId=${roleId}, idempotencyKey=${idempotencyKey}, payload=${!!payload}`);
+    // TODO: Verify idempotencyKey against Firestore 'idempotency_locks' to prevent duplicated logic execution
+    // --- ROUTER START ---
+    if (actionId === "onboard_organization") {
+        const uid = request.auth.uid;
+        // 1. Fetch user record to check current claims
+        const userRecord = await admin.auth().getUser(uid);
+        const currentCustomClaims = (userRecord.customClaims || {});
+        // Ensure user is truly in pending state to prevent overwriting mature profiles
+        if ((currentCustomClaims === null || currentCustomClaims === void 0 ? void 0 : currentCustomClaims.role) !== "pending" && (currentCustomClaims === null || currentCustomClaims === void 0 ? void 0 : currentCustomClaims.orgId)) {
+            throw new https_1.HttpsError("already-exists", "User is already onboarded.");
+        }
+        // 2. Validate Payload against Centralized Zod Schema
+        if (!payload) {
+            throw new https_1.HttpsError("invalid-argument", "Payload is required for onboarding.");
+        }
+        const orgData = {
+            name: payload.orgName || payload.fullAddress || "New Organization",
+            code: `ORG-${uid}`,
+            logoUrl: payload.logoUrl,
+            roleId: payload.roleId || payload.role, // Handle both payload shapes
+            vatNumber: payload.vatNumber,
+            fullAddress: payload.fullAddress,
+            address: payload.address,
+            city: payload.city,
+            province: payload.province,
+            zipCode: payload.zipCode,
+            country: payload.country,
+        };
+        const parsedData = schemas_1.OrganizationSchema.partial().parse(orgData);
+        // 3. Define the actual active status
+        const role = parsedData.roleId;
+        const isActive = role === "customer";
+        // 4. Initialize Firestore Batch Transaction
+        const db = admin.firestore();
+        const batch = db.batch();
+        const orgRootId = uid;
+        // Organization Document
+        const orgRef = db.collection("organizations").doc(orgRootId);
+        batch.set(orgRef, Object.assign(Object.assign({}, parsedData), { active: isActive, createdAt: admin.firestore.FieldValue.serverTimestamp(), createdBy: uid, updatedAt: admin.firestore.FieldValue.serverTimestamp(), updatedBy: uid }), { merge: true });
+        // Update User Document
+        const userRef = db.collection("users").doc(uid);
+        batch.set(userRef, {
+            active: isActive,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+        // 5. Upgrade Custom Claims via Admin SDK
+        const newClaims = Object.assign(Object.assign({}, currentCustomClaims), { role: role, onboarding: true, orgId: orgRootId, orgName: parsedData.name || null, logoUrl: parsedData.logoUrl || null, [`${role}Id`]: orgRootId, [`${role}Name`]: parsedData.name || null });
+        batch.update(userRef, { claims: newClaims });
+        await batch.commit();
+        await admin.auth().setCustomUserClaims(uid, newClaims);
+        // Generate Custom Token to synchronize client Edge cookies instantly
+        const customToken = await admin.auth().createCustomToken(uid);
+        return {
+            status: "success",
+            message: "Onboarding completed successfully.",
+            actionId,
+            customToken
+        };
+    }
+    // --- ROUTER END ---
+    return {
+        status: "success",
+        message: "Orchestrator finished successfully (No operation matched)",
+        actionId,
+    };
+});
+//# sourceMappingURL=orchestrator.js.map

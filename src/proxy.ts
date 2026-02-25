@@ -26,6 +26,18 @@ export async function proxy(request: NextRequest) {
 
             const role = (decodedToken.role as string) || 'pending'; // Fallback a pending se non definito
             const isOnboardingCompleted = decodedToken.onboarding === true;
+            const isEmailVerified = decodedToken.email_verified === true;
+
+            // 0. GESTIONE VERIFICA EMAIL
+            if (!isEmailVerified) {
+                if (!pathname.includes('/auth/verify-email') && !pathname.includes('/auth/logout')) {
+                    url.pathname = `/${locale}/auth/verify-email`;
+                    return NextResponse.redirect(url);
+                }
+                // Se è già in verify-email o sta facendo logout, lo lasciamo passare
+                headers.set('X-Tenant-Role', role);
+                return intlMiddleware(request);
+            }
 
             // 1. GESTIONE ONBOARDING
             // Se l'utente non ha ancora completato il profilo
@@ -41,8 +53,8 @@ export async function proxy(request: NextRequest) {
             }
 
             // 2. GESTIONE UTENTI COMPLETATI (Ruoli Definitivi)
-            // Se un utente completato prova ad accedere a rotte pubbliche o root o all'onboarding
-            if (pathname === '/' || pathname.includes('/auth/login') || pathname.includes('/auth/register') || pathname.includes('/onboarding')) {
+            // Se un utente completato prova ad accedere a rotte pubbliche o root o all'onboarding o verify-email
+            if (pathname === '/' || pathname.includes('/auth/login') || pathname.includes('/auth/register') || pathname.includes('/onboarding') || pathname.includes('/auth/verify-email')) {
                 url.pathname = `/${locale}/${role}`;
                 return NextResponse.redirect(url);
             }
@@ -64,6 +76,12 @@ export async function proxy(request: NextRequest) {
                 headers.set('X-Tenant-Org', decodedToken.organizationId as string);
             }
 
+            // Exclude API routes from next-intl middleware
+            if (pathname.startsWith('/api/')) {
+                const res = NextResponse.next({ request: { headers } });
+                return res;
+            }
+
             // Procede regolarmente col rendering Next-Intl
             return intlMiddleware(request);
         },
@@ -79,6 +97,11 @@ export async function proxy(request: NextRequest) {
             if (!isPublic && pathname !== '/' && !pathname.startsWith('/_next') && !pathname.startsWith('/api/')) {
                 url.pathname = `/${locale}/auth/login`;
                 return NextResponse.redirect(url);
+            }
+
+            // Exclude API routes from next-intl middleware
+            if (pathname.startsWith('/api/')) {
+                return NextResponse.next();
             }
 
             // Se è su area pubblica, procede tranquillo (mostrando la view non loggata)
