@@ -1,0 +1,149 @@
+{
+    "Brand": {
+        "name": "STANDLO",
+        "slogan": "Nous maintenons les certitudes",
+        "copyright": "© {year} STANDLO S.A. Tous droits réservés."
+    },
+    "Dashboard": {
+        "Designer": {
+            "title": "Studio de design",
+            "subtitle": "Consultez les demandes de conception et les briefs des clients Standlo.",
+            "card1Title": "Nouveaux briefs"
+        },
+        "Customer": {
+            "title": "Tableau de bord client",
+            "subtitle": "Bienvenue sur votre portail opérationnel STANDLO. Gérez vos événements, commandes et votre équipe ici.",
+            "card1Title": "Commandes actives",
+            "card2Title": "Membres de l'équipe"
+        },
+        "Manager": {
+            "title": "Responsable des opérations",
+            "subtitle": "Supervisez les opérations, gérez les projets complexes et suivez les flux de travail des partenaires.",
+            "card1Title": "Projets actifs",
+            "card2Title": "À facturer"
+        }
+    },
+    "Auth": {
+        "Register": {
+            "title": "Créer un compte",
+            "description": "Rejoignez STANDLO pour gérer vos opérations.",
+            "yesAccountText": "Vous avez déjà un compte ?",
+            "loginAction": "Se connecter",
+            "nameLabel": "Nom complet",
+            "namePlaceholder": "Jean Dupont",
+            "submitButton": "S'inscrire",
+            "acceptTerms": "J'accepte la <privacyLink>Politique de confidentialité</privacyLink> et les <termsLink>Conditions générales</termsLink>."
+        },
+        "Login": {
+            "title": "Se connecter à STANDLO",
+            "subtitle": "Entrez vos identifiants pour accéder à votre compte.",
+            "submitButton": "Se connecter",
+            "footerNote": "En continuant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité."
+        },
+        "continueGoogle": "Continuer avec Google",
+        "continueGithub": "Continuer avec GitHub",
+        "CardAuth": {
+            "copyright": "© {year} STANDLO. Tous droits réservés."
+        },
+        "title": "Se connecter à STANDLO",
+        "description": "Entrez vos identifiants pour accéder au portail opérationnel.",
+        "emailLabel": "Adresse e-mail",
+        "emailPlaceholder": "jean.dupont@entreprise.fr",
+        "passwordLabel": "Mot de passe",
+        "submitButton": "Accès",
+        "dividerText": "Ou continuer avec",
+        "footerNote": "* L'accès peut nécessiter une vérification en deux étapes (MFA SMS) pour les rôles administratifs.",
+        "noAccountText": "Vous n'avez pas de compte ?",
+        "registerAction": "S'inscrire",
+        "Errors": {
+            "auth/email-already-in-use": "Cette adresse e-mail est déjà associée à un compte.",
+            "auth/invalid-credential": "Les identifiants fournis sont incorrects.",
+            "auth/user-not-found": "Aucun compte trouvé pour cette adresse e-mail.",
+            "auth/wrong-password": "Le mot de passe que vous avez saisi est incorrect.",
+            "auth/weak-password": "Le mot de passe est trop faible (minimum 6 caractères).",
+            "auth/invalid-email": "L'adresse e-mail n'est pas valide.",
+            "auth/too-many-requests": "Trop de tentatives infructueuses. Veuillez réessayer plus tard.",
+            "auth/user-disabled": "Ce compte a été désactivé par l'administrateur.",
+            "auth/network-request-failed": "Erreur réseau. Veuillez vérifier votre connexion.",
+            "auth/popup-closed-by-user": "La fenêtre de connexion a été fermée avant son terme.",
+            "auth/account-exists-with-different-credential": "Vous avez déjà un compte avec cet e-mail lié à un autre fournisseur.",
+            "default": "Une erreur inattendue s'est produite. Veuillez réessayer."
+        },
+        "VerifyEmail": {
+            "title": "Vérifiez votre adresse e-mail",
+            "description": "Nous avons envoyé un e-mail à l'adresse associée à votre compte. Veuillez cliquer sur le lien de confirmation pour continuer.",
+            "successMessage": "E-mail vérifié avec succès ! Redirection...",
+            "alreadyVerified": "E-mail déjà vérifié ! Redirection...",
+            "checkStatusButton": "J'ai vérifié, continuer",
+            "resendButton": "Renvoyer l'e-mail",
+            "emailSentMessage": "E-mail de vérification envoyé avec succès !",
+            "errorMessage": "Impossible de confirmer votre e-mail pour le moment. Veuillez réessayer plus tard.",
+            "notVerifiedMessage": "Votre e-mail n'a pas encore été vérifié. Veuillez vérifier votre boîte de réception ou patienter un instant."
+        },
+        "Action": {
+            "title": "Traitement de la demande",
+            "description": "Veuillez patienter pendant que nous vérifions votre lien sécurisé.",
+            "loading": "Vérification du code...",
+            "invalidLink": "Code d'action invalide ou manquant.",
+            "invalidMode": "Mode d'action inconnu.",
+            "errorMessage": "Une erreur s'est produite lors du traitement de votre demande."
+        }
+    },
+    "Register": {
+        "title": "Créer un compte client",
+        "description": "L'inscription libre est exclusivement réservée aux clients. Les partenaires et fournisseurs sont invités.",
+        "nameLabel": "Nom de l'entreprise ou du contact",
+        "namePlaceholder": "Fiera Milano Spa",
+        "emailLabel": "E-mail professionnel",
+        "emailPlaceholder": "contact@entreprise.fr",
+        "passwordLabel": "Mot de passe",
+        "submitButton": "S'inscrire en tant que client",
+        "dividerText": "Ou",
+        "continueGoogle": "Continuer avec Google",
+        "yesAccountText": "Vous avez déjà un compte ?",
+        "loginAction": "Se connecter"
+    },
+    "Onboarding": {
+        "title": "Complétez votre profil B2B",
+        "subtitle": "Pour continuer à utiliser Standlo, nous avons besoin de certaines informations obligatoires pour la facturation.",
+        "orgNameLabel": "Nom de l'entreprise",
+        "logoLabel": "Logo de l'entreprise",
+        "roleLabel": "Sélectionnez votre rôle",
+        "vatLabel": "Numéro de TVA",
+        "sdiLabel": "Code SDI",
+        "ibanLabel": "IBAN",
+        "addressLabel": "Adresse du siège social",
+        "submitButton": "Compléter le profil"
+    },
+    "Components": {
+        "InputPlace": {
+            "placeholder": "Rechercher une adresse avec Google..."
+        }
+    },
+    "components": {
+        "auth": {
+            "logout": "Se déconnecter"
+        },
+        "header": {
+            "organization_fallback": "Organisation",
+            "user_fallback": "Utilisateur"
+        },
+        "footer": {
+            "copyright": "© {year} STANDLO. Plateforme pour la construction de stands européens.",
+            "terms": "Conditions",
+            "privacy": "Confidentialité"
+        },
+        "roles": {
+            "customer": "Exposant",
+            "provider": "Fournisseur de pièces",
+            "manager": "Account Manager",
+            "designer": "Designer",
+            "carpenter": "Menuisier",
+            "builder": "Monteur de stand",
+            "painter": "Peintre",
+            "technician": "Technicien",
+            "driver": "Chauffeur",
+            "promoter": "Promoteur"
+        }
+    }
+}

@@ -5,9 +5,11 @@ import { useTranslations } from "next-intl";
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, User, sendEmailVerification } from "firebase/auth";
 import { auth, appCheck } from "@/core/firebase";
 import { getToken } from "firebase/app-check";
+import { Link } from "@/i18n/routing";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { CardAuth } from "@/components/ui/CardAuth";
 
 export function FormRegister() {
@@ -16,6 +18,7 @@ export function FormRegister() {
     const [name, setName] = React.useState("");
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
+    const [acceptedTerms, setAcceptedTerms] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
 
@@ -118,7 +121,7 @@ export function FormRegister() {
             footerActionText={t("Register.loginAction")}
             onGoogleLogin={loginWithGoogle}
             onGithubLogin={loginWithGithub}
-            isLoading={isLoading}
+            isLoading={isLoading || !acceptedTerms}
         >
             <form onSubmit={onSubmit} className="layout-auth-form">
                 {error && (
@@ -162,7 +165,29 @@ export function FormRegister() {
                     disabled={isLoading}
                 />
 
-                <Button type="submit" className="layout-auth-submit" disabled={isLoading}>
+                <Checkbox
+                    id="acceptTerms"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    disabled={isLoading}
+                    label={
+                        t.rich("Register.acceptTerms", {
+                            privacyLink: (chunks) => (
+                                <Link href="/privacy" className="ui-checkbox-link" target="_blank">
+                                    {chunks}
+                                </Link>
+                            ),
+                            termsLink: (chunks) => (
+                                <Link href="/terms" className="ui-checkbox-link" target="_blank">
+                                    {chunks}
+                                </Link>
+                            ),
+                            fallback: "I accept the Privacy Policy and Terms & Conditions"
+                        })
+                    }
+                />
+
+                <Button type="submit" className="layout-auth-submit mt-2" disabled={isLoading || !acceptedTerms}>
                     {isLoading ? <Loader2 className="animate-spin" /> : t("Register.submitButton")}
                 </Button>
 

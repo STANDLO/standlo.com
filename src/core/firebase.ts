@@ -3,6 +3,7 @@ import { getAuth } from "firebase/auth";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, AppCheck } from "firebase/app-check";
 import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
+import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -17,6 +18,7 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 let appCheck: AppCheck | undefined;
+let analytics: Analytics | undefined;
 
 if (typeof window !== "undefined") {
     // Enable debug mode if local debug token is injected via ENV
@@ -39,10 +41,18 @@ if (typeof window !== "undefined") {
     } catch (e) {
         console.error("AppCheck initialization failed:", e);
     }
+
+    // Initialize Analytics
+    isSupported().then((supported) => {
+        if (supported) {
+            analytics = getAnalytics(app);
+            console.log("Firebase Analytics initialized successfully.");
+        }
+    }).catch(console.error);
 }
 
 const auth = getAuth(app);
 const storage = getStorage(app);
 const functions = getFunctions(app, "europe-west4"); // Default region for KalexAI functions
 
-export { app, auth, appCheck, storage, functions };
+export { app, auth, appCheck, storage, functions, analytics };

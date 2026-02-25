@@ -18,6 +18,8 @@ const RoleOptions = [
     // WOOD
     { value: "carpenter", label: "Carpenter" },
     { value: "cabinetmaker", label: "Cabinetmaker" },
+    // DRYWALL
+    { value: "dryliner", label: "Dryliner" },
     // IRON
     { value: "ironworker", label: "Ironworker" },
     // GLASS

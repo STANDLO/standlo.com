@@ -17,6 +17,8 @@ env:
     value: "1:260543824513:web:06b4226418896a81ad8380"
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
     value: "G-Q4M5ZC0CYH"
+  - variable: NEXT_PUBLIC_URL
+    value: "https://standlo.com"
   - variable: NEXT_PUBLIC_RECAPTCHA_SITE_KEY
     secret: RECAPTCHA_SITE_KEY
   - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY

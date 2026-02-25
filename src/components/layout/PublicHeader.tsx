@@ -3,6 +3,8 @@ import { Link } from "@/i18n/routing"
 import { Button } from "@/components/ui/Button"
 import { useTranslations } from "next-intl"
 import { Logo } from "@/components/ui/Logo"
+import { SwitchTheme } from "@/components/ui/SwitchTheme"
+import { SwitchLocale } from "@/components/ui/SwitchLocale"
 
 export function PublicHeader() {
     const t = useTranslations("Auth")
@@ -22,6 +24,10 @@ export function PublicHeader() {
                     <Link href="/auth/register">
                         <Button variant="primary">{t("registerAction")}</Button>
                     </Link>
+                    <div className="layout-header-public-actions">
+                        <SwitchLocale />
+                        <SwitchTheme />
+                    </div>
                 </nav>
             </div>
         </header>

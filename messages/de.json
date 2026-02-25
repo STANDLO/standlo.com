@@ -1,0 +1,149 @@
+{
+    "Brand": {
+        "name": "STANDLO",
+        "slogan": "Wir halten Sicherheiten aufrecht",
+        "copyright": "© {year} STANDLO S.A. Alle Rechte vorbehalten."
+    },
+    "Dashboard": {
+        "Designer": {
+            "title": "Designstudio",
+            "subtitle": "Gestaltungsanfragen und Briefings von Standlo-Kunden anzeigen.",
+            "card1Title": "Neue Briefings"
+        },
+        "Customer": {
+            "title": "Kunden-Dashboard",
+            "subtitle": "Willkommen in Ihrem operativen STANDLO-Portal. Verwalten Sie hier Ihre Veranstaltungen, Bestellungen und Ihr Team.",
+            "card1Title": "Aktive Bestellungen",
+            "card2Title": "Teammitglieder"
+        },
+        "Manager": {
+            "title": "Operations Manager",
+            "subtitle": "Überwachen Sie den Betrieb, verwalten Sie komplexe Projekte und verfolgen Sie Partner-Workflows.",
+            "card1Title": "Aktive Projekte",
+            "card2Title": "Zu fakturieren"
+        }
+    },
+    "Auth": {
+        "Register": {
+            "title": "Konto erstellen",
+            "description": "Treten Sie STANDLO bei, um Ihren Betrieb zu verwalten.",
+            "yesAccountText": "Haben Sie bereits ein Konto?",
+            "loginAction": "Anmelden",
+            "nameLabel": "Vollständiger Name",
+            "namePlaceholder": "Max Mustermann",
+            "submitButton": "Registrieren",
+            "acceptTerms": "Ich akzeptiere die <privacyLink>Datenschutzrichtlinie</privacyLink> und die <termsLink>Allgemeinen Geschäftsbedingungen</termsLink>."
+        },
+        "Login": {
+            "title": "Bei STANDLO anmelden",
+            "subtitle": "Geben Sie Ihre Zugangsdaten ein, um auf Ihr Konto zuzugreifen.",
+            "submitButton": "Anmelden",
+            "footerNote": "Indem Sie fortfahren, stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu."
+        },
+        "continueGoogle": "Weiter mit Google",
+        "continueGithub": "Weiter mit GitHub",
+        "CardAuth": {
+            "copyright": "© {year} STANDLO. Alle Rechte vorbehalten."
+        },
+        "title": "Bei STANDLO anmelden",
+        "description": "Geben Sie Ihre Zugangsdaten ein, um auf das operative Portal zuzugreifen.",
+        "emailLabel": "E-Mail-Adresse",
+        "emailPlaceholder": "mario.rossi@firma.de",
+        "passwordLabel": "Passwort",
+        "submitButton": "Zugang",
+        "dividerText": "Oder weiter mit",
+        "footerNote": "* Für den Zugriff kann eine Bestätigung in zwei Schritten (MFA SMS) für Administratorrollen erforderlich sein.",
+        "noAccountText": "Haben Sie noch kein Konto?",
+        "registerAction": "Registrieren",
+        "Errors": {
+            "auth/email-already-in-use": "Diese E-Mail-Adresse ist bereits mit einem Konto verknüpft.",
+            "auth/invalid-credential": "Die eingegebenen Zugangsdaten sind falsch.",
+            "auth/user-not-found": "Kein Konto für diese E-Mail-Adresse gefunden.",
+            "auth/wrong-password": "Das eingegebene Passwort ist falsch.",
+            "auth/weak-password": "Das Passwort ist zu schwach (mindestens 6 Zeichen).",
+            "auth/invalid-email": "Die E-Mail-Adresse ist ungültig.",
+            "auth/too-many-requests": "Zu viele fehlgeschlagene Versuche. Bitte versuchen Sie es später noch einmal.",
+            "auth/user-disabled": "Dieses Konto wurde vom Administrator deaktiviert.",
+            "auth/network-request-failed": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung.",
+            "auth/popup-closed-by-user": "Das Anmeldefenster wurde vor dem Abschluss geschlossen.",
+            "auth/account-exists-with-different-credential": "Sie haben bereits ein Konto mit dieser E-Mail-Adresse, das mit einem anderen Anbieter verknüpft ist.",
+            "default": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+        },
+        "VerifyEmail": {
+            "title": "Bestätigen Sie Ihre E-Mail-Adresse",
+            "description": "Wir haben eine E-Mail an die mit Ihrem Konto verknüpfte Adresse gesendet. Bitte klicken Sie auf den Bestätigungslink, um fortzufahren.",
+            "successMessage": "E-Mail-Adresse erfolgreich bestätigt! Sie werden weitergeleitet...",
+            "alreadyVerified": "E-Mail-Adresse bereits bestätigt! Sie werden weitergeleitet...",
+            "checkStatusButton": "Ich habe bestätigt, weiter",
+            "resendButton": "E-Mail erneut senden",
+            "emailSentMessage": "Bestätigungs-E-Mail erfolgreich gesendet!",
+            "errorMessage": "Wir konnten Ihre E-Mail-Adresse derzeit nicht bestätigen. Bitte versuchen Sie es später noch einmal.",
+            "notVerifiedMessage": "Ihre E-Mail-Adresse wurde noch nicht bestätigt. Bitte überprüfen Sie Ihren Posteingang oder warten Sie einen Moment."
+        },
+        "Action": {
+            "title": "Anfrage wird bearbeitet",
+            "description": "Bitte warten Sie, während wir Ihren sicheren Link überprüfen.",
+            "loading": "Code wird überprüft...",
+            "invalidLink": "Ungültiger oder fehlender Aktionscode.",
+            "invalidMode": "Unbekannter Aktionsmodus.",
+            "errorMessage": "Bei der Bearbeitung Ihrer Anfrage ist ein Fehler aufgetreten."
+        }
+    },
+    "Register": {
+        "title": "Kundenkonto erstellen",
+        "description": "Die offene Registrierung ist ausschließlich Kunden vorbehalten. Partner und Lieferanten werden eingeladen.",
+        "nameLabel": "Firmenname oder Kontakt",
+        "namePlaceholder": "Fiera Milano Spa",
+        "emailLabel": "Geschäftliche E-Mail-Adresse",
+        "emailPlaceholder": "kontakt@firma.de",
+        "passwordLabel": "Passwort",
+        "submitButton": "Als Kunde registrieren",
+        "dividerText": "Oder",
+        "continueGoogle": "Weiter mit Google",
+        "yesAccountText": "Haben Sie bereits ein Konto?",
+        "loginAction": "Anmelden"
+    },
+    "Onboarding": {
+        "title": "Vervollständigen Sie Ihr B2B-Profil",
+        "subtitle": "Um Standlo weiterhin nutzen zu können, benötigen wir einige obligatorische Rechnungsinformationen.",
+        "orgNameLabel": "Firmenname",
+        "logoLabel": "Firmenlogo",
+        "roleLabel": "Wählen Sie Ihre Rolle",
+        "vatLabel": "Umsatzsteuer-Identifikationsnummer",
+        "sdiLabel": "SDI-Code",
+        "ibanLabel": "IBAN",
+        "addressLabel": "Eingetragene Büroadresse",
+        "submitButton": "Profil vervollständigen"
+    },
+    "Components": {
+        "InputPlace": {
+            "placeholder": "Suchen Sie eine Adresse über Google..."
+        }
+    },
+    "components": {
+        "auth": {
+            "logout": "Abmelden"
+        },
+        "header": {
+            "organization_fallback": "Organisation",
+            "user_fallback": "Benutzer"
+        },
+        "footer": {
+            "copyright": "© {year} STANDLO. Plattform für europäischen Messebau.",
+            "terms": "Bedingungen",
+            "privacy": "Datenschutz"
+        },
+        "roles": {
+            "customer": "Aussteller",
+            "provider": "Teilelieferant",
+            "manager": "Account Manager",
+            "designer": "Designer",
+            "carpenter": "Tischler",
+            "builder": "Messebauer",
+            "painter": "Maler",
+            "technician": "Techniker",
+            "driver": "Fahrer",
+            "promoter": "Promoter"
+        }
+    }
+}

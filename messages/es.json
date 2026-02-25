@@ -1,4 +1,9 @@
 {
+    "Brand": {
+        "name": "STANDLO",
+        "slogan": "Mantenemos en pie las certezas",
+        "copyright": "© {year} STANDLO S.A. Todos los derechos reservados."
+    },
     "Dashboard": {
         "Designer": {
             "title": "Estudio de Diseño",
@@ -26,7 +31,8 @@
             "loginAction": "Inicia sesión",
             "nameLabel": "Nombre Completo",
             "namePlaceholder": "Juan Pérez",
-            "submitButton": "Regístrate"
+            "submitButton": "Regístrate",
+            "acceptTerms": "Acepto la <privacyLink>Política de Privacidad</privacyLink> y los <termsLink>Términos y Condiciones</termsLink>."
         },
         "Login": {
             "title": "Inicia sesión en STANDLO",
@@ -66,11 +72,21 @@
         "VerifyEmail": {
             "title": "Verifica tu dirección de Correo",
             "description": "Hemos enviado un correo a la dirección asociada a tu cuenta. Haz clic en el enlace de confirmación para continuar.",
+            "successMessage": "¡Correo electrónico verificado con éxito! Redirigiendo...",
+            "alreadyVerified": "¡Correo ya verificado! Redirigiendo...",
             "checkStatusButton": "Ya he verificado, continuar",
             "resendButton": "Enviar correo de nuevo",
             "emailSentMessage": "¡Correo de verificación enviado correctamente!",
             "errorMessage": "No pudimos confirmar tu correo. Por favor, inténtalo de nuevo más tarde.",
             "notVerifiedMessage": "Tu correo aún no está verificado. Revisa tu bandeja de entrada o espera un momento."
+        },
+        "Action": {
+            "title": "Procesando Solicitud",
+            "description": "Por favor espera mientras verificamos tu enlace seguro.",
+            "loading": "Verificando el código...",
+            "invalidLink": "Código de acción no válido o ausente.",
+            "invalidMode": "Modo de acción desconocido.",
+            "errorMessage": "Ocurrió un error al procesar tu solicitud."
         }
     },
     "Register": {

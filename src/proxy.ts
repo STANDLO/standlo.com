@@ -21,7 +21,7 @@ export async function proxy(request: NextRequest) {
             // Estrazione lingua e URL
             const url = request.nextUrl.clone();
             const pathname = url.pathname;
-            const localeMatch = pathname.match(/^\/(it|en|es)/);
+            const localeMatch = pathname.match(/^\/(it|en|es|us|de|fr)/);
             const locale = localeMatch ? localeMatch[1] : 'it'; // Default IT
 
             const role = (decodedToken.role as string) || 'pending'; // Fallback a pending se non definito

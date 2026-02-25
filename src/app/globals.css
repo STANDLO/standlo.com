@@ -228,6 +228,23 @@
     @apply text-sm font-medium leading-none;
   }
 
+  /* UI Checkbox Semantic Classes */
+  .ui-checkbox-container {
+    @apply flex items-start gap-4 mt-4;
+  }
+
+  .ui-checkbox-input {
+    @apply mt-1 w-4 h-4 shrink-0 rounded appearance-none border border-input bg-background text-emerald-500 checked:bg-emerald-500 checked:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-background transition-all cursor-pointer relative after:content-['✓'] after:absolute after:text-primary-foreground after:text-xs after:left-0.5 after:top-[-1px] after:opacity-0 checked:after:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .ui-checkbox-text {
+    @apply text-sm leading-snug text-muted-foreground;
+  }
+
+  .ui-checkbox-link {
+    @apply underline text-foreground hover:text-primary transition-colors;
+  }
+
   /* Logo Semantic Classes */
   .layout-logo-wrapper {
     @apply relative flex items-center justify-center;
@@ -264,6 +281,10 @@
 
   .layout-nav-links {
     @apply flex items-center gap-4 text-sm font-medium;
+  }
+
+  .layout-header-public-actions {
+    @apply flex items-center gap-2 border-l border-border pl-4 ml-2;
   }
 
   .layout-footer-main {

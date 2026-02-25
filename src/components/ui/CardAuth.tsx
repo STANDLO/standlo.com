@@ -35,7 +35,8 @@ export function CardAuth({
     onGithubLogin,
     isLoading
 }: CardAuthProps) {
-    const t = useTranslations("Auth")
+    const tAuth = useTranslations("Auth")
+    const tBrand = useTranslations("Brand")
 
     return (
         <Card className="layout-auth-card">
@@ -57,7 +58,7 @@ export function CardAuth({
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
                                 <span className="bg-background px-2 text-muted-foreground">
-                                    {t("dividerText")}
+                                    {tAuth("dividerText")}
                                 </span>
                             </div>
                         </div>
@@ -70,7 +71,7 @@ export function CardAuth({
                                 onClick={onGoogleLogin}
                                 disabled={isLoading}
                             >
-                                {t("continueGoogle")}
+                                {tAuth("continueGoogle")}
                             </Button>
 
                             <Button
@@ -80,7 +81,7 @@ export function CardAuth({
                                 onClick={onGithubLogin}
                                 disabled={isLoading}
                             >
-                                {t("continueGithub")}
+                                {tAuth("continueGithub")}
                             </Button>
                         </div>
                     </div>
@@ -96,7 +97,7 @@ export function CardAuth({
                     </div>
                 )}
                 <div className="layout-auth-card-copyright">
-                    {t("CardAuth.copyright", { year: new Date().getFullYear() })}
+                    {tBrand("copyright", { year: new Date().getFullYear() })}
                 </div>
             </CardFooter>
         </Card>

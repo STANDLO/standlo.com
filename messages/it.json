@@ -7,7 +7,8 @@
             "loginAction": "Accedi",
             "nameLabel": "Nome Completo",
             "namePlaceholder": "Mario Rossi",
-            "submitButton": "Registrati"
+            "submitButton": "Registrati",
+            "acceptTerms": "Accetto la <privacyLink>Privacy Policy</privacyLink> e i <termsLink>Termini e Condizioni</termsLink>."
         },
         "CardAuth": {
             "copyright": "© {year} STANDLO. Tutti i diritti riservati."
@@ -41,11 +42,21 @@
         "VerifyEmail": {
             "title": "Verifica il tuo indirizzo Email",
             "description": "Abbiamo inviato un'email all'indirizzo associato al tuo account. Clicca sul link di conferma per continuare.",
+            "successMessage": "Email verificata con successo! Reindirizzamento...",
+            "alreadyVerified": "L'email è già stata verificata! Reindirizzamento...",
             "checkStatusButton": "Ho verificato, continua",
             "resendButton": "Invia di nuovo l'email",
             "emailSentMessage": "Email di verifica inviata con successo!",
             "errorMessage": "Non è stato possibile confermare l'email. Riprova più tardi.",
             "notVerifiedMessage": "L'email non risulta ancora verificata. Controlla la posta o attendi qualche istante."
+        },
+        "Action": {
+            "title": "Elaborazione Richiesta",
+            "description": "Attendi mentre verifichiamo il link di sicurezza.",
+            "loading": "Verifica del codice in corso...",
+            "invalidLink": "Link non valido o scaduto.",
+            "invalidMode": "Tipo di azione non riconosciuta.",
+            "errorMessage": "Si è verificato un errore durante l'elaborazione della tua richiesta."
         }
     },
     "Register": {
@@ -78,6 +89,11 @@
         "InputPlace": {
             "placeholder": "Cerca un indirizzo con Google..."
         }
+    },
+    "Brand": {
+        "name": "STANDLO",
+        "slogan": "Reggiamo in piedi certezze",
+        "copyright": "© {year} STANDLO S.A. Tutti i diritti riservati."
     },
     "Dashboard": {
         "Designer": {
