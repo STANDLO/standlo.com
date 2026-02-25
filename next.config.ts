@@ -4,6 +4,7 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   images: {
     unoptimized: true, // Raccomandato per Firebase App Hosting per non pesare sul server con l'ottimizzazione on-the-fly
     remotePatterns: [

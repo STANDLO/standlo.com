@@ -1,6 +1,6 @@
 {
   "name": "standlo.com",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "scripts": {
     "dev": "rm -rf .next && rm -rf node_modules/.cache && next dev",
@@ -10,7 +10,9 @@
     "deploy:functions": "node scripts/DeployFunctions.mjs",
     "validate": "rm -rf node_modules && npm i && npm run lint && npm run build && npm audit",
     "cloud": "npx tsx scripts/deploy.ts",
-    "cloud:validate": "npx tsx scripts/deploy.ts --validate-only"
+    "cloud:validate": "npm run pentest:local && npx tsx scripts/deploy.ts --validate-only",
+    "pentest:local": "node scripts/pentest.mjs --target http://localhost:3000",
+    "pentest:prod": "node scripts/pentest.mjs --target https://standlo.com"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -38,6 +40,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "axios": "^1.13.5",
     "eslint": "^9.39.3",
     "eslint-config-next": "^16.1.6",
     "picomatch": "^4.0.3",

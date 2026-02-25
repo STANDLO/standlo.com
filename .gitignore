@@ -41,6 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# keys
+# keys & scripts
 keys/*
-.env.local
+scripts/*
+pentest_report.json
