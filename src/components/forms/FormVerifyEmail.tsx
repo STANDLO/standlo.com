@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { auth, appCheck } from "@/core/firebase";
 import { getToken } from "firebase/app-check";
 import { sendEmailVerification } from "firebase/auth";
-import { Loader2 } from "lucide-react";
+import { Loader2, TriangleAlert, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CardAuth } from "@/components/ui/CardAuth";
 
@@ -93,8 +93,9 @@ export function FormVerifyEmail() {
         >
             <div className="layout-auth-form mt-4">
                 {message && (
-                    <div className={`layout-auth-error ${message.type === 'success' ? 'bg-green-500/10 text-green-500' : ''}`}>
-                        {message.text}
+                    <div className={`layout-auth-error ${message.type === 'success' ? 'bg-green-500/10 text-green-500 border-green-500/20' : ''}`}>
+                        {message.type === 'error' ? <TriangleAlert className="h-4 w-4 shrink-0" /> : <CheckCircle2 className="h-4 w-4 shrink-0" />}
+                        <span>{message.text}</span>
                     </div>
                 )}
 

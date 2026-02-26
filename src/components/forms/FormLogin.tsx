@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, User } from "firebase/auth";
 import { auth, appCheck } from "@/core/firebase";
 import { getToken } from "firebase/app-check";
-import { Loader2 } from "lucide-react";
+import { Loader2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { CardAuth } from "@/components/ui/CardAuth";
@@ -114,7 +114,8 @@ export function FormLogin() {
             <form onSubmit={onSubmit} className="layout-auth-form">
                 {error && (
                     <div className="layout-auth-error">
-                        {error}
+                        <TriangleAlert className="h-4 w-4 shrink-0" />
+                        <span>{error}</span>
                     </div>
                 )}
 

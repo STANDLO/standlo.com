@@ -1,4 +1,28 @@
 {
+    "Roles": {
+        "customer": "Cliente",
+        "provider": "Fornitore Materiali",
+        "manager": "Project Manager",
+        "architect": "Architetto",
+        "engineer": "Ingegnere",
+        "designer": "Designer",
+        "electrician": "Elettricista",
+        "plumber": "Idraulico",
+        "carpenter": "Falegname",
+        "cabinetmaker": "Ebanista",
+        "dryliner": "Cartongessista",
+        "ironworker": "Fabbro",
+        "windowfitter": "Serramentista",
+        "glazier": "Vetraio",
+        "riggers": "Rigger (Strutture Sospese)",
+        "standbuilder": "Allestitore",
+        "plasterer": "Stuccatore",
+        "painter": "Imbianchino",
+        "tiler": "Piastrellista",
+        "driver": "Autista",
+        "forkliftdriver": "Mulettista",
+        "promoter": "Promoter"
+    },
     "Auth": {
         "Register": {
             "title": "Crea il tuo Account",
@@ -92,7 +116,8 @@
     },
     "Brand": {
         "name": "STANDLO",
-        "slogan": "Reggiamo in piedi certezze",
+        "slogan": "The Global Factory",
+        "description": "STANDLO nasce per risolvere il caos dei cantieri temporanei, ma la sua logica è universale. Che si tratti di un grattacielo, di uno showroom a Parigi, di un impianto fotovoltaico o di un prodotto di design, STANDLO coordina la trasformazione dell'idea in realtà fisica. Eliminiamo l'inefficienza strutturale dell'intermediazione per ogni \"cosa eretta\" nel mondo.",
         "copyright": "© {year} STANDLO S.A. Tutti i diritti riservati."
     },
     "Dashboard": {

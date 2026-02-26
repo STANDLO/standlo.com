@@ -1,7 +1,32 @@
 {
+    "Roles": {
+        "customer": "Kunde",
+        "provider": "Materiallieferant",
+        "manager": "Projektmanager",
+        "architect": "Architekt",
+        "engineer": "Ingenieur",
+        "designer": "Designer",
+        "electrician": "Elektriker",
+        "plumber": "Klempner",
+        "carpenter": "Zimmermann",
+        "cabinetmaker": "Tischler",
+        "dryliner": "Trockenbauer",
+        "ironworker": "Schlosser",
+        "windowfitter": "Fensterbauer",
+        "glazier": "Glaser",
+        "riggers": "Rigger (Hängestrukturen)",
+        "standbuilder": "Messebauer",
+        "plasterer": "Stuckateur",
+        "painter": "Maler",
+        "tiler": "Fliesenleger",
+        "driver": "Fahrer",
+        "forkliftdriver": "Gabelstaplerfahrer",
+        "promoter": "Promoter"
+    },
     "Brand": {
         "name": "STANDLO",
-        "slogan": "Wir halten Sicherheiten aufrecht",
+        "slogan": "The Global Factory",
+        "description": "STANDLO wurde geboren, um das Chaos temporärer Baustellen zu lösen, aber seine Logik ist universell. Ob es sich um einen Wolkenkratzer, einen Showroom in Paris, eine Photovoltaikanlage oder ein Designprodukt handelt, STANDLO koordiniert die Umwandlung der Idee in physische Realität. Wir beseitigen die strukturelle Ineffizienz der Vermittlung für jedes \"errichtete Ding\" auf der Welt.",
         "copyright": "© {year} STANDLO S.A. Alle Rechte vorbehalten."
     },
     "Dashboard": {

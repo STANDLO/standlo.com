@@ -7,6 +7,7 @@ import { auth, functions } from "@/core/firebase";
 import { httpsCallable } from "firebase/functions";
 import { signInWithCustomToken } from "firebase/auth";
 import { CardOnboarding } from "@/components/ui/CardOnboarding";
+import { TriangleAlert } from "lucide-react";
 
 export function FormOnboarding({ locale }: { locale: string }) {
     const t = useTranslations("Onboarding");
@@ -22,8 +23,7 @@ export function FormOnboarding({ locale }: { locale: string }) {
                 await auth.authStateReady();
                 const user = auth.currentUser;
                 if (user) {
-                    const idTokenResult = await user.getIdTokenResult(true);
-                    console.log("=== CUSTOM CLAIMS IN ONBOARDING ===", idTokenResult.claims);
+                    await user.getIdTokenResult(true);
                 } else {
                     console.log("=== AUTH READY BUT NO USER FOUND ===");
                 }
@@ -104,7 +104,8 @@ export function FormOnboarding({ locale }: { locale: string }) {
             <div className="layout-auth-form-wrapper">
                 {error && (
                     <div className="layout-auth-error mb-4">
-                        {error}
+                        <TriangleAlert className="h-4 w-4 shrink-0" />
+                        <span>{error}</span>
                     </div>
                 )}
                 <DynamicSDUIForm

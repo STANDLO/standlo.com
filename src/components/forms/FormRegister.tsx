@@ -6,7 +6,7 @@ import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleA
 import { auth, appCheck } from "@/core/firebase";
 import { getToken } from "firebase/app-check";
 import { Link } from "@/i18n/routing";
-import { Loader2 } from "lucide-react";
+import { Loader2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -126,7 +126,8 @@ export function FormRegister() {
             <form onSubmit={onSubmit} className="layout-auth-form">
                 {error && (
                     <div className="layout-auth-error">
-                        {error}
+                        <TriangleAlert className="h-4 w-4 shrink-0" />
+                        <span>{error}</span>
                     </div>
                 )}
 

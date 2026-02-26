@@ -6,7 +6,7 @@ import { OrganizationSchema } from "../schemas";
 export const orchestrator = onCall({
     region: "europe-west4",
     enforceAppCheck: true,
-    consumeAppCheckToken: true,
+    consumeAppCheckToken: false,
 }, async (request) => {
     // 1. Mandatory Auth check
     if (!request.auth) {
@@ -56,6 +56,11 @@ export const orchestrator = onCall({
 
         const parsedData = OrganizationSchema.partial().parse(orgData);
 
+        // Clean up undefined values from parsedData as Firestore rejects them
+        const sanitizedData = Object.fromEntries(
+            Object.entries(parsedData).filter(([, v]) => v !== undefined)
+        );
+
         // 3. Define the actual active status
         const role = parsedData.roleId as string;
         const isActive = role === "customer";
@@ -68,7 +73,7 @@ export const orchestrator = onCall({
         // Organization Document
         const orgRef = db.collection("organizations").doc(orgRootId);
         batch.set(orgRef, {
-            ...parsedData as Record<string, unknown>,
+            ...sanitizedData as Record<string, unknown>,
             active: isActive,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             createdBy: uid,
@@ -84,18 +89,26 @@ export const orchestrator = onCall({
         }, { merge: true });
 
         // 5. Upgrade Custom Claims via Admin SDK
-        const newClaims = {
+        const newClaims: Record<string, unknown> = {
             ...currentCustomClaims,
-            role: role,
+            role: role || "pending",
             onboarding: true,
             orgId: orgRootId,
             orgName: parsedData.name || null,
             logoUrl: parsedData.logoUrl || null,
-            [`${role}Id`]: orgRootId,
-            [`${role}Name`]: parsedData.name || null,
         };
 
-        batch.update(userRef, { claims: newClaims });
+        if (role) {
+            newClaims[`${role}Id`] = orgRootId;
+            newClaims[`${role}Name`] = parsedData.name || null;
+        }
+
+        // Clean up undefined values from claims as Firestore rejects them
+        const sanitizedClaims = Object.fromEntries(
+            Object.entries(newClaims).filter(([, v]) => v !== undefined)
+        );
+
+        batch.update(userRef, { claims: sanitizedClaims });
         await batch.commit();
 
         await admin.auth().setCustomUserClaims(uid, newClaims);

@@ -40,7 +40,7 @@ const schemas_1 = require("../schemas");
 exports.orchestrator = (0, https_1.onCall)({
     region: "europe-west4",
     enforceAppCheck: true,
-    consumeAppCheckToken: true,
+    consumeAppCheckToken: false,
 }, async (request) => {
     // 1. Mandatory Auth check
     if (!request.auth) {
@@ -80,6 +80,8 @@ exports.orchestrator = (0, https_1.onCall)({
             country: payload.country,
         };
         const parsedData = schemas_1.OrganizationSchema.partial().parse(orgData);
+        // Clean up undefined values from parsedData as Firestore rejects them
+        const sanitizedData = Object.fromEntries(Object.entries(parsedData).filter(([, v]) => v !== undefined));
         // 3. Define the actual active status
         const role = parsedData.roleId;
         const isActive = role === "customer";
@@ -89,7 +91,7 @@ exports.orchestrator = (0, https_1.onCall)({
         const orgRootId = uid;
         // Organization Document
         const orgRef = db.collection("organizations").doc(orgRootId);
-        batch.set(orgRef, Object.assign(Object.assign({}, parsedData), { active: isActive, createdAt: admin.firestore.FieldValue.serverTimestamp(), createdBy: uid, updatedAt: admin.firestore.FieldValue.serverTimestamp(), updatedBy: uid }), { merge: true });
+        batch.set(orgRef, Object.assign(Object.assign({}, sanitizedData), { active: isActive, createdAt: admin.firestore.FieldValue.serverTimestamp(), createdBy: uid, updatedAt: admin.firestore.FieldValue.serverTimestamp(), updatedBy: uid }), { merge: true });
         // Update User Document
         const userRef = db.collection("users").doc(uid);
         batch.set(userRef, {
@@ -97,8 +99,14 @@ exports.orchestrator = (0, https_1.onCall)({
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
         // 5. Upgrade Custom Claims via Admin SDK
-        const newClaims = Object.assign(Object.assign({}, currentCustomClaims), { role: role, onboarding: true, orgId: orgRootId, orgName: parsedData.name || null, logoUrl: parsedData.logoUrl || null, [`${role}Id`]: orgRootId, [`${role}Name`]: parsedData.name || null });
-        batch.update(userRef, { claims: newClaims });
+        const newClaims = Object.assign(Object.assign({}, currentCustomClaims), { role: role || "pending", onboarding: true, orgId: orgRootId, orgName: parsedData.name || null, logoUrl: parsedData.logoUrl || null });
+        if (role) {
+            newClaims[`${role}Id`] = orgRootId;
+            newClaims[`${role}Name`] = parsedData.name || null;
+        }
+        // Clean up undefined values from claims as Firestore rejects them
+        const sanitizedClaims = Object.fromEntries(Object.entries(newClaims).filter(([, v]) => v !== undefined));
+        batch.update(userRef, { claims: sanitizedClaims });
         await batch.commit();
         await admin.auth().setCustomUserClaims(uid, newClaims);
         // Generate Custom Token to synchronize client Edge cookies instantly

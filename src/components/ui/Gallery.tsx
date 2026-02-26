@@ -16,6 +16,7 @@ export interface GalleryProps {
     containerClassName?: string;
     maxFiles?: number;       // Maximum number of images allowed
     accept?: string;         // e.g. "image/png, image/jpeg"
+    id?: string;             // explicit html element id
 }
 
 export function Gallery({
@@ -26,7 +27,8 @@ export function Gallery({
     error,
     containerClassName,
     maxFiles = 10,
-    accept = "image/png"
+    accept = "image/png",
+    id
 }: GalleryProps) {
     const [isDragging, setIsDragging] = React.useState(false);
     const [uploadingFiles, setUploadingFiles] = React.useState<Record<string, number>>({});
@@ -148,6 +150,9 @@ export function Gallery({
         }
     };
 
+    const reactId = React.useId();
+    const fileInputId = id || `gallery-input-${reactId}`;
+
     const galleryElement = (
         <div className="flex flex-col gap-4 w-full">
             {/* Upload Zone */}
@@ -164,6 +169,7 @@ export function Gallery({
                     )}
                 >
                     <input
+                        id={fileInputId}
                         type="file"
                         className="hidden"
                         accept={accept}
@@ -186,8 +192,8 @@ export function Gallery({
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
 
                     {/* Uploading placeholders */}
-                    {Object.entries(uploadingFiles).map(([id, progress]) => (
-                        <div key={id} className="relative aspect-square rounded-lg border flex flex-col items-center justify-center bg-muted/30 overflow-hidden">
+                    {Object.entries(uploadingFiles).map(([uploadId, progress]) => (
+                        <div key={uploadId} className="relative aspect-square rounded-lg border flex flex-col items-center justify-center bg-muted/30 overflow-hidden">
                             <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
                             <div className="w-3/4 h-2 bg-secondary rounded-full overflow-hidden">
                                 <div className="h-full bg-primary transition-all duration-300" style={{ width: `${Math.max(progress, 5)}%` }} />
@@ -247,7 +253,7 @@ export function Gallery({
 
     return (
         <div className={cn("ui-input-wrapper", containerClassName)}>
-            <label className="ui-input-label">
+            <label className="ui-input-label" htmlFor={fileInputId}>
                 {label}
             </label>
             {galleryElement}

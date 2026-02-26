@@ -33,13 +33,21 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.webInterface = exports.brain = exports.firestoreGateway = exports.choreography = exports.orchestrator = exports.beforeSignIn = exports.beforeCreate = void 0;
+exports.webInterface = exports.brain = exports.firestoreGateway = exports.choreography = exports.orchestrator = exports.beforeSignIn = exports.beforeCreate = exports.systemLocales = void 0;
 const identity_1 = require("firebase-functions/v2/identity");
 const admin = __importStar(require("firebase-admin"));
 const firestore_1 = require("firebase-admin/firestore");
 const app = admin.initializeApp();
 const db = (0, firestore_1.getFirestore)(app, "standlo"); // Enterprise Named Database
 const REGION = "europe-west4";
+exports.systemLocales = [
+    { code: "it", nativeLabel: "Italia", flag: "🇮🇹" },
+    { code: "es", nativeLabel: "España", flag: "🇪🇸" },
+    { code: "en", nativeLabel: "United Kingdom", flag: "🇬🇧" },
+    { code: "us", nativeLabel: "United States of America", flag: "🇺🇸" },
+    { code: "de", nativeLabel: "Deutschland", flag: "🇩🇪" },
+    { code: "fr", nativeLabel: "France", flag: "🇫🇷" }
+];
 /**
  * Triggered before a new user account is created.
  * Configured in Identity Platform / Firebase Auth Settings -> Blocking Functions.
@@ -51,7 +59,7 @@ exports.beforeCreate = (0, identity_1.beforeUserCreated)({ region: REGION }, asy
     const existingClaims = user.customClaims || {};
     const role = "pending";
     // Build raw claims
-    const rawClaims = Object.assign(Object.assign({}, existingClaims), { role: role, onboarding: false, active: true, orgId: null, orgName: null, locale: existingClaims.locale || "en", theme: existingClaims.theme || "light", fairIds: existingClaims.fairIds || [] });
+    const rawClaims = Object.assign(Object.assign({}, existingClaims), { role: role, onboarding: false, active: true, privacy: true, terms: true, orgId: null, orgName: null, locale: existingClaims.locale || "en", theme: existingClaims.theme || "light", fairIds: existingClaims.fairIds || [] });
     // Strip undefined values which crash Firestore AND Identity Platform. 
     // We also strip nulls to avoid issues with reserved constraints just in case.
     const safeClaims = Object.fromEntries(Object.entries(rawClaims).filter(([, v]) => v !== undefined && v !== null));

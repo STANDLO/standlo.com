@@ -13,6 +13,8 @@ const inputVariants = cva(
                 secondary: "ui-input-secondary",
                 secondaryMuted: "ui-input-secondary-muted",
                 secondaryReadonly: "ui-input-secondary-readonly",
+                success: "ui-input-success",
+                warning: "ui-input-warning",
             }
         },
         defaultVariants: {
@@ -43,6 +45,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     <input
                         id={id}
                         type={currentType}
+                        autoComplete={props.autoComplete || "off"}
                         className={cn(
                             inputVariants({ variant, className }),
                             error && "border-destructive focus-visible:ring-destructive",

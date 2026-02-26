@@ -6,7 +6,7 @@ export type UIFieldMeta = {
     name: string; // Il path del campo (es. 'name.it' o 'vatNumber')
     label?: string; // Chiave I18n o testuale per la label
     placeholder?: string;
-    type?: 'text' | 'email' | 'password' | 'number' | 'boolean' | 'select' | 'textarea' | 'localized' | 'lookup' | 'place' | 'date' | 'gallery';
+    type?: 'text' | 'email' | 'password' | 'number' | 'boolean' | 'select' | 'textarea' | 'localized' | 'lookup' | 'place' | 'date' | 'gallery' | 'vat';
     options?: { label: string; value: string | number }[]; // Per select/radio
     lookupTarget?: string; // Es. "organizations" (Per InputLookup)
     required?: boolean;

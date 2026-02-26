@@ -208,6 +208,14 @@
     @apply border-transparent bg-transparent px-0 py-1 ring-0 cursor-default focus-visible:ring-0 shadow-none;
   }
 
+  .ui-input-success {
+    @apply border-emerald-500 bg-emerald-500/5 px-3 py-1 focus-visible:ring-emerald-500;
+  }
+
+  .ui-input-warning {
+    @apply border-amber-500 bg-amber-500/5 px-3 py-1 focus-visible:ring-amber-500;
+  }
+
   .ui-input-secondary {
     @apply border-input bg-transparent px-3 py-1 focus-visible:ring-secondary;
   }
@@ -370,6 +378,10 @@
 
   .ui-error-banner {
     @apply p-3 text-sm text-destructive bg-destructive/10 rounded-md;
+  }
+
+  .layout-auth-error {
+    @apply flex items-center gap-2 p-3 mb-4 text-sm text-destructive bg-destructive/10 rounded-md border border-destructive/20;
   }
 
   .layout-auth-card {
