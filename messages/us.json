@@ -169,6 +169,10 @@
             "technician": "Technician",
             "driver": "Driver",
             "promoter": "Promoter"
+        },
+        "devMode": {
+            "title": "Work in Progress",
+            "description": "The environment dedicated to this role is currently under development. We are creating tailor-made tools to optimize your workflow. Check back soon!"
         }
     }
 }

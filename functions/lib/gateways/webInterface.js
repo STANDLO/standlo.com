@@ -15,12 +15,15 @@ exports.webInterface = (0, https_1.onCall)({
     const data = request.data;
     const { correlationId, orgId, roleId } = data;
     console.log(`[WebInterface][${correlationId || 'no-corr-id'}] Requesting UI Schema Manifest for Role: ${roleId} in Org: ${orgId}`);
-    // Call the Policy Engine to dynamically generate the SDUI payload
+    // Call the Policy Engine to dynamically generate the SDUI payloads
     const organizationManifest = (0, policyEngine_1.generateManifestForEntity)('organization', roleId, schemas_1.OrganizationSchema);
+    // Call the Policy Engine to get the Navigation Tree mapped to this Role
+    const navigationManifest = (0, policyEngine_1.generateNavigationManifest)(roleId);
     return {
         status: "success",
         manifest: {
-            organization: organizationManifest
+            organization: organizationManifest,
+            navigation: navigationManifest
         },
     };
 });

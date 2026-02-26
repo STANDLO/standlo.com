@@ -60,10 +60,10 @@ export async function proxy(request: NextRequest) {
             }
 
             // 3. VALIDAZIONE PERMESSI DI AREA (es. /en/admin ma è customer)
-            const areaMatch = pathname.match(/^\/(?:it|en|es)\/([^\/]+)/);
+            const areaMatch = pathname.match(/^\/(?:it|en|es|us|de|fr)\/([^\/]+)/);
             if (areaMatch) {
                 const requestedArea = areaMatch[1];
-                if (requestedArea !== 'auth' && requestedArea !== role) {
+                if (requestedArea !== 'auth' && requestedArea !== 'debug' && requestedArea !== role) {
                     // Unauthorized: Ritorna alla sua area di competenza
                     url.pathname = `/${locale}/${role}`;
                     return NextResponse.redirect(url);

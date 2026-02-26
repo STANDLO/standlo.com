@@ -163,6 +163,10 @@
             "technician": "Tecnico",
             "driver": "Trasportatore",
             "promoter": "Promoter"
+        },
+        "devMode": {
+            "title": "Work in Progress",
+            "description": "L'ambiente dedicato a questo ruolo è attualmente in fase di sviluppo. Stiamo creando strumenti su misura per ottimizzare il tuo flusso di lavoro. Torna a trovarci presto!"
         }
     }
 }

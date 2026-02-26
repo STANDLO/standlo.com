@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { GatewayRequest } from "../types";
-import { generateManifestForEntity } from "../rbac/policyEngine";
+import { generateManifestForEntity, generateNavigationManifest } from "../rbac/policyEngine";
 import { OrganizationSchema, RoleId } from "../schemas";
 import { z } from "zod";
 
@@ -18,13 +18,17 @@ export const webInterface = onCall({
 
     console.log(`[WebInterface][${correlationId || 'no-corr-id'}] Requesting UI Schema Manifest for Role: ${roleId} in Org: ${orgId}`);
 
-    // Call the Policy Engine to dynamically generate the SDUI payload
+    // Call the Policy Engine to dynamically generate the SDUI payloads
     const organizationManifest = generateManifestForEntity('organization', roleId as RoleId, OrganizationSchema as z.ZodObject<z.ZodRawShape>);
+
+    // Call the Policy Engine to get the Navigation Tree mapped to this Role
+    const navigationManifest = generateNavigationManifest(roleId as RoleId);
 
     return {
         status: "success",
         manifest: {
-            organization: organizationManifest
+            organization: organizationManifest,
+            navigation: navigationManifest
         },
     };
 });

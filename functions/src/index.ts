@@ -39,8 +39,7 @@ export const beforeCreate = beforeUserCreated({ region: REGION }, async (event) 
         orgId: null,
         orgName: null,
         locale: existingClaims.locale || "en",
-        theme: existingClaims.theme || "light",
-        fairIds: existingClaims.fairIds || []
+        theme: existingClaims.theme || "light"
     };
 
     // Strip undefined values which crash Firestore AND Identity Platform. 

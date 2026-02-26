@@ -169,6 +169,10 @@
             "technician": "Técnico",
             "driver": "Transportista",
             "promoter": "Promotor"
+        },
+        "devMode": {
+            "title": "Trabajo en progreso",
+            "description": "El entorno dedicado a este rol está actualmente en desarrollo. Estamos creando herramientas a medida para optimizar tu flujo de trabajo. ¡Vuelve pronto!"
         }
     }
 }

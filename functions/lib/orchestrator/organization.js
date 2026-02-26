@@ -39,6 +39,7 @@ const firestore_1 = require("firebase-admin/firestore");
 const https_1 = require("firebase-functions/v2/https");
 const schemas_1 = require("../schemas");
 async function onboardOrganization(uid, orgData) {
+    var _a;
     const userRec = await admin.auth().getUser(uid);
     const currentCustomClaims = userRec.customClaims || {};
     if (currentCustomClaims.onboarding) {
@@ -69,6 +70,13 @@ async function onboardOrganization(uid, orgData) {
         }, { merge: true });
         // 5. Upgrade Custom Claims via Admin SDK
         const newClaims = Object.assign(Object.assign({}, currentCustomClaims), { role: role || "pending", onboarding: true, orgId: orgRootId, orgName: parsedData.name || null, logoUrl: parsedData.logoUrl || null });
+        // Estrapolazione Country Code dalla P.IVA (es. "IT123456789" -> "IT")
+        const countryCode = parsedData.vatNumber && parsedData.vatNumber.length >= 2
+            ? parsedData.vatNumber.substring(0, 2).toUpperCase()
+            : null;
+        if (countryCode && ((_a = parsedData.place) === null || _a === void 0 ? void 0 : _a.zipCode)) {
+            newClaims.location = `${countryCode}-${parsedData.place.zipCode}`;
+        }
         if (role) {
             newClaims[`${role}Id`] = orgRootId;
             newClaims[`${role}Name`] = parsedData.name || null;

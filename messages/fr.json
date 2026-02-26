@@ -169,6 +169,10 @@
             "technician": "Technicien",
             "driver": "Chauffeur",
             "promoter": "Promoteur"
+        },
+        "devMode": {
+            "title": "Travail en cours",
+            "description": "L'environnement dédié à ce rôle est actuellement en cours de développement. Nous créons des outils sur mesure pour optimiser votre flux de travail. Revenez bientôt !"
         }
     }
 }

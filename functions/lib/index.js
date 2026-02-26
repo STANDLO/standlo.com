@@ -59,7 +59,7 @@ exports.beforeCreate = (0, identity_1.beforeUserCreated)({ region: REGION }, asy
     const existingClaims = user.customClaims || {};
     const role = "pending";
     // Build raw claims
-    const rawClaims = Object.assign(Object.assign({}, existingClaims), { role: role, onboarding: false, active: true, privacy: true, terms: true, orgId: null, orgName: null, locale: existingClaims.locale || "en", theme: existingClaims.theme || "light", fairIds: existingClaims.fairIds || [] });
+    const rawClaims = Object.assign(Object.assign({}, existingClaims), { role: role, onboarding: false, active: true, privacy: true, terms: true, orgId: null, orgName: null, locale: existingClaims.locale || "en", theme: existingClaims.theme || "light" });
     // Strip undefined values which crash Firestore AND Identity Platform. 
     // We also strip nulls to avoid issues with reserved constraints just in case.
     const safeClaims = Object.fromEntries(Object.entries(rawClaims).filter(([, v]) => v !== undefined && v !== null));

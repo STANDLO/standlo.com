@@ -60,6 +60,15 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             logoUrl: parsedData.logoUrl || null,
         };
 
+        // Estrapolazione Country Code dalla P.IVA (es. "IT123456789" -> "IT")
+        const countryCode = parsedData.vatNumber && parsedData.vatNumber.length >= 2
+            ? parsedData.vatNumber.substring(0, 2).toUpperCase()
+            : null;
+
+        if (countryCode && parsedData.place?.zipCode) {
+            newClaims.location = `${countryCode}-${parsedData.place.zipCode}`;
+        }
+
         if (role) {
             newClaims[`${role}Id`] = orgRootId;
             newClaims[`${role}Name`] = parsedData.name || null;
@@ -86,7 +95,7 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         console.error("[Orchestrator][onboardOrganization] Error:", error);
         if (error instanceof Error) {
             if (error.name === "ZodError") {
-                throw new HttpsError("invalid-argument", "Organization schema validation failed.", (error as any).errors);
+                throw new HttpsError("invalid-argument", "Organization schema validation failed.", (error as { errors?: unknown }).errors);
             }
             throw new HttpsError("internal", error.message || "An internal error occurred during onboarding.");
         }

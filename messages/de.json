@@ -169,6 +169,10 @@
             "technician": "Techniker",
             "driver": "Fahrer",
             "promoter": "Promoter"
+        },
+        "devMode": {
+            "title": "In Bearbeitung",
+            "description": "Die Umgebung für diese Rolle befindet sich derzeit in der Entwicklung. Wir erstellen maßgeschneiderte Tools, um Ihren Workflow zu optimieren. Schauen Sie bald wieder vorbei!"
         }
     }
 }

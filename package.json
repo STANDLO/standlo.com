@@ -1,15 +1,15 @@
 {
   "name": "standlo.com",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": true,
   "scripts": {
     "dev": "rm -rf .next && rm -rf node_modules/.cache && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
-    "deploy:functions": "node scripts/DeployFunctions.mjs",
     "validate": "rm -rf node_modules && npm i && npm run lint && npm run build && npm audit",
     "cloud": "npx tsx scripts/deploy.ts",
+    "cloud:firebase": "node scripts/DeployFirebase.mjs",
     "cloud:validate": "npm run pentest:local && npx tsx scripts/deploy.ts --validate-only",
     "pentest:local": "node scripts/pentest.mjs --target http://localhost:3000",
     "pentest:prod": "node scripts/pentest.mjs --target https://standlo.com"
