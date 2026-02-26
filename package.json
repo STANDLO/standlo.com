@@ -1,6 +1,6 @@
 {
   "name": "standlo.com",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "scripts": {
     "dev": "rm -rf .next && rm -rf node_modules/.cache && next dev",
@@ -44,6 +44,7 @@
     "eslint": "^9.39.3",
     "eslint-config-next": "^16.1.6",
     "picomatch": "^4.0.3",
+    "proxy-from-env": "^2.0.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
