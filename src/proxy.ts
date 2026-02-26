@@ -7,7 +7,7 @@ import { authConfig } from "./core/auth-edge";
 const intlMiddleware = createMiddleware(routing);
 
 // I file public che non richiedono login (es. /auth/login, landing, etc.)
-const PUBLIC_PATHS = ['/auth/login', '/auth/register'];
+const PUBLIC_PATHS = ['/auth/login', '/auth/register', '/auth/action'];
 
 export async function proxy(request: NextRequest) {
     // 1. JWT Parsing & Role Redirection
@@ -30,7 +30,7 @@ export async function proxy(request: NextRequest) {
 
             // 0. GESTIONE VERIFICA EMAIL
             if (!isEmailVerified) {
-                if (!pathname.includes('/auth/verify-email') && !pathname.includes('/auth/logout')) {
+                if (!pathname.includes('/auth/verify-email') && !pathname.includes('/auth/logout') && !pathname.includes('/auth/action')) {
                     url.pathname = `/${locale}/auth/verify-email`;
                     return NextResponse.redirect(url);
                 }

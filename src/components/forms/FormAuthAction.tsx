@@ -3,7 +3,8 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { applyActionCode } from "firebase/auth";
-import { auth } from "@/core/firebase";
+import { auth, appCheck } from "@/core/firebase";
+import { getToken } from "firebase/app-check";
 import { useTranslations } from "next-intl";
 import { CardAuth } from "@/components/ui/CardAuth";
 import { Loader2 } from "lucide-react";
@@ -41,13 +42,40 @@ export function FormAuthAction({ locale }: { locale: string }) {
                 } else if (mode === "verifyEmail") {
                     // Verify the email address
                     await applyActionCode(auth, actionCode);
-                    setStatus("success");
-                    setMessage(t("VerifyEmail.successMessage", { fallback: "Email verified successfully! Redirecting..." }));
 
-                    // Auto-redirect to login after verification
-                    setTimeout(() => {
-                        router.push(`/${locale}/auth/login?verified=true`);
-                    }, 2000);
+                    if (auth.currentUser) {
+                        // Resync local token
+                        await auth.currentUser.reload();
+                        const token = await auth.currentUser.getIdToken(true);
+
+                        const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+                        if (appCheck) {
+                            try {
+                                const appCheckTokenResponse = await getToken(appCheck, false);
+                                if (appCheckTokenResponse.token) {
+                                    headers["X-Firebase-AppCheck"] = appCheckTokenResponse.token;
+                                }
+                            } catch (err) {
+                                console.warn("Failed to get AppCheck token:", err);
+                            }
+                        }
+
+                        // Update Edge cookie session so proxy.ts gets the new 'email_verified' claim
+                        await fetch("/api/auth/login", { headers });
+
+                        setStatus("success");
+                        setMessage(t("VerifyEmail.successMessage", { fallback: "Email verified successfully! Redirecting..." }));
+                        setTimeout(() => {
+                            router.push(`/${locale}/onboarding`);
+                        }, 2000);
+                    } else {
+                        setStatus("success");
+                        setMessage(t("VerifyEmail.successMessage", { fallback: "Email verified successfully! Redirecting..." }));
+                        // Auto-redirect to login after verification
+                        setTimeout(() => {
+                            router.push(`/${locale}/auth/login?verified=true`);
+                        }, 2000);
+                    }
                 } else {
                     setStatus("error");
                     setMessage(t("Action.invalidMode", { fallback: "Unknown action mode." }));

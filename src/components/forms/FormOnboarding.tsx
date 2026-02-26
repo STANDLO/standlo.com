@@ -3,9 +3,10 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { DynamicSDUIForm, SDUIField } from "@/components/forms/DynamicSDUIForm";
-import { auth, functions } from "@/core/firebase";
+import { auth, functions, appCheck } from "@/core/firebase";
 import { httpsCallable } from "firebase/functions";
 import { signInWithCustomToken } from "firebase/auth";
+import { getToken } from "firebase/app-check";
 import { CardOnboarding } from "@/components/ui/CardOnboarding";
 import { TriangleAlert } from "lucide-react";
 
@@ -75,10 +76,20 @@ export function FormOnboarding({ locale }: { locale: string }) {
                 const userCredential = await signInWithCustomToken(auth, data.customToken);
                 const idToken = await userCredential.user.getIdToken(true);
 
+                const headers: Record<string, string> = { Authorization: `Bearer ${idToken}` };
+                if (appCheck) {
+                    try {
+                        const appCheckTokenResponse = await getToken(appCheck, false);
+                        if (appCheckTokenResponse.token) {
+                            headers["X-Firebase-AppCheck"] = appCheckTokenResponse.token;
+                        }
+                    } catch (err) {
+                        console.warn("Failed to get AppCheck token:", err);
+                    }
+                }
+
                 // Update Edge cookies
-                await fetch("/api/auth/login", {
-                    headers: { Authorization: `Bearer ${idToken}` }
-                });
+                await fetch("/api/auth/login", { headers });
             }
 
             // Redirect on success
