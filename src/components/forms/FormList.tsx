@@ -4,68 +4,119 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { extractZodKeys } from "@/core/extractZodKeys";
+import { functions } from "@/core/firebase";
+import { httpsCallable } from "firebase/functions";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface FormListColumn<T = any> {
+export interface FormListColumn<T = Record<string, unknown>> {
     key: string;
     label?: string; // Chiave I18n o testo libero
     render?: (item: T) => React.ReactNode;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface FormListProps<T = any, S extends z.ZodSchema<any> = z.ZodSchema<any>> {
-    data: T[];
-    columns: FormListColumn<T>[];
-    schema?: S; // Opzionale per list list statici senza RBAC
-    // Paginazione
-    totalItems: number;
-    currentPage: number;
-    pageSize?: number;
-    onPageChange?: (newPage: number) => void;
-    // Azioni riga
-    onRowClick?: (item: T) => void;
-    isLoading?: boolean;
+export interface FormListProps<S extends z.ZodSchema<any> = z.ZodSchema<any>> {
+    orgId?: string;
+    roleId: string;
+    entityId: string;
+    columns: FormListColumn<Record<string, unknown>>[];
+    schema?: S;
+    onRowClick?: (item: Record<string, unknown>) => void;
+    filters?: Record<string, unknown>[];
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function FormList<T = any, S extends z.ZodSchema<any> = z.ZodSchema<any>>({
-    data,
+export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
+    orgId,
+    roleId,
+    entityId,
     columns,
     schema,
-    totalItems,
-    currentPage,
-    pageSize = 20,
-    onPageChange,
     onRowClick,
-    isLoading = false
-}: FormListProps<T, S>) {
+    filters = []
+}: FormListProps<S>) {
     const t = useTranslations("Common");
-    const totalPages = Math.ceil(totalItems / pageSize);
+    const [data, setData] = React.useState<Record<string, unknown>[]>([]);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [error, setError] = React.useState<string | null>(null);
 
-    // Dynamic RBAC Filter: If a schema is provided, we only render columns that are explicitly allowed in the schema shape.
+    // Pagination state
+    const [cursor, setCursor] = React.useState<string | null>(null);
+    const [hasMore, setHasMore] = React.useState(false);
+
+    const loadData = React.useCallback(async (reset = false) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const firestoreGateway = httpsCallable(functions, "firestoreGateway");
+            const response = await firestoreGateway({
+                orgId,
+                roleId,
+                entityId,
+                actionId: "list",
+                filters,
+                limit: 20,
+                cursor: reset ? null : cursor
+            });
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const resultData = (response.data as any).data as Record<string, unknown>[];
+            if (reset) {
+                setData(resultData);
+            } else {
+                setData(prev => [...prev, ...resultData]);
+            }
+
+            // if we got exactly 20, maybe there's more
+            setHasMore(resultData.length === 20);
+            if (resultData.length > 0) {
+                setCursor(resultData[resultData.length - 1].id as string);
+            } else if (reset) {
+                setCursor(null);
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            console.error("[FormList] Failed to load list data:", err);
+            setError(err.message || "Failed to load");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [orgId, roleId, entityId, cursor, filters]);
+
+    React.useEffect(() => {
+        loadData(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [orgId, roleId, entityId, JSON.stringify(filters)]);
+
     const allowedKeys = schema ? extractZodKeys(schema) : null;
     const visibleColumns = columns.filter((col) => !allowedKeys || allowedKeys.includes(col.key));
 
     return (
         <div className="ui-list-container">
-            <div className="ui-list-wrapper">
-                <table className="ui-table">
-                    <thead className="ui-table-thead">
+            {error && (
+                <div className="ui-error-banner mb-4 p-4 bg-red-50 text-red-600 rounded-md">
+                    {error}
+                </div>
+            )}
+            <div className="ui-list-wrapper overflow-x-auto">
+                <table className="ui-table w-full text-left border-collapse">
+                    <thead className="ui-table-thead border-b">
                         <tr className="ui-table-tr">
                             {visibleColumns.map((col) => (
-                                <th key={col.key} className="ui-table-th">
+                                <th key={col.key} className="ui-table-th p-3 font-semibold">
                                     {col.label || col.key}
                                 </th>
                             ))}
                         </tr>
                     </thead>
                     <tbody className="ui-table-tbody">
-                        {isLoading ? (
+                        {isLoading && data.length === 0 ? (
                             Array.from({ length: 5 }).map((_, i) => (
-                                <tr key={i} className="ui-table-tr">
+                                <tr key={i} className="ui-table-tr animate-pulse">
                                     {visibleColumns.map((col) => (
-                                        <td key={col.key} className="ui-table-td">
-                                            <div className="ui-table-skeleton"></div>
+                                        <td key={col.key} className="ui-table-td p-3">
+                                            <div className="h-4 bg-gray-200 rounded w-full"></div>
                                         </td>
                                     ))}
                                 </tr>
@@ -73,12 +124,12 @@ export function FormList<T = any, S extends z.ZodSchema<any> = z.ZodSchema<any>>
                         ) : data.length > 0 ? (
                             data.map((item, rowIndex) => (
                                 <tr
-                                    key={rowIndex}
+                                    key={(item.id as string) || rowIndex}
                                     onClick={() => onRowClick && onRowClick(item)}
-                                    className={`ui-table-tr ${onRowClick ? "cursor-pointer" : ""}`}
+                                    className={`ui-table-tr border-b hover:bg-gray-50 transition-colors ${onRowClick ? "cursor-pointer" : ""}`}
                                 >
                                     {visibleColumns.map((col) => (
-                                        <td key={col.key} className="ui-table-td">
+                                        <td key={col.key} className="ui-table-td p-3">
                                             {col.render ? col.render(item) : (item as Record<string, unknown>)[col.key] as string || "-"}
                                         </td>
                                     ))}
@@ -86,7 +137,7 @@ export function FormList<T = any, S extends z.ZodSchema<any> = z.ZodSchema<any>>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={visibleColumns.length} className="ui-table-empty">
+                                <td colSpan={visibleColumns.length} className="ui-table-empty p-6 text-center text-gray-500">
                                     {t("noResults", { fallback: "Nessun risultato trovato." })}
                                 </td>
                             </tr>
@@ -95,28 +146,16 @@ export function FormList<T = any, S extends z.ZodSchema<any> = z.ZodSchema<any>>
                 </table>
             </div>
 
-            {/* Simple Pagination */}
-            {totalPages > 1 && (
-                <div className="ui-pagination-container">
-                    <div className="ui-pagination-text">
-                        Pagina {currentPage} di {totalPages}
-                    </div>
-                    <div className="ui-pagination-actions">
-                        <button
-                            className="ui-btn ui-btn-outline h-8 px-3"
-                            onClick={() => onPageChange && onPageChange(currentPage - 1)}
-                            disabled={currentPage <= 1 || isLoading}
-                        >
-                            Precedente
-                        </button>
-                        <button
-                            className="ui-btn ui-btn-outline h-8 px-3"
-                            onClick={() => onPageChange && onPageChange(currentPage + 1)}
-                            disabled={currentPage >= totalPages || isLoading}
-                        >
-                            Successiva
-                        </button>
-                    </div>
+            {hasMore && (
+                <div className="ui-pagination-container mt-6 flex justify-center">
+                    <Button
+                        variant="outline"
+                        onClick={() => loadData()}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : null}
+                        {t("loadMore", { fallback: "Carica Altri" })}
+                    </Button>
                 </div>
             )}
         </div>

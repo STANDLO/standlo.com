@@ -8,23 +8,16 @@ export default function GenericEntityListPage({ params }: { params: Promise<{ lo
     const { locale, roleId, entity } = React.use(params);
     const router = useRouter();
 
-    // TODO: Dynamic data fetch resolution based on entity schema
-    const dummyData = [
-        { id: "1", name: `Sample ${entity} 1`, status: "Active" },
-        { id: "2", name: `Sample ${entity} 2`, status: "Pending" }
-    ];
-
     return (
         <div className="ui-form-list">
             <FormList
-                data={dummyData}
+                roleId={roleId}
+                entityId={entity}
                 columns={[
                     { key: "id", label: "ID" },
                     { key: "name", label: "Name" },
-                    { key: "status", label: "Status" }
+                    { key: "createdAt", label: "Data Creazione" }
                 ]}
-                totalItems={2}
-                currentPage={1}
                 onRowClick={(item) => router.push(`/${locale}/partner/${roleId}/${entity}/${item.id}`)}
             />
         </div>

@@ -38,8 +38,9 @@ L'interazione tra Frontend e DB as-a-service (Firestore) è schermata da un Patt
 
 ### 2.3 Firestore Gateway
 È l'unico Data Access Layer standardizzato e controllato per l'interazione bidirezionale Frontend<->DB che non necessita di logiche massive custom.
-- **Scopo Principale**: Operare in trasparenza tramite astrazioni sicure di validazione dati `v1` (le API che gestiscono POST, GET, LIST agganciate ai nostri schemi Zod centralizzati).
-- **Come Aggiornarlo**: Si espande autonomamente quando si creano nuovi schemi e li si inseriscono nell'albero delle API (`functions/src/gateways/Firestore.ts`), convalidando e incrociando i FieldRules.
+- **Scopo Principale**: Orchestra in totale autonomia le operazioni CRUD (`list`, `create`, `read`, `update`, `soft_delete`), applicando impaginazione server-side, multi-tenant isolation e filtraggio composto nativo.
+- **EntityRegistry & Sicurezza**: Utilizza un `EntityRegistry` centrale per mappare `entityId` ai percorsi Firestore esatti e agli Zod Schemas corrispondenti. Qualsiasi manomissione del payload rispetto allo schema atteso genera automaticamente un **Security Alert** tracciato su Firestore.
+- **Long-Term Archiving**: Gestisce nativamente l'esclusione di default dei record soft-deleted e archiviati (`isArchived: true`), mantenendo le collection veloci e sicure tramite Indici Composti.
 
 ### 2.4 Choreography
 Coda asincrona per task _fire-and-forget_ e code distribuite. 
@@ -73,8 +74,8 @@ Le regole sui dati sono gestite in modo matematico per prevenire Data Leakage o 
 Tutti gli schemi risiedono univocamente in `functions/src/schemas`.
 
 - **Entity Schema Grouping**: I file sono raggruppati per Entità di Business (es. `organization.ts`, `project.ts`) e **MAI** per livello architetturale.
-- **MasterSchema VS RoleSchema**: Per ogni Business Entity si concepisce un `MasterSchema` (ereditato da un universale `BaseSchema` preposto al track lifecycle morbido). Da questo Master, utilizzando stringenti costrutti TypeScript (`Zod.pick()` e `Zod.omit()`), si derivano chirurgicamente i sub-schemi RBAC (`[Role][Entity]UpdateSchema`, `SearchSchema`, `ResponseSchema`). 
-- **Forms Crittografici Frontend (`extractZodKeys.ts`)**: I form React (`FormCreate` e `FormDetail`) non hardcodano campi. Ingoiano un RoleSchema Server e renderizzano ciclicamente **esclusivamente** le chiavi attive. Qualsiasi manomissione viene troncata.
+- **MasterSchema VS RoleSchema**: Per ogni Business Entity si concepisce un `MasterSchema` (ereditato da un universale `BaseSchema` preposto al track lifecycle morbido e **archiviazione a lungo termine**). Da questo Master si derivano chirurgicamente i sub-schemi RBAC.
+- **Componenti Autonomi SDUI (`FormList`, `FormCreate`, `FormDetail`)**: L'intero front-end opera in logica "Zero-Boilerplate". Navigando su rotte generiche come `/[locale]/partner/[roleId]/[entity]`, l'interfaccia inietta a runtime i Form generici passandogli solo `entity` e `roleId`. I form invocano autonomamente il **Firestore Gateway**, delegano la validazione Zod al backend e gestiscono in autonomia caricamento, impaginazione e mutation state.
 
 ---
 
@@ -110,7 +111,8 @@ L'operatività base per testare il codice in locale:
 
 1. **Installazione Base**: `npm i` nel root + `cd functions && npm i`
 2. **Ambiente di Sviluppo**: Sulla ROOT `npm run dev`. Apre l'istanza su `http://localhost:3000`.
-3. **Deploy Backend Master**: Eseguire `npm run cloud:firebase` nella root. Lo script convalida, compila le TypeScript Cloud Functions ed effettua push unificato su Firebase (Storage, DB Rules, Indexes, e Gateways).
-4. **Deploy Frontend su Prod**: Deploy su GCP Firebase AppHosting con build remota Vercel-like, innescato strettamente dal merge push upstream manuale.
+3. **Deployment**:
+   - `npm run cloud:validate`: Lancia il DevSecOps Pentest in locale + build completa TypeScript. Esegue la "gate validation" prima del deploy.
+   - `npm run cloud` o equivalente: Seguire le istruzioni DevSecOps o gli automatismi CI/CD previsti dal workflow. Nativamente Vercel-like in staging.
 
 *(Fine Master Context)*

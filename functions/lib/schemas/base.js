@@ -94,6 +94,9 @@ exports.BaseSchema = zod_1.z.object({
     updatedBy: zod_1.z.string().optional(),
     deletedAt: zod_1.z.date().nullable().optional(),
     deletedBy: zod_1.z.string().nullable().optional(),
+    // Long-Term Archiving
+    isArchived: zod_1.z.boolean().default(false),
+    endLifeTime: zod_1.z.date().nullable().optional(),
 });
 /**
  * API RBAC Schema Generators (Livello Controller)
@@ -115,6 +118,8 @@ exports.ProtectedSystemFields = {
     updatedBy: true,
     deletedAt: true,
     deletedBy: true,
+    isArchived: true,
+    endLifeTime: true,
 };
 // Paginazione Standard (GET)
 exports.PaginationQuerySchema = zod_1.z.object({

@@ -1,13 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { useForm, DefaultValues, Path } from "react-hook-form";
+import { useForm, Path } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslations } from "next-intl";
 
 import { UIFieldMeta } from "@/core/schemas";
 import { extractZodKeys } from "@/core/extractZodKeys";
+import { functions } from "@/core/firebase";
+import { httpsCallable } from "firebase/functions";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -16,10 +18,13 @@ import { InputLookup } from "./InputLookup";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface FormDetailProps<T extends z.ZodSchema<any>> {
+    orgId?: string;
+    roleId: string;
+    entityId: string;
+    uid: string;
     schema: T;
     fields: UIFieldMeta[];
-    defaultValues: DefaultValues<z.infer<T>>; // Obbligatorio in Detail
-    onSubmit: (data: z.infer<T>) => Promise<void>;
+    onSuccess?: (id: string, data: z.infer<T>) => void;
     submitLabel?: string;
     onCancel?: () => void;
     cancelLabel?: string;
@@ -28,10 +33,13 @@ export interface FormDetailProps<T extends z.ZodSchema<any>> {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function FormDetail<T extends z.ZodSchema<any>>({
+    orgId,
+    roleId,
+    entityId,
+    uid,
     schema,
     fields,
-    defaultValues,
-    onSubmit,
+    onSuccess,
     submitLabel = "Save Changes",
     onCancel,
     cancelLabel = "Cancel",
@@ -39,30 +47,76 @@ export function FormDetail<T extends z.ZodSchema<any>>({
 }: FormDetailProps<T>) {
     const t = useTranslations("Common");
 
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [fetchError, setFetchError] = React.useState<string | null>(null);
+
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [globalError, setGlobalError] = React.useState<string | null>(null);
 
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors, isDirty },
     } = useForm<z.infer<T>>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(schema as any),
-        defaultValues,
     });
 
-    useWarnIfUnsavedChanges(isDirty && !isSubmitting && !readOnlyMode);
+    React.useEffect(() => {
+        const loadEntity = async () => {
+            setIsLoading(true);
+            setFetchError(null);
+            try {
+                const firestoreGateway = httpsCallable(functions, "firestoreGateway");
+                const response = await firestoreGateway({
+                    orgId,
+                    roleId,
+                    entityId,
+                    actionId: "read",
+                    payload: { id: uid }
+                });
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const resultData = response.data as any;
+                reset(resultData.data);
+            } catch (err: unknown) {
+                console.error("Failed to load entity:", err);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                setFetchError((err as any).message || "Failed to load data");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadEntity();
+    }, [orgId, roleId, entityId, uid, reset]);
+
+    useWarnIfUnsavedChanges(isDirty && !isSubmitting && !readOnlyMode && !isLoading);
 
     const processSubmit = async (data: z.infer<T>) => {
         setIsSubmitting(true);
         setGlobalError(null);
         try {
-            await onSubmit(data);
+            const firestoreGateway = httpsCallable(functions, "firestoreGateway");
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const response = await firestoreGateway({
+                orgId,
+                roleId,
+                entityId,
+                actionId: "update",
+                payload: { id: uid, ...data }
+            });
+
+            if (onSuccess) {
+                onSuccess(uid, data);
+            }
         } catch (err: unknown) {
             console.error(err);
-            if (err instanceof Error) {
-                setGlobalError(err.message);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((err as any).message) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                setGlobalError((err as any).message);
             } else {
                 setGlobalError("An unexpected error occurred.");
             }
@@ -70,6 +124,22 @@ export function FormDetail<T extends z.ZodSchema<any>>({
             setIsSubmitting(false);
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="ui-form-loading p-12 flex justify-center items-center">
+                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+            </div>
+        );
+    }
+
+    if (fetchError) {
+        return (
+            <div className="ui-error-banner mb-4 p-4 bg-red-50 text-red-600 rounded-md">
+                Error loading {entityId}: {fetchError}
+            </div>
+        );
+    }
 
     return (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

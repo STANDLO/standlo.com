@@ -8,6 +8,8 @@ import { useTranslations } from "next-intl";
 
 import { UIFieldMeta } from "@/core/schemas";
 import { extractZodKeys } from "@/core/extractZodKeys";
+import { functions } from "@/core/firebase";
+import { httpsCallable } from "firebase/functions";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -16,10 +18,13 @@ import { InputLookup } from "./InputLookup";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface FormCreateProps<T extends z.ZodSchema<any>> {
+    orgId?: string;
+    roleId: string;
+    entityId: string;
     schema: T;
     fields: UIFieldMeta[];
     defaultValues?: DefaultValues<z.infer<T>>;
-    onSubmit: (data: z.infer<T>) => Promise<void>;
+    onSuccess?: (id: string, data: z.infer<T>) => void;
     submitLabel?: string;
     onCancel?: () => void;
     cancelLabel?: string;
@@ -27,10 +32,13 @@ export interface FormCreateProps<T extends z.ZodSchema<any>> {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function FormCreate<T extends z.ZodSchema<any>>({
+    orgId,
+    roleId,
+    entityId,
     schema,
     fields,
     defaultValues,
-    onSubmit,
+    onSuccess,
     submitLabel = "Save",
     onCancel,
     cancelLabel = "Cancel"
@@ -56,11 +64,26 @@ export function FormCreate<T extends z.ZodSchema<any>>({
         setIsSubmitting(true);
         setGlobalError(null);
         try {
-            await onSubmit(data);
+            const firestoreGateway = httpsCallable(functions, "firestoreGateway");
+            const response = await firestoreGateway({
+                orgId,
+                roleId,
+                entityId,
+                actionId: "create",
+                payload: data
+            });
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const resultData = response.data as any;
+            if (onSuccess) {
+                onSuccess(resultData.id, data);
+            }
         } catch (err: unknown) {
             console.error(err);
-            if (err instanceof Error) {
-                setGlobalError(err.message);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((err as any).message) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                setGlobalError((err as any).message);
             } else {
                 setGlobalError("An unexpected error occurred.");
             }

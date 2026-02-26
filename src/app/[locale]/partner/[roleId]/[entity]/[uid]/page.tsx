@@ -14,18 +14,18 @@ export default function GenericEntityDetailPage({ params }: { params: Promise<{ 
     const { locale, roleId, entity, uid } = React.use(params);
     const router = useRouter();
 
-    // TODO: Centralized read logic by uid
-    const dummyRecord = { name: `Sample ${entity} ${uid}` };
+    // Removed manual dummy variable since data will be fetched inside FormDetail
 
     return (
         <div className="ui-form-detail">
             <FormDetail
+                roleId={roleId}
+                entityId={entity}
+                uid={uid}
                 schema={FallbackSchema}
                 fields={[{ name: "name", label: "Name", type: "text", required: true }]}
-                defaultValues={dummyRecord}
-                onSubmit={async (data) => {
-                    console.log(`[${roleId}] Updating ${entity}:`, data);
-                    alert(`Update Feature is dynamically bound for ${uid}`);
+                onSuccess={(id, data) => {
+                    console.log(`[${roleId}] Updated ${entity} with ID ${id}:`, data);
                     router.push(`/${locale}/partner/${roleId}/${entity}`);
                 }}
                 submitLabel="Save Changes"

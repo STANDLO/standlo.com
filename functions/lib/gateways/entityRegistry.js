@@ -1,0 +1,87 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Registry = void 0;
+exports.getEntityConfig = getEntityConfig;
+exports.buildCollectionPath = buildCollectionPath;
+const schemas = __importStar(require("../schemas"));
+exports.Registry = {
+    // Global Elements
+    "organization": { scope: "global", name: "organizations", schema: schemas.OrganizationSchema },
+    "user": { scope: "global", name: "users", schema: schemas.UserSchema },
+    // Multi-tenant Elements
+    "fair": { scope: "tenant", name: "fairs", schema: schemas.FairSchema },
+    "exhibition": { scope: "tenant", name: "exhibitions", schema: schemas.ExhibitionSchema },
+    "exhibitor": { scope: "tenant", name: "exhibitors", schema: schemas.ExhibitorSchema },
+    "project": { scope: "tenant", name: "projects", schema: schemas.ProjectSchema },
+    "warehouse": { scope: "tenant", name: "warehouses", schema: schemas.WarehouseSchema },
+    "workcenter": { scope: "tenant", name: "workcenters", schema: schemas.WorkcenterSchema },
+    "shelve": { scope: "tenant", name: "shelves", schema: schemas.ShelveSchema },
+    "tool": { scope: "tenant", name: "tools", schema: schemas.ToolSchema },
+    "stand": { scope: "tenant", name: "stands", schema: schemas.StandSchema },
+    "assembly": { scope: "tenant", name: "assemblies", schema: schemas.AssemblySchema },
+    "part": { scope: "tenant", name: "parts", schema: schemas.PartSchema },
+    "process": { scope: "tenant", name: "processes", schema: schemas.ProcessSchema },
+    "calendar": { scope: "tenant", name: "calendars", schema: schemas.CalendarSchema },
+    "activity": { scope: "tenant", name: "activities", schema: schemas.ActivitySchema },
+    "message": { scope: "tenant", name: "messages", schema: schemas.MessageSchema },
+    "notification": { scope: "tenant", name: "notifications", schema: schemas.NotificationSchema },
+    "invoice": { scope: "tenant", name: "invoices", schema: schemas.InvoiceSchema },
+    "payment": { scope: "tenant", name: "payments", schema: schemas.PaymentSchema },
+    "tax": { scope: "tenant", name: "taxes", schema: schemas.TaxSchema },
+    "apikey": { scope: "tenant", name: "apikeys", schema: schemas.ApiKeySchema },
+    "call": { scope: "tenant", name: "calls", schema: schemas.CallSchema },
+};
+function getEntityConfig(entityId) {
+    const config = exports.Registry[entityId];
+    if (!config) {
+        throw new Error(`[EntityRegistry] Entity ID '${entityId}' not found.`);
+    }
+    return config;
+}
+function buildCollectionPath(entityId, orgId) {
+    const config = getEntityConfig(entityId);
+    if (config.scope === "global") {
+        return config.name;
+    }
+    if (config.scope === "tenant") {
+        if (!orgId) {
+            throw new Error(`[EntityRegistry] orgId is REQUIRED to access tenant-scoped entity '${entityId}'.`);
+        }
+        return `organizations/${orgId}/${config.name}`;
+    }
+    throw new Error(`[EntityRegistry] Invalid scope for entity '${entityId}'.`);
+}
+//# sourceMappingURL=entityRegistry.js.map

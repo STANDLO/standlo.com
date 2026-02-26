@@ -148,6 +148,9 @@ export const BaseSchema = z.object({
     deletedAt: z.date().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
 
+    // Long-Term Archiving
+    isArchived: z.boolean().default(false),
+    endLifeTime: z.date().nullable().optional(),
 });
 
 export type LocalizedString = z.infer<typeof LocalizedStringSchema>;
@@ -174,6 +177,8 @@ export const ProtectedSystemFields = {
     updatedBy: true,
     deletedAt: true,
     deletedBy: true,
+    isArchived: true,
+    endLifeTime: true,
 } as const;
 
 // Paginazione Standard (GET)

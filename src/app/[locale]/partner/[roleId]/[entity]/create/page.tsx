@@ -17,11 +17,12 @@ export default function GenericEntityCreatePage({ params }: { params: Promise<{ 
     return (
         <div className="ui-form-create">
             <FormCreate
+                roleId={roleId}
+                entityId={entity}
                 schema={FallbackSchema}
                 fields={[{ name: "name", label: "Name", type: "text", required: true }]}
-                onSubmit={async (data) => {
-                    console.log(`[${roleId}] Creating ${entity}:`, data);
-                    alert(`Created ${entity}: ` + JSON.stringify(data));
+                onSuccess={(id, data) => {
+                    console.log(`[${roleId}] Created ${entity} with ID ${id}:`, data);
                     router.push(`/${locale}/partner/${roleId}/${entity}`);
                 }}
                 submitLabel="Save"

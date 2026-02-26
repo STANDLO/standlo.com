@@ -41,7 +41,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
     /**
      * Generica Write (Create)
      */
-    async create(orgId: string, data: Omit<T, "id" | "orgId" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy">, userId: string): Promise<T> {
+    async create(orgId: string, data: Omit<T, "id" | "orgId" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy" | "isArchived" | "endLifeTime">, userId: string): Promise<T> {
         const now = new Date().toISOString();
         const payload = {
             ...data,
@@ -52,6 +52,8 @@ export abstract class BaseRepository<T extends BaseEntity> {
             updatedBy: userId,
             deletedAt: null,
             deletedBy: null,
+            isArchived: false,
+            endLifeTime: null,
         };
 
         const docRef = await this.collection.add(payload);
@@ -74,7 +76,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
     /**
      * Generica Update
      */
-    async update(orgId: string, id: string, data: Partial<Omit<T, "id" | "orgId" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy">>, userId: string): Promise<T | null> {
+    async update(orgId: string, id: string, data: Partial<Omit<T, "id" | "orgId" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy" | "isArchived" | "endLifeTime">>, userId: string): Promise<T | null> {
         const docRef = this.collection.doc(id);
         const doc = await docRef.get();
 
