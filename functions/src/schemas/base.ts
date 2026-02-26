@@ -1,17 +1,7 @@
 import { z } from "zod";
-import { RoleIdSchema } from "./auth";
+import { RoleIdSchema, LocalizedStringSchema } from "./primitives";
 
-/**
- * 1. Localized String Schema
- * Schema per i campi testuali multi-lingua.
- * L'italiano ("it") è considerato la lingua principale ed è obbligatorio.
- * "en" e "es" sono opzionali.
- */
-export const LocalizedStringSchema = z.object({
-    it: z.string().optional(),
-    es: z.string().optional()
-});
-
+export { LocalizedStringSchema };
 /**
  * Schemas ausiliari per la tracciabilità e i metadati avanzati
  */

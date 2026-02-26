@@ -146,6 +146,17 @@
         }
     },
     "components": {
+        "dashboard": "Tableau de Bord",
+        "orders": "Commandes",
+        "catalog": "Catalogue",
+        "organizations": "Organisations",
+        "settings": "Paramètres",
+        "projects": "Projets",
+        "production": "Production",
+        "customers": "Clients",
+        "team": "Équipe",
+        "tasks": "Tâches",
+        "reviews": "Révisons",
         "auth": {
             "logout": "Se déconnecter"
         },

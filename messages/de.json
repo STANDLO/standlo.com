@@ -146,6 +146,17 @@
         }
     },
     "components": {
+        "dashboard": "Dashboard",
+        "orders": "Bestellungen",
+        "catalog": "Katalog",
+        "organizations": "Organisationen",
+        "settings": "Einstellungen",
+        "projects": "Projekte",
+        "production": "Produktion",
+        "customers": "Kunden",
+        "team": "Team",
+        "tasks": "Aufgaben",
+        "reviews": "Bewertungen",
         "auth": {
             "logout": "Abmelden"
         },

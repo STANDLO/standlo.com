@@ -125,32 +125,32 @@ export function generateNavigationManifest(roleId: RoleId): NavItemManifest[] {
     switch (roleId) {
         case "customer":
             return [
-                { labelKey: "dashboard", path: `/${roleId}`, icon: "LayoutDashboard", matchPattern: `/${roleId}/dashboard` },
-                { labelKey: "orders", path: `/${roleId}/orders`, icon: "FileText" },
-                { labelKey: "team", path: `/${roleId}/team`, icon: "UserPlus" },
-                { labelKey: "settings", path: `/${roleId}/settings`, icon: "Settings" }
+                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
+                { labelKey: "orders", path: `/partner/${roleId}/orders`, icon: "FileText" },
+                { labelKey: "team", path: `/partner/${roleId}/team`, icon: "UserPlus" },
+                { labelKey: "settings", path: `/partner/${roleId}/settings`, icon: "Settings" }
             ];
         case "manager":
             return [
-                { labelKey: "dashboard", path: `/${roleId}`, icon: "LayoutDashboard", matchPattern: `/${roleId}/dashboard` },
-                { labelKey: "projects", path: `/${roleId}/projects`, icon: "Construction" },
-                { labelKey: "production", path: `/${roleId}/production`, icon: "Wrench" },
-                { labelKey: "customers", path: `/${roleId}/customers`, icon: "Users" },
-                { labelKey: "settings", path: `/${roleId}/settings`, icon: "Settings" }
+                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
+                { labelKey: "projects", path: `/partner/${roleId}/projects`, icon: "Construction" },
+                { labelKey: "production", path: `/partner/${roleId}/production`, icon: "Wrench" },
+                { labelKey: "customers", path: `/partner/${roleId}/customers`, icon: "Users" },
+                { labelKey: "settings", path: `/partner/${roleId}/settings`, icon: "Settings" }
             ];
         case "designer":
             return [
-                { labelKey: "dashboard", path: `/${roleId}`, icon: "LayoutDashboard", matchPattern: `/${roleId}/dashboard` },
-                { labelKey: "tasks", path: `/${roleId}/tasks`, icon: "PenTool" },
-                { labelKey: "reviews", path: `/${roleId}/reviews`, icon: "CheckSquare" }
+                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
+                { labelKey: "tasks", path: `/partner/${roleId}/tasks`, icon: "PenTool" },
+                { labelKey: "reviews", path: `/partner/${roleId}/reviews`, icon: "CheckSquare" }
             ];
         case "provider":
             return [
-                { labelKey: "dashboard", path: `/${roleId}`, icon: "LayoutDashboard", matchPattern: `/${roleId}/dashboard` },
-                { labelKey: "orders", path: `/${roleId}/orders`, icon: "Package" },
-                { labelKey: "catalog", path: `/${roleId}/catalog`, icon: "Layers" },
-                { labelKey: "organizations", path: `/${roleId}/organizations`, icon: "Building2" },
-                { labelKey: "settings", path: `/${roleId}/settings`, icon: "Settings" }
+                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
+                { labelKey: "orders", path: `/partner/${roleId}/orders`, icon: "Package" },
+                { labelKey: "catalog", path: `/partner/${roleId}/catalog`, icon: "Layers" },
+                { labelKey: "organizations", path: `/partner/${roleId}/organizations`, icon: "Building2" },
+                { labelKey: "settings", path: `/partner/${roleId}/settings`, icon: "Settings" }
             ];
         // Placeholder for other technicians/builders
         case "electrician":

@@ -146,6 +146,17 @@
         }
     },
     "components": {
+        "dashboard": "Panel de Control",
+        "orders": "Pedidos",
+        "catalog": "Catálogo",
+        "organizations": "Organizaciones",
+        "settings": "Ajustes",
+        "projects": "Proyectos",
+        "production": "Producción",
+        "customers": "Clientes",
+        "team": "Equipo",
+        "tasks": "Tareas",
+        "reviews": "Revisiones",
         "auth": {
             "logout": "Cerrar sesión"
         },

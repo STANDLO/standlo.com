@@ -5,24 +5,15 @@ exports.createCreationSchema = createCreationSchema;
 exports.createUpdateSchema = createUpdateSchema;
 exports.createResponseSchema = createResponseSchema;
 const zod_1 = require("zod");
-const auth_1 = require("./auth");
-/**
- * 1. Localized String Schema
- * Schema per i campi testuali multi-lingua.
- * L'italiano ("it") è considerato la lingua principale ed è obbligatorio.
- * "en" e "es" sono opzionali.
- */
-exports.LocalizedStringSchema = zod_1.z.object({
-    it: zod_1.z.string().optional(),
-    es: zod_1.z.string().optional()
-});
+const primitives_1 = require("./primitives");
+Object.defineProperty(exports, "LocalizedStringSchema", { enumerable: true, get: function () { return primitives_1.LocalizedStringSchema; } });
 /**
  * Schemas ausiliari per la tracciabilità e i metadati avanzati
  */
 exports.UserRelationSchema = zod_1.z.object({
     id: zod_1.z.string(),
     name: zod_1.z.string(),
-    roleId: auth_1.RoleIdSchema
+    roleId: primitives_1.RoleIdSchema
 });
 exports.OrganizationRelationSchema = zod_1.z.object({
     id: zod_1.z.string(),
@@ -66,7 +57,7 @@ exports.DocumentUpdateSchema = zod_1.z.object({
     changes: zod_1.z.array(exports.FieldUpdateSchema)
 });
 exports.DocumentMetaSchema = zod_1.z.object({
-    translations: exports.LocalizedStringSchema.optional(),
+    translations: primitives_1.LocalizedStringSchema.optional(),
     keywords: zod_1.z.array(zod_1.z.string()).optional(),
     aiVectors: zod_1.z.array(zod_1.z.number()).optional(),
 }).catchall(zod_1.z.unknown());

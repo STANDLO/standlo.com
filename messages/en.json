@@ -146,6 +146,17 @@
         }
     },
     "components": {
+        "dashboard": "Dashboard",
+        "orders": "Orders",
+        "catalog": "Catalog",
+        "organizations": "Organizations",
+        "settings": "Settings",
+        "projects": "Projects",
+        "production": "Production",
+        "customers": "Customers",
+        "team": "Team",
+        "tasks": "Tasks",
+        "reviews": "Reviews",
         "auth": {
             "logout": "Log out"
         },

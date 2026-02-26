@@ -140,6 +140,17 @@
         }
     },
     "components": {
+        "dashboard": "Dashboard",
+        "orders": "Ordini",
+        "catalog": "Catalogo",
+        "organizations": "Organizzazioni",
+        "settings": "Impostazioni",
+        "projects": "Progetti",
+        "production": "Produzione",
+        "customers": "Clienti",
+        "team": "Squadra",
+        "tasks": "Incarichi",
+        "reviews": "Revisioni",
         "auth": {
             "logout": "Esci"
         },

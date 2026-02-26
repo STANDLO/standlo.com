@@ -55,17 +55,25 @@ export async function proxy(request: NextRequest) {
             // 2. GESTIONE UTENTI COMPLETATI (Ruoli Definitivi)
             // Se un utente completato prova ad accedere a rotte pubbliche o root o all'onboarding o verify-email
             if (pathname === '/' || pathname.includes('/auth/login') || pathname.includes('/auth/register') || pathname.includes('/onboarding') || pathname.includes('/auth/verify-email')) {
-                url.pathname = `/${locale}/${role}`;
+                url.pathname = `/${locale}/partner/${role}`;
                 return NextResponse.redirect(url);
             }
 
-            // 3. VALIDAZIONE PERMESSI DI AREA (es. /en/admin ma è customer)
-            const areaMatch = pathname.match(/^\/(?:it|en|es|us|de|fr)\/([^\/]+)/);
+            // 3. VALIDAZIONE PERMESSI DI AREA (es. /en/partner/admin ma è customer)
+            const areaMatch = pathname.match(/^\/(?:it|en|es|us|de|fr)\/([^\/]+)(?:\/([^\/]+))?/);
             if (areaMatch) {
                 const requestedArea = areaMatch[1];
-                if (requestedArea !== 'auth' && requestedArea !== 'debug' && requestedArea !== role) {
-                    // Unauthorized: Ritorna alla sua area di competenza
-                    url.pathname = `/${locale}/${role}`;
+                const roleArea = areaMatch[2]; // ex: 'customer' inside /it/partner/customer
+
+                // If they are accessing a generic area outside partner, only auth and debug are allowed
+                if (requestedArea !== 'partner' && requestedArea !== 'auth' && requestedArea !== 'debug' && requestedArea !== 'onboarding') {
+                    url.pathname = `/${locale}/partner/${role}`;
+                    return NextResponse.redirect(url);
+                }
+
+                // If they are inside partner and the role in the URL doesn't match their JWT role
+                if (requestedArea === 'partner' && roleArea && roleArea !== role) {
+                    url.pathname = `/${locale}/partner/${role}`;
                     return NextResponse.redirect(url);
                 }
             }
