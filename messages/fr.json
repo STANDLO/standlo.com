@@ -48,6 +48,11 @@
             "card2Title": "À facturer"
         }
     },
+    "Common": {
+        "noResults": "Aucun résultat trouvé.",
+        "loadMore": "Charger Plus",
+        "genericError": "Un problème est survenu lors du traitement de votre demande."
+    },
     "Auth": {
         "Register": {
             "title": "Créer un compte",
@@ -149,6 +154,7 @@
         "dashboard": "Tableau de Bord",
         "orders": "Commandes",
         "catalog": "Catalogue",
+        "organization": "Organisation",
         "organizations": "Organisations",
         "settings": "Paramètres",
         "projects": "Projets",

@@ -62,4 +62,5 @@ export const UserPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: defaultPolicy,
     promoter: defaultPolicy,
     other: defaultPolicy,
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

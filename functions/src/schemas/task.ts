@@ -3,16 +3,26 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 
-export const ActivitySchema = BaseSchema.extend({});
-export type Activity = z.infer<typeof ActivitySchema>;
+export const TaskSchema = BaseSchema.extend({
+    name: z.string(),
+    description: z.string().optional(),
+    status: z.enum(['todo', 'in_progress', 'done', 'blocked']).default('todo'),
+    processId: z.string().optional(), // Reference to the Process
+    assignedTo: z.string().optional(), // userId
+    warehouseId: z.string() // Location where task is performed
+});
+export type Task = z.infer<typeof TaskSchema>;
 
-export const ActivityCreateSchema = createCreationSchema(ActivitySchema);
-export const ActivityUpdateSchema = createUpdateSchema(ActivitySchema);
-export const ActivitySearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+export const TaskCreateSchema = createCreationSchema(TaskSchema);
+export const TaskUpdateSchema = createUpdateSchema(TaskSchema);
+export const TaskSearchSchema = PaginationQuerySchema.extend({
+    name: z.string().optional(),
+    status: z.enum(['todo', 'in_progress', 'done', 'blocked']).optional(),
+    assignedTo: z.string().optional(),
+    warehouseId: z.string().optional()
 });
 
-export const ActivityPolicyMatrix: Record<RoleId, EntityPolicy> = {
+export const TaskPolicyMatrix: Record<RoleId, EntityPolicy> = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -36,4 +46,5 @@ export const ActivityPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

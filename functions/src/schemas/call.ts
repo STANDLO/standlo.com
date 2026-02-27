@@ -4,18 +4,17 @@ import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 
 export const CallSchema = BaseSchema.extend({
-    apiKeyHint: z.string().describe("text"), // The hint or ref of the API key used
-    status: z.number().int().describe("number"), // HTTP status code (200, 404, 500)
-    method: z.string().optional().describe("text"), // HTTP method (GET, POST, etc.)
-    durationMs: z.number().int().optional().describe("number"), // Execution time in ms
-    // The 'code' field inherited from BaseSchema will be used to store the called endpoint.
+    apiKeyHint: z.string().describe(JSON.stringify("text")),
+    status: z.number().describe(JSON.stringify("number")),
+    method: z.string().optional().describe(JSON.stringify("text")),
+    durationMs: z.number().optional().describe(JSON.stringify("number")),
 });
 export type Call = z.infer<typeof CallSchema>;
 
 export const CallCreateSchema = createCreationSchema(CallSchema);
 export const CallUpdateSchema = createUpdateSchema(CallSchema);
 export const CallSearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+    name: z.string().optional(),
 });
 
 export const CallPolicyMatrix: Record<RoleId, EntityPolicy> = {
@@ -42,4 +41,5 @@ export const CallPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

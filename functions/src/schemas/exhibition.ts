@@ -9,7 +9,7 @@ export type Exhibition = z.infer<typeof ExhibitionSchema>;
 export const ExhibitionCreateSchema = createCreationSchema(ExhibitionSchema);
 export const ExhibitionUpdateSchema = createUpdateSchema(ExhibitionSchema);
 export const ExhibitionSearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+    name: z.string().optional(),
 });
 
 export const ExhibitionPolicyMatrix: Record<RoleId, EntityPolicy> = {
@@ -36,4 +36,5 @@ export const ExhibitionPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

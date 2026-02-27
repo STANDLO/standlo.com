@@ -49,43 +49,51 @@ const https_1 = require("firebase-functions/v2/https");
 const entityRegistry_1 = require("./entityRegistry");
 const firestore_1 = require("firebase-admin/firestore");
 const admin = __importStar(require("firebase-admin"));
+const crypto = __importStar(require("crypto"));
 exports.firestore = (0, https_1.onCall)({
     region: "europe-west4",
     enforceAppCheck: true,
     consumeAppCheckToken: false,
 }, async (request) => {
-    var _a;
-    if (!request.auth) {
-        throw new https_1.HttpsError("unauthenticated", "User must be authenticated to access Firestore gateway.");
-    }
-    const db = (0, firestore_1.getFirestore)();
-    const data = request.data;
-    const { correlationId, idempotencyKey, orgId, entityId, actionId, payload, limit, cursor, orderBy, filters } = data;
-    console.log(`[Firestore][${correlationId || 'no-corr-id'}] Action: ${actionId} | Entity: ${entityId} | User: ${request.auth.uid}`);
-    if (!entityId) {
-        throw new https_1.HttpsError("invalid-argument", "EntityId is required.");
-    }
-    const path = (0, entityRegistry_1.buildCollectionPath)(entityId, orgId);
-    const config = (0, entityRegistry_1.getEntityConfig)(entityId);
-    const collectionRef = db.collection(path);
-    // 1. Idempotency Check for Write Actions
-    const isWrite = ["create", "update", "soft_delete", "hard_delete"].includes(actionId);
-    if (idempotencyKey && isWrite) {
-        const lockRef = db.collection("idempotency_locks").doc(idempotencyKey);
-        const lockSnap = await lockRef.get();
-        if (lockSnap.exists) {
-            console.log(`[Firestore] Idempotency lock hit for key: ${idempotencyKey}`);
-            return {
-                status: "success",
-                actionId,
-                data: (_a = lockSnap.data()) === null || _a === void 0 ? void 0 : _a.result,
-                cached: true
-            };
-        }
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let resultData;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    const errorReferenceCode = crypto.randomUUID();
+    let entityIdStr = "unknown";
+    let actionIdStr = "unknown";
+    let orgIdStr = "unknown";
     try {
+        if (!request.auth) {
+            throw new https_1.HttpsError("unauthenticated", "User must be authenticated to access Firestore gateway.");
+        }
+        const db = (0, firestore_1.getFirestore)();
+        const data = request.data;
+        const { correlationId, idempotencyKey, orgId, entityId, actionId, payload, limit, cursor, orderBy, filters } = data;
+        entityIdStr = entityId || "unknown";
+        actionIdStr = actionId || "unknown";
+        orgIdStr = orgId || "unknown";
+        console.log(`[Firestore][${correlationId || 'no-corr-id'}] Action: ${actionId} | Entity: ${entityId} | User: ${request.auth.uid}`);
+        if (!entityId) {
+            throw new https_1.HttpsError("invalid-argument", "EntityId is required.");
+        }
+        const path = (0, entityRegistry_1.buildCollectionPath)(entityId, orgId);
+        const config = (0, entityRegistry_1.getEntityConfig)(entityId);
+        const collectionRef = db.collection(path);
+        // 1. Idempotency Check for Write Actions
+        const isWrite = ["create", "update", "soft_delete", "hard_delete"].includes(actionId);
+        if (idempotencyKey && isWrite) {
+            const lockRef = db.collection("idempotency_locks").doc(idempotencyKey);
+            const lockSnap = await lockRef.get();
+            if (lockSnap.exists) {
+                console.log(`[Firestore] Idempotency lock hit for key: ${idempotencyKey}`);
+                return {
+                    status: "success",
+                    actionId,
+                    data: (_a = lockSnap.data()) === null || _a === void 0 ? void 0 : _a.result,
+                    cached: true
+                };
+            }
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let resultData;
         switch (actionId) {
             case "list": {
                 let query = collectionRef;
@@ -150,10 +158,15 @@ exports.firestore = (0, https_1.onCall)({
                         type: "schema_mismatch",
                         action: "create",
                         entityId,
-                        userId: request.auth.uid,
-                        correlationId,
-                        submittedPayload: payload,
-                        timestamp: admin.firestore.FieldValue.serverTimestamp()
+                        uid: request.auth.uid,
+                        payload: JSON.stringify(payload),
+                        errorMessage: "Extra fields stripped during Create",
+                        errorReferenceCode: crypto.randomUUID(),
+                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                        createdBy: request.auth.uid,
+                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: request.auth.uid,
+                        isArchived: false
                     });
                 }
                 const newRef = collectionRef.doc();
@@ -175,7 +188,7 @@ exports.firestore = (0, https_1.onCall)({
                     throw new https_1.HttpsError("invalid-argument", `Zod validation failed: ${JSON.stringify(parsedResult.error.issues)}`);
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const _b = parsedResult.data, { id } = _b, updateData = __rest(_b, ["id"]);
+                const _k = parsedResult.data, { id } = _k, updateData = __rest(_k, ["id"]);
                 const payloadKeysLen = Object.keys(payload).filter(k => k !== 'id').length;
                 const parsedKeysLen = Object.keys(updateData).length;
                 if (payloadKeysLen !== parsedKeysLen) {
@@ -183,11 +196,15 @@ exports.firestore = (0, https_1.onCall)({
                         type: "schema_mismatch",
                         action: "update",
                         entityId,
-                        documentId: id,
-                        userId: request.auth.uid,
-                        correlationId,
-                        submittedPayload: payload,
-                        timestamp: admin.firestore.FieldValue.serverTimestamp()
+                        uid: request.auth.uid,
+                        payload: JSON.stringify(payload),
+                        errorMessage: "Extra fields stripped during Update",
+                        errorReferenceCode: crypto.randomUUID(),
+                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                        createdBy: request.auth.uid,
+                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: request.auth.uid,
+                        isArchived: false
                     });
                 }
                 updateData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
@@ -232,8 +249,33 @@ exports.firestore = (0, https_1.onCall)({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
     catch (error) {
-        console.error(`[FirestoreGateway] Error processing ${actionId}:`, error);
-        throw new https_1.HttpsError("internal", error.message || "Database operation failed.");
+        console.error(`[FirestoreGateway][${errorReferenceCode}] Error processing request:`, error);
+        try {
+            const db = (0, firestore_1.getFirestore)();
+            await db.collection("alerts").add({
+                type: "system",
+                action: actionIdStr,
+                entityId: entityIdStr,
+                orgId: orgIdStr === "unknown" ? null : orgIdStr,
+                uid: ((_b = request.auth) === null || _b === void 0 ? void 0 : _b.uid) || "unauthenticated",
+                email: ((_d = (_c = request.auth) === null || _c === void 0 ? void 0 : _c.token) === null || _d === void 0 ? void 0 : _d.email) || null,
+                roleId: ((_f = (_e = request.auth) === null || _e === void 0 ? void 0 : _e.token) === null || _f === void 0 ? void 0 : _f.roleId) || "unknown",
+                payload: JSON.stringify(((_g = request.data) === null || _g === void 0 ? void 0 : _g.payload) || {}),
+                errorMessage: error.message || String(error),
+                errorReferenceCode,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                createdBy: ((_h = request.auth) === null || _h === void 0 ? void 0 : _h.uid) || "system",
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedBy: ((_j = request.auth) === null || _j === void 0 ? void 0 : _j.uid) || "system",
+                isArchived: false
+            });
+        }
+        catch (logError) {
+            console.error(`[FirestoreGateway][${errorReferenceCode}] Failed to save security alert:`, logError);
+        }
+        // Throw sanitized error to frontend with reference code
+        const status = error instanceof https_1.HttpsError ? error.code : "invalid-argument";
+        throw new https_1.HttpsError(status, `Richiesta non valida o permessi insufficienti. Riferimento errore: ${errorReferenceCode}`);
     }
 });
 //# sourceMappingURL=firestore.js.map

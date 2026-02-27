@@ -3,13 +3,20 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 
-export const WarehouseSchema = BaseSchema.extend({});
+export const WarehouseSchema = BaseSchema.extend({
+    code: z.string(), // e.g. 'IT-20017-03133760128'
+    name: z.string(), // e.g. 'Acme Corp Logistics'
+    type: z.enum(['headquarter', 'fair', 'site', 'showroom']).default('headquarter'),
+    address: z.string().optional()
+});
 export type Warehouse = z.infer<typeof WarehouseSchema>;
 
 export const WarehouseCreateSchema = createCreationSchema(WarehouseSchema);
 export const WarehouseUpdateSchema = createUpdateSchema(WarehouseSchema);
 export const WarehouseSearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+    name: z.string().optional(),
+    code: z.string().optional(),
+    type: z.enum(['headquarter', 'fair', 'site', 'showroom']).optional(),
 });
 
 export const WarehousePolicyMatrix: Record<RoleId, EntityPolicy> = {
@@ -36,4 +43,5 @@ export const WarehousePolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

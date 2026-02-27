@@ -9,7 +9,7 @@ export type Stand = z.infer<typeof StandSchema>;
 export const StandCreateSchema = createCreationSchema(StandSchema);
 export const StandUpdateSchema = createUpdateSchema(StandSchema);
 export const StandSearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+    name: z.string().optional(),
 });
 
 export const StandPolicyMatrix: Record<RoleId, EntityPolicy> = {
@@ -36,4 +36,5 @@ export const StandPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

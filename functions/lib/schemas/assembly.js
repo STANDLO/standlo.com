@@ -3,11 +3,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssemblyPolicyMatrix = exports.AssemblySearchSchema = exports.AssemblyUpdateSchema = exports.AssemblyCreateSchema = exports.AssemblySchema = void 0;
 const zod_1 = require("zod");
 const base_1 = require("./base");
-exports.AssemblySchema = base_1.BaseSchema.extend({});
+const primitives_1 = require("./primitives");
+exports.AssemblySchema = base_1.BaseSchema.extend({
+    name: primitives_1.LocalizedStringSchema,
+    description: primitives_1.LocalizedStringSchema.optional(),
+    locationType: zod_1.z.enum(['warehouse', 'site']).default('warehouse'),
+    parts: zod_1.z.array(zod_1.z.object({
+        partId: zod_1.z.string(),
+        quantity: zod_1.z.number()
+    })).default([]),
+    processes: zod_1.z.array(zod_1.z.object({
+        processId: zod_1.z.string(),
+        quantity: zod_1.z.number()
+    })).default([]),
+    tools: zod_1.z.array(zod_1.z.object({
+        toolId: zod_1.z.string(),
+        quantity: zod_1.z.number()
+    })).default([])
+});
 exports.AssemblyCreateSchema = (0, base_1.createCreationSchema)(exports.AssemblySchema);
 exports.AssemblyUpdateSchema = (0, base_1.createUpdateSchema)(exports.AssemblySchema);
 exports.AssemblySearchSchema = base_1.PaginationQuerySchema.extend({
-    name: zod_1.z.string().optional()
+    name: zod_1.z.string().optional(),
+    locationType: zod_1.z.enum(['warehouse', 'site']).optional(),
 });
 exports.AssemblyPolicyMatrix = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -33,5 +51,6 @@ exports.AssemblyPolicyMatrix = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };
 //# sourceMappingURL=assembly.js.map

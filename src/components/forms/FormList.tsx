@@ -8,6 +8,7 @@ import { functions } from "@/core/firebase";
 import { httpsCallable } from "firebase/functions";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ErrorGuard } from "@/components/ui/ErrorGuard";
 
 export interface FormListColumn<T = Record<string, unknown>> {
     key: string;
@@ -39,7 +40,8 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
     const t = useTranslations("Common");
     const [data, setData] = React.useState<Record<string, unknown>[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
-    const [error, setError] = React.useState<string | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [error, setError] = React.useState<any>(null);
 
     // Pagination state
     const [cursor, setCursor] = React.useState<string | null>(null);
@@ -78,7 +80,7 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error("[FormList] Failed to load list data:", err);
-            setError(err.message || "Failed to load");
+            setError(err);
         } finally {
             setIsLoading(false);
         }
@@ -92,13 +94,12 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
     const allowedKeys = schema ? extractZodKeys(schema) : null;
     const visibleColumns = columns.filter((col) => !allowedKeys || allowedKeys.includes(col.key));
 
+    if (error) {
+        return <ErrorGuard error={error} />;
+    }
+
     return (
         <div className="ui-list-container">
-            {error && (
-                <div className="ui-error-banner mb-4 p-4 bg-red-50 text-red-600 rounded-md">
-                    {error}
-                </div>
-            )}
             <div className="ui-list-wrapper overflow-x-auto">
                 <table className="ui-table w-full text-left border-collapse">
                     <thead className="ui-table-thead border-b">

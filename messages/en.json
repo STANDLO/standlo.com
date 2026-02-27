@@ -48,6 +48,11 @@
             "card2Title": "To Invoice"
         }
     },
+    "Common": {
+        "noResults": "No results found.",
+        "loadMore": "Load More",
+        "genericError": "There was a problem processing your request."
+    },
     "Auth": {
         "Register": {
             "title": "Create an Account",
@@ -149,6 +154,7 @@
         "dashboard": "Dashboard",
         "orders": "Orders",
         "catalog": "Catalog",
+        "organization": "Organization",
         "organizations": "Organizations",
         "settings": "Settings",
         "projects": "Projects",

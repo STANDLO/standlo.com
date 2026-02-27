@@ -7,7 +7,7 @@ exports.ToolSchema = base_1.BaseSchema.extend({});
 exports.ToolCreateSchema = (0, base_1.createCreationSchema)(exports.ToolSchema);
 exports.ToolUpdateSchema = (0, base_1.createUpdateSchema)(exports.ToolSchema);
 exports.ToolSearchSchema = base_1.PaginationQuerySchema.extend({
-    name: zod_1.z.string().optional()
+    name: zod_1.z.string().optional(),
 });
 exports.ToolPolicyMatrix = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -33,5 +33,6 @@ exports.ToolPolicyMatrix = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };
 //# sourceMappingURL=tool.js.map

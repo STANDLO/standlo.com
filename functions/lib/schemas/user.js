@@ -57,5 +57,6 @@ exports.UserPolicyMatrix = {
     forkliftdriver: defaultPolicy,
     promoter: defaultPolicy,
     other: defaultPolicy,
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };
 //# sourceMappingURL=user.js.map

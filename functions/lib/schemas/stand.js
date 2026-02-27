@@ -7,7 +7,7 @@ exports.StandSchema = base_1.BaseSchema.extend({});
 exports.StandCreateSchema = (0, base_1.createCreationSchema)(exports.StandSchema);
 exports.StandUpdateSchema = (0, base_1.createUpdateSchema)(exports.StandSchema);
 exports.StandSearchSchema = base_1.PaginationQuerySchema.extend({
-    name: zod_1.z.string().optional()
+    name: zod_1.z.string().optional(),
 });
 exports.StandPolicyMatrix = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -33,5 +33,6 @@ exports.StandPolicyMatrix = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };
 //# sourceMappingURL=stand.js.map

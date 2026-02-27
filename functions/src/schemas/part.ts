@@ -2,14 +2,31 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
+import { LocalizedStringSchema } from "./primitives";
 
-export const PartSchema = BaseSchema.extend({});
+export const PartSchema = BaseSchema.extend({
+    name: LocalizedStringSchema,
+    description: LocalizedStringSchema.optional(),
+    sector: z.string(), // e.g. construction, exhibition
+    layer: z.string(), // e.g. rigging, floor, wall
+    isRentable: z.boolean().default(true),
+    isSellable: z.boolean().default(true),
+    isConsumable: z.boolean().default(false), // Consumables vs Assets
+    baseUnit: z.string().default('pcs'), // 'pcs', 'sqm', 'lm'
+    variantsDefinition: z.array(z.object({
+        attribute: z.string(), // e.g. 'width_cm'
+        type: z.enum(['string', 'number', 'boolean']),
+        options: z.array(z.union([z.string(), z.number()])).optional()
+    })).optional()
+});
 export type Part = z.infer<typeof PartSchema>;
 
 export const PartCreateSchema = createCreationSchema(PartSchema);
 export const PartUpdateSchema = createUpdateSchema(PartSchema);
 export const PartSearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+    name: z.string().optional(),
+    sector: z.string().optional(),
+    layer: z.string().optional(),
 });
 
 export const PartPolicyMatrix: Record<RoleId, EntityPolicy> = {
@@ -36,4 +53,5 @@ export const PartPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

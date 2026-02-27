@@ -23,6 +23,11 @@
         "forkliftdriver": "Mulettista",
         "promoter": "Promoter"
     },
+    "Common": {
+        "noResults": "Nessun risultato trovato.",
+        "loadMore": "Carica Altri",
+        "genericError": "C'è stato un problema nel processare la tua richiesta."
+    },
     "Auth": {
         "Register": {
             "title": "Crea il tuo Account",
@@ -33,6 +38,12 @@
             "namePlaceholder": "Mario Rossi",
             "submitButton": "Registrati",
             "acceptTerms": "Accetto la <privacyLink>Privacy Policy</privacyLink> e i <termsLink>Termini e Condizioni</termsLink>."
+        },
+        "Login": {
+            "title": "Accedi a STANDLO",
+            "subtitle": "Inserisci le tue credenziali per accedere al tuo account.",
+            "submitButton": "Accedi",
+            "footerNote": "Continuando, accetti i nostri Termini di Servizio e l'Informativa sulla Privacy."
         },
         "CardAuth": {
             "copyright": "© {year} STANDLO. Tutti i diritti riservati."
@@ -143,6 +154,7 @@
         "dashboard": "Dashboard",
         "orders": "Ordini",
         "catalog": "Catalogo",
+        "organization": "Organizzazione",
         "organizations": "Organizzazioni",
         "settings": "Impostazioni",
         "projects": "Progetti",

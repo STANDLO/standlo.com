@@ -3,16 +3,28 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 
-export const CalendarSchema = BaseSchema.extend({});
-export type Calendar = z.infer<typeof CalendarSchema>;
+export const CalendarSlotSchema = BaseSchema.extend({
+    resourceType: z.enum(['user', 'product', 'tool']),
+    resourceId: z.string(),
+    startDate: z.string().datetime(), // ISO 8601 string or similar
+    endDate: z.string().datetime(),
+    referenceType: z.enum(['task', 'rent', 'availability']),
+    referenceId: z.string().optional(),
+    warehouseId: z.string(), // Crucial for location-based scheduling
+    quantity: z.number().default(1)
+});
+export type CalendarSlot = z.infer<typeof CalendarSlotSchema>;
 
-export const CalendarCreateSchema = createCreationSchema(CalendarSchema);
-export const CalendarUpdateSchema = createUpdateSchema(CalendarSchema);
-export const CalendarSearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+export const CalendarSlotCreateSchema = createCreationSchema(CalendarSlotSchema);
+export const CalendarSlotUpdateSchema = createUpdateSchema(CalendarSlotSchema);
+export const CalendarSlotSearchSchema = PaginationQuerySchema.extend({
+    resourceType: z.enum(['user', 'product', 'tool']).optional(),
+    resourceId: z.string().optional(),
+    warehouseId: z.string().optional(),
+    referenceType: z.enum(['task', 'rent', 'availability']).optional()
 });
 
-export const CalendarPolicyMatrix: Record<RoleId, EntityPolicy> = {
+export const CalendarSlotPolicyMatrix: Record<RoleId, EntityPolicy> = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -36,4 +48,5 @@ export const CalendarPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

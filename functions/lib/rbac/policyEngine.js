@@ -17,7 +17,8 @@ const assembly_1 = require("../schemas/assembly");
 const part_1 = require("../schemas/part");
 const process_1 = require("../schemas/process");
 const calendar_1 = require("../schemas/calendar");
-const activity_1 = require("../schemas/activity");
+const task_1 = require("../schemas/task");
+const rent_1 = require("../schemas/rent");
 const message_1 = require("../schemas/message");
 const notification_1 = require("../schemas/notification");
 const invoice_1 = require("../schemas/invoice");
@@ -40,15 +41,16 @@ const PolicyMatrices = {
     assembly: assembly_1.AssemblyPolicyMatrix,
     part: part_1.PartPolicyMatrix,
     process: process_1.ProcessPolicyMatrix,
-    calendar: calendar_1.CalendarPolicyMatrix,
-    activity: activity_1.ActivityPolicyMatrix,
+    calendar: calendar_1.CalendarSlotPolicyMatrix,
+    tasks: task_1.TaskPolicyMatrix,
+    rent: rent_1.RentPolicyMatrix,
     message: message_1.MessagePolicyMatrix,
     notification: notification_1.NotificationPolicyMatrix,
     invoice: invoice_1.InvoicePolicyMatrix,
     payment: payment_1.PaymentPolicyMatrix,
     tax: tax_1.TaxPolicyMatrix,
     apikey: apikey_1.ApiKeyPolicyMatrix,
-    call: call_1.CallPolicyMatrix,
+    call: call_1.CallPolicyMatrix
 };
 /**
  * Utility to generate a dynamic UI Manifest based on a Zod Schema and the Role Policy
@@ -58,7 +60,7 @@ function generateManifestForEntity(entityName, roleId, zodSchema) {
     if (!matrix) {
         throw new Error(`Policy matrix not defined for entity: ${entityName}`);
     }
-    const policy = matrix[roleId] || matrix['other'];
+    const policy = matrix[roleId] || matrix["other"];
     if (!policy.canRead) {
         return { error: "Permission Denied" };
     }
@@ -85,8 +87,7 @@ function generateManifestForEntity(entityName, roleId, zodSchema) {
                 // Not JSON, ignore
             }
         }
-        fields.push(Object.assign({ name: key, editable: policy.canUpdate && fieldPolicy.write }, meta // Inject { type: 'gallery', label: '...', etc }
-        ));
+        fields.push(Object.assign({ name: key, editable: policy.canUpdate && fieldPolicy.write }, meta));
     }
     return {
         entity: entityName,
@@ -96,7 +97,7 @@ function generateManifestForEntity(entityName, roleId, zodSchema) {
             canUpdate: policy.canUpdate,
             canDelete: policy.canDelete,
         },
-        fields
+        fields,
     };
 }
 /**
@@ -106,32 +107,41 @@ function generateNavigationManifest(roleId) {
     switch (roleId) {
         case "customer":
             return [
-                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
-                { labelKey: "orders", path: `/partner/${roleId}/orders`, icon: "FileText" },
-                { labelKey: "team", path: `/partner/${roleId}/team`, icon: "UserPlus" },
-                { labelKey: "settings", path: `/partner/${roleId}/settings`, icon: "Settings" }
+                {
+                    labelKey: "dashboard",
+                    path: `/partner/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/partner/${roleId}/dashboard`,
+                },
             ];
         case "manager":
             return [
-                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
+                {
+                    labelKey: "dashboard",
+                    path: `/partner/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/partner/${roleId}/dashboard`,
+                },
                 { labelKey: "projects", path: `/partner/${roleId}/projects`, icon: "Construction" },
-                { labelKey: "production", path: `/partner/${roleId}/production`, icon: "Wrench" },
-                { labelKey: "customers", path: `/partner/${roleId}/customers`, icon: "Users" },
-                { labelKey: "settings", path: `/partner/${roleId}/settings`, icon: "Settings" }
             ];
         case "designer":
             return [
-                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
-                { labelKey: "tasks", path: `/partner/${roleId}/tasks`, icon: "PenTool" },
-                { labelKey: "reviews", path: `/partner/${roleId}/reviews`, icon: "CheckSquare" }
+                {
+                    labelKey: "dashboard",
+                    path: `/partner/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/partner/${roleId}/dashboard`,
+                },
             ];
         case "provider":
             return [
-                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
-                { labelKey: "orders", path: `/partner/${roleId}/orders`, icon: "Package" },
-                { labelKey: "catalog", path: `/partner/${roleId}/catalog`, icon: "Layers" },
-                { labelKey: "organizations", path: `/partner/${roleId}/organizations`, icon: "Building2" },
-                { labelKey: "settings", path: `/partner/${roleId}/settings`, icon: "Settings" }
+                {
+                    labelKey: "dashboard",
+                    path: `/partner/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/partner/${roleId}/dashboard`,
+                },
+                { labelKey: "organization", path: `/partner/${roleId}/organization`, icon: "Building2" },
             ];
         // Placeholder for other technicians/builders
         case "electrician":
@@ -141,15 +151,25 @@ function generateNavigationManifest(roleId) {
         case "driver":
         case "promoter":
             return [
-                { labelKey: "dashboard", path: `/${roleId}`, icon: "LayoutDashboard", matchPattern: `/${roleId}/dashboard` },
+                {
+                    labelKey: "dashboard",
+                    path: `/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/${roleId}/dashboard`,
+                },
                 { labelKey: "tasks", path: `/${roleId}/tasks`, icon: "Wrench" },
-                { labelKey: "schedule", path: `/${roleId}/schedule`, icon: "Calendar" }
+                { labelKey: "schedule", path: `/${roleId}/schedule`, icon: "Calendar" },
             ];
         case "pending":
             return [];
         default:
             return [
-                { labelKey: "dashboard", path: `/${roleId}`, icon: "LayoutDashboard", matchPattern: `/${roleId}/dashboard` },
+                {
+                    labelKey: "dashboard",
+                    path: `/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/${roleId}/dashboard`,
+                },
             ];
     }
 }

@@ -39,7 +39,7 @@ const firestore_1 = require("firebase-admin/firestore");
 const https_1 = require("firebase-functions/v2/https");
 const schemas_1 = require("../schemas");
 async function onboardOrganization(uid, orgData) {
-    var _a;
+    var _a, _b;
     const userRec = await admin.auth().getUser(uid);
     const currentCustomClaims = userRec.customClaims || {};
     if (currentCustomClaims.onboarding) {
@@ -68,13 +68,32 @@ async function onboardOrganization(uid, orgData) {
             active: isActive,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
-        // 5. Upgrade Custom Claims via Admin SDK
-        const newClaims = Object.assign(Object.assign({}, currentCustomClaims), { role: role || "pending", onboarding: true, orgId: orgRootId, orgName: parsedData.name || null, logoUrl: parsedData.logoUrl || null });
         // Estrapolazione Country Code dalla P.IVA (es. "IT123456789" -> "IT")
         const countryCode = parsedData.vatNumber && parsedData.vatNumber.length >= 2
             ? parsedData.vatNumber.substring(0, 2).toUpperCase()
             : null;
-        if (countryCode && ((_a = parsedData.place) === null || _a === void 0 ? void 0 : _a.zipCode)) {
+        if (role === "provider") {
+            const warehouseId = db.collection(`organizations/${orgRootId}/warehouses`).doc().id;
+            const locationPrefix = countryCode && ((_a = parsedData.place) === null || _a === void 0 ? void 0 : _a.zipCode)
+                ? `${countryCode}-${parsedData.place.zipCode}`
+                : "UNKNOWN";
+            const vatStr = parsedData.vatNumber || "NO-VAT";
+            const warehouseRef = db.collection(`organizations/${orgRootId}/warehouses`).doc(warehouseId);
+            batch.set(warehouseRef, {
+                code: `${locationPrefix}-${vatStr}`,
+                name: parsedData.name || "Default Headquarter",
+                type: "headquarter",
+                address: parsedData.place ? JSON.stringify(parsedData.place) : null,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                createdBy: uid,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedBy: uid,
+            });
+        }
+        // 5. Upgrade Custom Claims via Admin SDK
+        const newClaims = Object.assign(Object.assign({}, currentCustomClaims), { role: role || "pending", onboarding: true, orgId: orgRootId, orgName: parsedData.name || null, logoUrl: parsedData.logoUrl || null });
+        // Note: countryCode is evaluated earlier in this method
+        if (countryCode && ((_b = parsedData.place) === null || _b === void 0 ? void 0 : _b.zipCode)) {
             newClaims.location = `${countryCode}-${parsedData.place.zipCode}`;
         }
         if (role) {

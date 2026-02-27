@@ -40,6 +40,7 @@ L'interazione tra Frontend e DB as-a-service (Firestore) è schermata da un Patt
 È l'unico Data Access Layer standardizzato e controllato per l'interazione bidirezionale Frontend<->DB che non necessita di logiche massive custom.
 - **Scopo Principale**: Orchestra in totale autonomia le operazioni CRUD (`list`, `create`, `read`, `update`, `soft_delete`), applicando impaginazione server-side, multi-tenant isolation e filtraggio composto nativo.
 - **EntityRegistry & Sicurezza**: Utilizza un `EntityRegistry` centrale per mappare `entityId` ai percorsi Firestore esatti e agli Zod Schemas corrispondenti. Qualsiasi manomissione del payload rispetto allo schema atteso genera automaticamente un **Security Alert** tracciato su Firestore.
+- **Error Hashing & Context Enrichment**: In caso di eccezioni (es. permessi, validazione), il Gateway genera un `errorReferenceCode` univoco e lo invia al frontend. I log estesi (comprendenti User-Agent, IP, payload e Request Context) vengono salvati in sicurezza nella collection `alerts`.
 - **Long-Term Archiving**: Gestisce nativamente l'esclusione di default dei record soft-deleted e archiviati (`isArchived: true`), mantenendo le collection veloci e sicure tramite Indici Composti.
 
 ### 2.4 Choreography
@@ -85,6 +86,7 @@ Il Frontend è strutturato su convenzioni testate:
 - **Zero Inline Tailwind nei File React**: È vietato inserire utility class come `bg-blue-500` o `w-full` nei file `.tsx` logici. I file React richiamano unicamente semantica di alto livello.
 - **`@layer components` in globals.css**: Tutte le composizioni visive sono estrapolate in `src/app/globals.css`. Es. contenitori come `.layout-auth-wrapper`.
 - **Componentistica Atomica Protetta**: Utilizzo obbligatorio dei widget in `src/components/ui/` (es. `<InputLocalized>`). Raggruppamento dei form in `src/components/forms/`. Convenzione **PascalCase**.
+- **ErrorGuard & UX Sicura**: Intercettazione globale degli errori in `FormList`, `FormCreate` e `FormDetail` tramite il componente `<ErrorGuard />`. Mostra unicamente messaggi user-friendly e un UUID univoco (Reference Code) per l'assistenza, nascondendo gli stack trace al client (visualizzabili solo tramite il toggle "Sincere View" in Dev Mode).
 - **Internazionalizzazione Obbligata**: **Nessun testo hardcoded in vista.** Messaggi, labels, configurati nel the tree `/messages` (es. `/messages/it.json`). Acceduti tramite hook standardizzati globali (`useTranslations`).
 
 ---
@@ -114,5 +116,17 @@ L'operatività base per testare il codice in locale:
 3. **Deployment**:
    - `npm run cloud:validate`: Lancia il DevSecOps Pentest in locale + build completa TypeScript. Esegue la "gate validation" prima del deploy.
    - `npm run cloud` o equivalente: Seguire le istruzioni DevSecOps o gli automatismi CI/CD previsti dal workflow. Nativamente Vercel-like in staging.
+
+## 9. Standlo Admin Studio (Control Panel & Local Developer GUI)
+Ecosistema Low-Code parallelo installato isolatamente nella cartella root `/admin`. É un'applicazione Next.js nativa con accesso Firebase "God Mode" (tramite Firebase Admin SDK) per bypassare restrizioni e permettere interventi totali. Mai rilasciata in produzione (inserita in `.gitignore`).
+Include capacità avanzate:
+- **Visual Schema & Policy Editor (NoCode):** Interfaccia drag-and-drop per l'astrazione JSON->Zod. Riscrive file sorgente come `schemas/organization.ts` e `policyEngine.ts` dinamicamente con introspezione di `UIFieldMeta`.
+- **Safe Generation Pipeline (AST Validation):** Middleware node che parsifica virtualmente tramite *TypeScript Compiler API* e formatta con *Prettier* prima di innescare save su file physicali, ostacolando Syntax Error letali.
+- **Interactive Role Impersonation:** Motore QA integrato. Selettore "Impersonifica" inietta dinamicamente il RoleID ai Meta-Form per simulare cosa vede l'utente con l'attuale filtro Zod.
+- **Universal Admin CRUD:** Re-implementa i Meta-Form (`FormList`, `Create`, `Detail`) ma con privilegi assoluti, rendendolo l'Internal Panel definitivo per aggiustare/ispezionare entità DB con Meta-UI.
+- **Security Alerts Dashboard:** Sincronizzazione in tempo reale dal Backend Firestore Gateway degli alert Security Deposit (manipolazioni data, permessi mancanti).
+- **Monorepo Component Reusability:** Importa e aliasa (via turbopack e tsconfig) i percorsi UI `src/` del main project per continuità visiva Zero-Boilerplate.
+
+---
 
 *(Fine Master Context)*

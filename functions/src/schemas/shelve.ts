@@ -3,13 +3,22 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 
-export const ShelveSchema = BaseSchema.extend({});
+export const ShelveSchema = BaseSchema.extend({
+    warehouseId: z.string(),
+    name: z.string(), // e.g. 'Scaffale 13B'
+    conditionRanking: z.enum(['A', 'B', 'C']).optional(), // Usura / Grade
+    products: z.array(z.object({
+        productId: z.string(),
+        quantity: z.number()
+    })).default([]) // Stock locale nello scaffale
+});
 export type Shelve = z.infer<typeof ShelveSchema>;
 
 export const ShelveCreateSchema = createCreationSchema(ShelveSchema);
 export const ShelveUpdateSchema = createUpdateSchema(ShelveSchema);
 export const ShelveSearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+    warehouseId: z.string().optional(),
+    name: z.string().optional(),
 });
 
 export const ShelvePolicyMatrix: Record<RoleId, EntityPolicy> = {
@@ -36,4 +45,5 @@ export const ShelvePolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

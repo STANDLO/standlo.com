@@ -16,8 +16,9 @@ import { StandPolicyMatrix } from "../schemas/stand";
 import { AssemblyPolicyMatrix } from "../schemas/assembly";
 import { PartPolicyMatrix } from "../schemas/part";
 import { ProcessPolicyMatrix } from "../schemas/process";
-import { CalendarPolicyMatrix } from "../schemas/calendar";
-import { ActivityPolicyMatrix } from "../schemas/activity";
+import { CalendarSlotPolicyMatrix } from "../schemas/calendar";
+import { TaskPolicyMatrix } from "../schemas/task";
+import { RentPolicyMatrix } from "../schemas/rent";
 import { MessagePolicyMatrix } from "../schemas/message";
 import { NotificationPolicyMatrix } from "../schemas/notification";
 import { InvoicePolicyMatrix } from "../schemas/invoice";
@@ -41,15 +42,16 @@ const PolicyMatrices: Record<string, Record<RoleId, EntityPolicy>> = {
     assembly: AssemblyPolicyMatrix,
     part: PartPolicyMatrix,
     process: ProcessPolicyMatrix,
-    calendar: CalendarPolicyMatrix,
-    activity: ActivityPolicyMatrix,
+    calendar: CalendarSlotPolicyMatrix,
+    tasks: TaskPolicyMatrix,
+    rent: RentPolicyMatrix,
     message: MessagePolicyMatrix,
     notification: NotificationPolicyMatrix,
     invoice: InvoicePolicyMatrix,
     payment: PaymentPolicyMatrix,
     tax: TaxPolicyMatrix,
     apikey: ApiKeyPolicyMatrix,
-    call: CallPolicyMatrix,
+    call: CallPolicyMatrix
 };
 
 /**
@@ -61,7 +63,7 @@ export function generateManifestForEntity(entityName: string, roleId: RoleId, zo
         throw new Error(`Policy matrix not defined for entity: ${entityName}`);
     }
 
-    const policy = matrix[roleId] || matrix['other'];
+    const policy = matrix[roleId] || matrix["other"];
 
     if (!policy.canRead) {
         return { error: "Permission Denied" };
@@ -95,7 +97,7 @@ export function generateManifestForEntity(entityName: string, roleId: RoleId, zo
         fields.push({
             name: key,
             editable: policy.canUpdate && fieldPolicy.write, // Must have entity update permission AND field write permission
-            ...meta // Inject { type: 'gallery', label: '...', etc }
+            ...meta, // Inject { type: 'gallery', label: '...', etc }
         });
     }
 
@@ -107,14 +109,14 @@ export function generateManifestForEntity(entityName: string, roleId: RoleId, zo
             canUpdate: policy.canUpdate,
             canDelete: policy.canDelete,
         },
-        fields
+        fields,
     };
 }
 
 export interface NavItemManifest {
-    labelKey: string;     // Translation key (e.g., 'dashboard')
-    path: string;         // Relative URL path without locale (e.g., '/manager/projects')
-    icon: string;         // Lucide Icon name (e.g., 'LayoutDashboard')
+    labelKey: string; // Translation key (e.g., 'dashboard')
+    path: string; // Relative URL path without locale (e.g., '/manager/projects')
+    icon: string; // Lucide Icon name (e.g., 'LayoutDashboard')
     matchPattern?: string; // Optional exact match pattern for active state
 }
 
@@ -125,32 +127,41 @@ export function generateNavigationManifest(roleId: RoleId): NavItemManifest[] {
     switch (roleId) {
         case "customer":
             return [
-                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
-                { labelKey: "orders", path: `/partner/${roleId}/orders`, icon: "FileText" },
-                { labelKey: "team", path: `/partner/${roleId}/team`, icon: "UserPlus" },
-                { labelKey: "settings", path: `/partner/${roleId}/settings`, icon: "Settings" }
+                {
+                    labelKey: "dashboard",
+                    path: `/partner/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/partner/${roleId}/dashboard`,
+                },
             ];
         case "manager":
             return [
-                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
+                {
+                    labelKey: "dashboard",
+                    path: `/partner/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/partner/${roleId}/dashboard`,
+                },
                 { labelKey: "projects", path: `/partner/${roleId}/projects`, icon: "Construction" },
-                { labelKey: "production", path: `/partner/${roleId}/production`, icon: "Wrench" },
-                { labelKey: "customers", path: `/partner/${roleId}/customers`, icon: "Users" },
-                { labelKey: "settings", path: `/partner/${roleId}/settings`, icon: "Settings" }
             ];
         case "designer":
             return [
-                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
-                { labelKey: "tasks", path: `/partner/${roleId}/tasks`, icon: "PenTool" },
-                { labelKey: "reviews", path: `/partner/${roleId}/reviews`, icon: "CheckSquare" }
+                {
+                    labelKey: "dashboard",
+                    path: `/partner/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/partner/${roleId}/dashboard`,
+                },
             ];
         case "provider":
             return [
-                { labelKey: "dashboard", path: `/partner/${roleId}`, icon: "LayoutDashboard", matchPattern: `/partner/${roleId}/dashboard` },
-                { labelKey: "orders", path: `/partner/${roleId}/orders`, icon: "Package" },
-                { labelKey: "catalog", path: `/partner/${roleId}/catalog`, icon: "Layers" },
-                { labelKey: "organizations", path: `/partner/${roleId}/organizations`, icon: "Building2" },
-                { labelKey: "settings", path: `/partner/${roleId}/settings`, icon: "Settings" }
+                {
+                    labelKey: "dashboard",
+                    path: `/partner/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/partner/${roleId}/dashboard`,
+                },
+                { labelKey: "organization", path: `/partner/${roleId}/organization`, icon: "Building2" },
             ];
         // Placeholder for other technicians/builders
         case "electrician":
@@ -160,16 +171,25 @@ export function generateNavigationManifest(roleId: RoleId): NavItemManifest[] {
         case "driver":
         case "promoter":
             return [
-                { labelKey: "dashboard", path: `/${roleId}`, icon: "LayoutDashboard", matchPattern: `/${roleId}/dashboard` },
+                {
+                    labelKey: "dashboard",
+                    path: `/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/${roleId}/dashboard`,
+                },
                 { labelKey: "tasks", path: `/${roleId}/tasks`, icon: "Wrench" },
-                { labelKey: "schedule", path: `/${roleId}/schedule`, icon: "Calendar" }
+                { labelKey: "schedule", path: `/${roleId}/schedule`, icon: "Calendar" },
             ];
         case "pending":
             return [];
         default:
             return [
-                { labelKey: "dashboard", path: `/${roleId}`, icon: "LayoutDashboard", matchPattern: `/${roleId}/dashboard` },
+                {
+                    labelKey: "dashboard",
+                    path: `/${roleId}`,
+                    icon: "LayoutDashboard",
+                    matchPattern: `/${roleId}/dashboard`,
+                },
             ];
     }
 }
-

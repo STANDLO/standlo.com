@@ -1,50 +1,14 @@
 import { z } from "zod";
-import { createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
+import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleIdSchema, RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 
-// Roles for standard dynamic Select mapping
-const RoleOptions = [
-    { value: "customer", label: "Customer" },
-    { value: "provider", label: "Material Provider" },
-    // 1. Fase di Progettazione e Permessi (Planning)
-    { value: "manager", label: "Project Manager" },
-    { value: "architect", label: "Architect" },
-    { value: "engineer", label: "Engineer" },
-    { value: "designer", label: "Designer" },
-    // TECHNICIAN
-    { value: "electrician", label: "Electrician" },
-    { value: "plumber", label: "Plumber" },
-    // WOOD
-    { value: "carpenter", label: "Carpenter" },
-    { value: "cabinetmaker", label: "Cabinetmaker" },
-    // DRYWALL
-    { value: "dryliner", label: "Dryliner" },
-    // IRON
-    { value: "ironworker", label: "Ironworker" },
-    // GLASS
-    { value: "windowfitter", label: "Window Fitter" },
-    { value: "glazier", label: "Glazier" },
-    // EXPO
-    { value: "riggers", label: "Riggers" },
-    { value: "standbuilder", label: "Stand Builder" },
-    // FINISHING
-    { value: "plasterer", label: "Plasterer" },
-    { value: "painter", label: "Painter" },
-    { value: "tiler", label: "Tiler" },
-    // LOGISTICS
-    { value: "driver", label: "Driver" },
-    { value: "forkliftdriver", label: "Forklift Driver" },
-    // OTHER
-    { value: "promoter", label: "Promoter" }
-];
+import { SystemRoleOptions } from "./primitives";
 
-export const OrganizationSchema = z.object({
-    id: z.string().optional(),
-    roleId: RoleIdSchema.describe(JSON.stringify({ type: "select", required: true, label: "Ruolo in STANDLO", options: RoleOptions })),
+export const OrganizationSchema = BaseSchema.extend({
+
+    roleId: RoleIdSchema.describe(JSON.stringify({ type: "select", required: true, label: "Ruolo in STANDLO", options: SystemRoleOptions })),
     vatNumber: z.string().optional().describe(JSON.stringify({ type: "vat", required: true, label: "Partita IVA / Codice Fiscale" })),
-    name: z.string().min(1, "Il nome dell'Organizzazione è obbligatorio.").describe(JSON.stringify({ type: "text", required: true, label: "Ragione Sociale o Nome Visualizzato" })),
-    code: z.string().optional(),
     pec: z.string().email("PEC non valida.").optional(),
     sdiCode: z.string().length(7, "Il Codice SDI deve essere di 7 caratteri.").optional(),
 
@@ -64,12 +28,6 @@ export const OrganizationSchema = z.object({
     website: z.string().url("URL sito web non valido.").optional(),
     logoUrl: z.string().optional().describe(JSON.stringify({ type: "gallery", label: "Logo Aziendale" })),
     logoUrls: z.array(z.string()).optional(),
-
-    active: z.boolean().default(true),
-    createdAt: z.any().optional(),
-    createdBy: z.string().optional(),
-    updatedAt: z.any().optional(),
-    updatedBy: z.string().optional()
 });
 
 export type Organization = z.infer<typeof OrganizationSchema>;
@@ -181,4 +139,5 @@ export const OrganizationPolicyMatrix: Record<RoleId, EntityPolicy> = {
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

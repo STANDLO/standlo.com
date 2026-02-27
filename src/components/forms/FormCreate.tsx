@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useWarnIfUnsavedChanges } from "@/hooks/useWarnIfUnsavedChanges";
 import { InputLookup } from "./InputLookup";
+import { ErrorGuard } from "@/components/ui/ErrorGuard";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface FormCreateProps<T extends z.ZodSchema<any>> {
@@ -46,7 +47,8 @@ export function FormCreate<T extends z.ZodSchema<any>>({
     const t = useTranslations("Common");
 
     const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [globalError, setGlobalError] = React.useState<string | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [globalError, setGlobalError] = React.useState<any>(null);
 
     const {
         register,
@@ -80,26 +82,19 @@ export function FormCreate<T extends z.ZodSchema<any>>({
             }
         } catch (err: unknown) {
             console.error(err);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((err as any).message) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                setGlobalError((err as any).message);
-            } else {
-                setGlobalError("An unexpected error occurred.");
-            }
+            setGlobalError(err);
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    if (globalError) {
+        return <ErrorGuard error={globalError} />;
+    }
+
     return (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <form onSubmit={handleSubmit(processSubmit as any)} className="ui-form">
-            {globalError && (
-                <div className="ui-error-banner">
-                    {globalError}
-                </div>
-            )}
 
             <div className="ui-form-grid">
                 {fields

@@ -2,14 +2,26 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
+import { LocalizedStringSchema, RoleIdSchema } from "./primitives";
 
-export const ProcessSchema = BaseSchema.extend({});
+export const ProcessSchema = BaseSchema.extend({
+    name: LocalizedStringSchema,
+    description: LocalizedStringSchema.optional(),
+    requiredRole: RoleIdSchema.optional(), // Skill Matching & Security
+    timeMatrix: z.array(z.object({
+        quantityThreshold: z.number(), // e.g. up to 1, up to 10
+        setupTimeMinutes: z.number(), // Prep time
+        executionTimeMinutes: z.number(), // Execution time per unit
+        cleanupTimeMinutes: z.number() // Cleanup time
+    })).default([])
+});
 export type Process = z.infer<typeof ProcessSchema>;
 
 export const ProcessCreateSchema = createCreationSchema(ProcessSchema);
 export const ProcessUpdateSchema = createUpdateSchema(ProcessSchema);
 export const ProcessSearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+    name: z.string().optional(),
+    requiredRole: RoleIdSchema.optional(),
 });
 
 export const ProcessPolicyMatrix: Record<RoleId, EntityPolicy> = {
@@ -36,4 +48,5 @@ export const ProcessPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

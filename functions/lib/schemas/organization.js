@@ -4,47 +4,10 @@ exports.OrganizationPolicyMatrix = exports.OrganizationSearchSchema = exports.Or
 const zod_1 = require("zod");
 const base_1 = require("./base");
 const auth_1 = require("./auth");
-// Roles for standard dynamic Select mapping
-const RoleOptions = [
-    { value: "customer", label: "Customer" },
-    { value: "provider", label: "Material Provider" },
-    // 1. Fase di Progettazione e Permessi (Planning)
-    { value: "manager", label: "Project Manager" },
-    { value: "architect", label: "Architect" },
-    { value: "engineer", label: "Engineer" },
-    { value: "designer", label: "Designer" },
-    // TECHNICIAN
-    { value: "electrician", label: "Electrician" },
-    { value: "plumber", label: "Plumber" },
-    // WOOD
-    { value: "carpenter", label: "Carpenter" },
-    { value: "cabinetmaker", label: "Cabinetmaker" },
-    // DRYWALL
-    { value: "dryliner", label: "Dryliner" },
-    // IRON
-    { value: "ironworker", label: "Ironworker" },
-    // GLASS
-    { value: "windowfitter", label: "Window Fitter" },
-    { value: "glazier", label: "Glazier" },
-    // EXPO
-    { value: "riggers", label: "Riggers" },
-    { value: "standbuilder", label: "Stand Builder" },
-    // FINISHING
-    { value: "plasterer", label: "Plasterer" },
-    { value: "painter", label: "Painter" },
-    { value: "tiler", label: "Tiler" },
-    // LOGISTICS
-    { value: "driver", label: "Driver" },
-    { value: "forkliftdriver", label: "Forklift Driver" },
-    // OTHER
-    { value: "promoter", label: "Promoter" }
-];
-exports.OrganizationSchema = zod_1.z.object({
-    id: zod_1.z.string().optional(),
-    roleId: auth_1.RoleIdSchema.describe(JSON.stringify({ type: "select", required: true, label: "Ruolo in STANDLO", options: RoleOptions })),
+const primitives_1 = require("./primitives");
+exports.OrganizationSchema = base_1.BaseSchema.extend({
+    roleId: auth_1.RoleIdSchema.describe(JSON.stringify({ type: "select", required: true, label: "Ruolo in STANDLO", options: primitives_1.SystemRoleOptions })),
     vatNumber: zod_1.z.string().optional().describe(JSON.stringify({ type: "vat", required: true, label: "Partita IVA / Codice Fiscale" })),
-    name: zod_1.z.string().min(1, "Il nome dell'Organizzazione è obbligatorio.").describe(JSON.stringify({ type: "text", required: true, label: "Ragione Sociale o Nome Visualizzato" })),
-    code: zod_1.z.string().optional(),
     pec: zod_1.z.string().email("PEC non valida.").optional(),
     sdiCode: zod_1.z.string().length(7, "Il Codice SDI deve essere di 7 caratteri.").optional(),
     place: zod_1.z.object({
@@ -62,11 +25,6 @@ exports.OrganizationSchema = zod_1.z.object({
     website: zod_1.z.string().url("URL sito web non valido.").optional(),
     logoUrl: zod_1.z.string().optional().describe(JSON.stringify({ type: "gallery", label: "Logo Aziendale" })),
     logoUrls: zod_1.z.array(zod_1.z.string()).optional(),
-    active: zod_1.z.boolean().default(true),
-    createdAt: zod_1.z.any().optional(),
-    createdBy: zod_1.z.string().optional(),
-    updatedAt: zod_1.z.any().optional(),
-    updatedBy: zod_1.z.string().optional()
 });
 exports.OrganizationCreateSchema = (0, base_1.createCreationSchema)(exports.OrganizationSchema);
 exports.OrganizationUpdateSchema = (0, base_1.createUpdateSchema)(exports.OrganizationSchema);
@@ -174,5 +132,6 @@ exports.OrganizationPolicyMatrix = {
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };
 //# sourceMappingURL=organization.js.map

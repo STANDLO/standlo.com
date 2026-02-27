@@ -3,11 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WorkcenterPolicyMatrix = exports.WorkcenterSearchSchema = exports.WorkcenterUpdateSchema = exports.WorkcenterCreateSchema = exports.WorkcenterSchema = void 0;
 const zod_1 = require("zod");
 const base_1 = require("./base");
-exports.WorkcenterSchema = base_1.BaseSchema.extend({});
+exports.WorkcenterSchema = base_1.BaseSchema.extend({
+    warehouseId: zod_1.z.string(),
+    name: zod_1.z.string(), // e.g. 'Cabina Verniciatura'
+    description: zod_1.z.string().optional()
+});
 exports.WorkcenterCreateSchema = (0, base_1.createCreationSchema)(exports.WorkcenterSchema);
 exports.WorkcenterUpdateSchema = (0, base_1.createUpdateSchema)(exports.WorkcenterSchema);
 exports.WorkcenterSearchSchema = base_1.PaginationQuerySchema.extend({
-    name: zod_1.z.string().optional()
+    warehouseId: zod_1.z.string().optional(),
+    name: zod_1.z.string().optional(),
 });
 exports.WorkcenterPolicyMatrix = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -33,5 +38,6 @@ exports.WorkcenterPolicyMatrix = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };
 //# sourceMappingURL=workcenter.js.map

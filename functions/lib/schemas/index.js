@@ -31,8 +31,9 @@ __exportStar(require("./stand"), exports);
 __exportStar(require("./assembly"), exports);
 __exportStar(require("./part"), exports);
 __exportStar(require("./process"), exports);
+__exportStar(require("./alert"), exports);
 __exportStar(require("./calendar"), exports);
-__exportStar(require("./activity"), exports);
+__exportStar(require("./task"), exports);
 __exportStar(require("./message"), exports);
 __exportStar(require("./notification"), exports);
 __exportStar(require("./invoice"), exports);
@@ -40,4 +41,6 @@ __exportStar(require("./payment"), exports);
 __exportStar(require("./tax"), exports);
 __exportStar(require("./apikey"), exports);
 __exportStar(require("./call"), exports);
+__exportStar(require("./product"), exports);
+__exportStar(require("./rent"), exports);
 //# sourceMappingURL=index.js.map

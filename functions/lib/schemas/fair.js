@@ -7,7 +7,7 @@ exports.FairSchema = base_1.BaseSchema.extend({});
 exports.FairCreateSchema = (0, base_1.createCreationSchema)(exports.FairSchema);
 exports.FairUpdateSchema = (0, base_1.createUpdateSchema)(exports.FairSchema);
 exports.FairSearchSchema = base_1.PaginationQuerySchema.extend({
-    name: zod_1.z.string().optional()
+    name: zod_1.z.string().optional(),
 });
 exports.FairPolicyMatrix = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -33,5 +33,6 @@ exports.FairPolicyMatrix = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };
 //# sourceMappingURL=fair.js.map

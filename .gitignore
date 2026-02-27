@@ -3,6 +3,7 @@
 # dependencies
 /node_modules
 /functions/node_modules
+/admin/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -44,4 +45,5 @@ next-env.d.ts
 # keys & scripts
 keys/*
 scripts/*
-pentest_report.json
+admin/*
+pentest_report.jsonadmin/

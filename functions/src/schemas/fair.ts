@@ -9,7 +9,7 @@ export type Fair = z.infer<typeof FairSchema>;
 export const FairCreateSchema = createCreationSchema(FairSchema);
 export const FairUpdateSchema = createUpdateSchema(FairSchema);
 export const FairSearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+    name: z.string().optional(),
 });
 
 export const FairPolicyMatrix: Record<RoleId, EntityPolicy> = {
@@ -36,4 +36,5 @@ export const FairPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

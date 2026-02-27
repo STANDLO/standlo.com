@@ -50,6 +50,31 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
 
+        // Estrapolazione Country Code dalla P.IVA (es. "IT123456789" -> "IT")
+        const countryCode = parsedData.vatNumber && parsedData.vatNumber.length >= 2
+            ? parsedData.vatNumber.substring(0, 2).toUpperCase()
+            : null;
+
+        if (role === "provider") {
+            const warehouseId = db.collection(`organizations/${orgRootId}/warehouses`).doc().id;
+            const locationPrefix = countryCode && parsedData.place?.zipCode
+                ? `${countryCode}-${parsedData.place.zipCode}`
+                : "UNKNOWN";
+            const vatStr = parsedData.vatNumber || "NO-VAT";
+
+            const warehouseRef = db.collection(`organizations/${orgRootId}/warehouses`).doc(warehouseId);
+            batch.set(warehouseRef, {
+                code: `${locationPrefix}-${vatStr}`,
+                name: parsedData.name || "Default Headquarter",
+                type: "headquarter",
+                address: parsedData.place ? JSON.stringify(parsedData.place) : null,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                createdBy: uid,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedBy: uid,
+            });
+        }
+
         // 5. Upgrade Custom Claims via Admin SDK
         const newClaims: Record<string, unknown> = {
             ...currentCustomClaims,
@@ -60,10 +85,7 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             logoUrl: parsedData.logoUrl || null,
         };
 
-        // Estrapolazione Country Code dalla P.IVA (es. "IT123456789" -> "IT")
-        const countryCode = parsedData.vatNumber && parsedData.vatNumber.length >= 2
-            ? parsedData.vatNumber.substring(0, 2).toUpperCase()
-            : null;
+        // Note: countryCode is evaluated earlier in this method
 
         if (countryCode && parsedData.place?.zipCode) {
             newClaims.location = `${countryCode}-${parsedData.place.zipCode}`;

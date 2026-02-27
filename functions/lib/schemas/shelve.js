@@ -3,11 +3,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShelvePolicyMatrix = exports.ShelveSearchSchema = exports.ShelveUpdateSchema = exports.ShelveCreateSchema = exports.ShelveSchema = void 0;
 const zod_1 = require("zod");
 const base_1 = require("./base");
-exports.ShelveSchema = base_1.BaseSchema.extend({});
+exports.ShelveSchema = base_1.BaseSchema.extend({
+    warehouseId: zod_1.z.string(),
+    name: zod_1.z.string(), // e.g. 'Scaffale 13B'
+    conditionRanking: zod_1.z.enum(['A', 'B', 'C']).optional(), // Usura / Grade
+    products: zod_1.z.array(zod_1.z.object({
+        productId: zod_1.z.string(),
+        quantity: zod_1.z.number()
+    })).default([]) // Stock locale nello scaffale
+});
 exports.ShelveCreateSchema = (0, base_1.createCreationSchema)(exports.ShelveSchema);
 exports.ShelveUpdateSchema = (0, base_1.createUpdateSchema)(exports.ShelveSchema);
 exports.ShelveSearchSchema = base_1.PaginationQuerySchema.extend({
-    name: zod_1.z.string().optional()
+    warehouseId: zod_1.z.string().optional(),
+    name: zod_1.z.string().optional(),
 });
 exports.ShelvePolicyMatrix = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -33,5 +42,6 @@ exports.ShelvePolicyMatrix = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };
 //# sourceMappingURL=shelve.js.map

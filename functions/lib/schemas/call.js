@@ -4,16 +4,15 @@ exports.CallPolicyMatrix = exports.CallSearchSchema = exports.CallUpdateSchema =
 const zod_1 = require("zod");
 const base_1 = require("./base");
 exports.CallSchema = base_1.BaseSchema.extend({
-    apiKeyHint: zod_1.z.string().describe("text"), // The hint or ref of the API key used
-    status: zod_1.z.number().int().describe("number"), // HTTP status code (200, 404, 500)
-    method: zod_1.z.string().optional().describe("text"), // HTTP method (GET, POST, etc.)
-    durationMs: zod_1.z.number().int().optional().describe("number"), // Execution time in ms
-    // The 'code' field inherited from BaseSchema will be used to store the called endpoint.
+    apiKeyHint: zod_1.z.string().describe(JSON.stringify("text")),
+    status: zod_1.z.number().describe(JSON.stringify("number")),
+    method: zod_1.z.string().optional().describe(JSON.stringify("text")),
+    durationMs: zod_1.z.number().optional().describe(JSON.stringify("number")),
 });
 exports.CallCreateSchema = (0, base_1.createCreationSchema)(exports.CallSchema);
 exports.CallUpdateSchema = (0, base_1.createUpdateSchema)(exports.CallSchema);
 exports.CallSearchSchema = base_1.PaginationQuerySchema.extend({
-    name: zod_1.z.string().optional()
+    name: zod_1.z.string().optional(),
 });
 exports.CallPolicyMatrix = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -39,5 +38,6 @@ exports.CallPolicyMatrix = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };
 //# sourceMappingURL=call.js.map

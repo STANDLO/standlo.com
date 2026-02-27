@@ -2,14 +2,32 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
+import { LocalizedStringSchema } from "./primitives";
 
-export const AssemblySchema = BaseSchema.extend({});
+export const AssemblySchema = BaseSchema.extend({
+    name: LocalizedStringSchema,
+    description: LocalizedStringSchema.optional(),
+    locationType: z.enum(['warehouse', 'site']).default('warehouse'),
+    parts: z.array(z.object({
+        partId: z.string(),
+        quantity: z.number()
+    })).default([]),
+    processes: z.array(z.object({
+        processId: z.string(),
+        quantity: z.number()
+    })).default([]),
+    tools: z.array(z.object({
+        toolId: z.string(),
+        quantity: z.number()
+    })).default([])
+});
 export type Assembly = z.infer<typeof AssemblySchema>;
 
 export const AssemblyCreateSchema = createCreationSchema(AssemblySchema);
 export const AssemblyUpdateSchema = createUpdateSchema(AssemblySchema);
 export const AssemblySearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+    name: z.string().optional(),
+    locationType: z.enum(['warehouse', 'site']).optional(),
 });
 
 export const AssemblyPolicyMatrix: Record<RoleId, EntityPolicy> = {
@@ -36,4 +54,5 @@ export const AssemblyPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

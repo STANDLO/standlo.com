@@ -48,6 +48,11 @@
             "card2Title": "Por Facturar"
         }
     },
+    "Common": {
+        "noResults": "No se encontraron resultados.",
+        "loadMore": "Cargar Más",
+        "genericError": "Se produjo un problema al procesar su solicitud."
+    },
     "Auth": {
         "Register": {
             "title": "Crea tu Cuenta",
@@ -149,6 +154,7 @@
         "dashboard": "Panel de Control",
         "orders": "Pedidos",
         "catalog": "Catálogo",
+        "organization": "Organización",
         "organizations": "Organizaciones",
         "settings": "Ajustes",
         "projects": "Proyectos",

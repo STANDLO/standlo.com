@@ -3,13 +3,18 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 
-export const WorkcenterSchema = BaseSchema.extend({});
+export const WorkcenterSchema = BaseSchema.extend({
+    warehouseId: z.string(),
+    name: z.string(), // e.g. 'Cabina Verniciatura'
+    description: z.string().optional()
+});
 export type Workcenter = z.infer<typeof WorkcenterSchema>;
 
 export const WorkcenterCreateSchema = createCreationSchema(WorkcenterSchema);
 export const WorkcenterUpdateSchema = createUpdateSchema(WorkcenterSchema);
 export const WorkcenterSearchSchema = PaginationQuerySchema.extend({
-    name: z.string().optional()
+    warehouseId: z.string().optional(),
+    name: z.string().optional(),
 });
 
 export const WorkcenterPolicyMatrix: Record<RoleId, EntityPolicy> = {
@@ -36,4 +41,5 @@ export const WorkcenterPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

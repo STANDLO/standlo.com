@@ -3,11 +3,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WarehousePolicyMatrix = exports.WarehouseSearchSchema = exports.WarehouseUpdateSchema = exports.WarehouseCreateSchema = exports.WarehouseSchema = void 0;
 const zod_1 = require("zod");
 const base_1 = require("./base");
-exports.WarehouseSchema = base_1.BaseSchema.extend({});
+exports.WarehouseSchema = base_1.BaseSchema.extend({
+    code: zod_1.z.string(), // e.g. 'IT-20017-03133760128'
+    name: zod_1.z.string(), // e.g. 'Acme Corp Logistics'
+    type: zod_1.z.enum(['headquarter', 'fair', 'site', 'showroom']).default('headquarter'),
+    address: zod_1.z.string().optional()
+});
 exports.WarehouseCreateSchema = (0, base_1.createCreationSchema)(exports.WarehouseSchema);
 exports.WarehouseUpdateSchema = (0, base_1.createUpdateSchema)(exports.WarehouseSchema);
 exports.WarehouseSearchSchema = base_1.PaginationQuerySchema.extend({
-    name: zod_1.z.string().optional()
+    name: zod_1.z.string().optional(),
+    code: zod_1.z.string().optional(),
+    type: zod_1.z.enum(['headquarter', 'fair', 'site', 'showroom']).optional(),
 });
 exports.WarehousePolicyMatrix = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -33,5 +40,6 @@ exports.WarehousePolicyMatrix = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };
 //# sourceMappingURL=warehouse.js.map

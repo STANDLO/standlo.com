@@ -3,50 +3,60 @@ import { GatewayRequest } from "../types";
 import { buildCollectionPath, getEntityConfig } from "./entityRegistry";
 import { getFirestore } from "firebase-admin/firestore";
 import * as admin from "firebase-admin";
+import * as crypto from "crypto";
 
 export const firestore = onCall({
     region: "europe-west4",
     enforceAppCheck: true,
     consumeAppCheckToken: false,
 }, async (request) => {
-    if (!request.auth) {
-        throw new HttpsError("unauthenticated", "User must be authenticated to access Firestore gateway.");
-    }
-
-    const db = getFirestore();
-    const data = request.data as GatewayRequest;
-    const { correlationId, idempotencyKey, orgId, entityId, actionId, payload, limit, cursor, orderBy, filters } = data;
-
-    console.log(`[Firestore][${correlationId || 'no-corr-id'}] Action: ${actionId} | Entity: ${entityId} | User: ${request.auth.uid}`);
-
-    if (!entityId) {
-        throw new HttpsError("invalid-argument", "EntityId is required.");
-    }
-
-    const path = buildCollectionPath(entityId, orgId);
-    const config = getEntityConfig(entityId);
-    const collectionRef = db.collection(path);
-
-    // 1. Idempotency Check for Write Actions
-    const isWrite = ["create", "update", "soft_delete", "hard_delete"].includes(actionId);
-    if (idempotencyKey && isWrite) {
-        const lockRef = db.collection("idempotency_locks").doc(idempotencyKey);
-        const lockSnap = await lockRef.get();
-        if (lockSnap.exists) {
-            console.log(`[Firestore] Idempotency lock hit for key: ${idempotencyKey}`);
-            return {
-                status: "success",
-                actionId,
-                data: lockSnap.data()?.result,
-                cached: true
-            };
-        }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let resultData: any;
+    const errorReferenceCode = crypto.randomUUID();
+    let entityIdStr = "unknown";
+    let actionIdStr = "unknown";
+    let orgIdStr = "unknown";
 
     try {
+        if (!request.auth) {
+            throw new HttpsError("unauthenticated", "User must be authenticated to access Firestore gateway.");
+        }
+
+        const db = getFirestore();
+        const data = request.data as GatewayRequest;
+        const { correlationId, idempotencyKey, orgId, entityId, actionId, payload, limit, cursor, orderBy, filters } = data;
+
+        entityIdStr = entityId || "unknown";
+        actionIdStr = actionId || "unknown";
+        orgIdStr = orgId || "unknown";
+
+        console.log(`[Firestore][${correlationId || 'no-corr-id'}] Action: ${actionId} | Entity: ${entityId} | User: ${request.auth.uid}`);
+
+        if (!entityId) {
+            throw new HttpsError("invalid-argument", "EntityId is required.");
+        }
+
+        const path = buildCollectionPath(entityId, orgId);
+        const config = getEntityConfig(entityId);
+        const collectionRef = db.collection(path);
+
+        // 1. Idempotency Check for Write Actions
+        const isWrite = ["create", "update", "soft_delete", "hard_delete"].includes(actionId);
+        if (idempotencyKey && isWrite) {
+            const lockRef = db.collection("idempotency_locks").doc(idempotencyKey);
+            const lockSnap = await lockRef.get();
+            if (lockSnap.exists) {
+                console.log(`[Firestore] Idempotency lock hit for key: ${idempotencyKey}`);
+                return {
+                    status: "success",
+                    actionId,
+                    data: lockSnap.data()?.result,
+                    cached: true
+                };
+            }
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let resultData: any;
+
         switch (actionId) {
             case "list": {
                 let query: admin.firestore.Query = collectionRef;
@@ -117,10 +127,15 @@ export const firestore = onCall({
                         type: "schema_mismatch",
                         action: "create",
                         entityId,
-                        userId: request.auth.uid,
-                        correlationId,
-                        submittedPayload: payload,
-                        timestamp: admin.firestore.FieldValue.serverTimestamp()
+                        uid: request.auth.uid,
+                        payload: JSON.stringify(payload),
+                        errorMessage: "Extra fields stripped during Create",
+                        errorReferenceCode: crypto.randomUUID(),
+                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                        createdBy: request.auth.uid,
+                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: request.auth.uid,
+                        isArchived: false
                     });
                 }
 
@@ -164,11 +179,15 @@ export const firestore = onCall({
                         type: "schema_mismatch",
                         action: "update",
                         entityId,
-                        documentId: id,
-                        userId: request.auth.uid,
-                        correlationId,
-                        submittedPayload: payload,
-                        timestamp: admin.firestore.FieldValue.serverTimestamp()
+                        uid: request.auth.uid,
+                        payload: JSON.stringify(payload),
+                        errorMessage: "Extra fields stripped during Update",
+                        errorReferenceCode: crypto.randomUUID(),
+                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                        createdBy: request.auth.uid,
+                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: request.auth.uid,
+                        isArchived: false
                     });
                 }
 
@@ -217,7 +236,33 @@ export const firestore = onCall({
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        console.error(`[FirestoreGateway] Error processing ${actionId}:`, error);
-        throw new HttpsError("internal", error.message || "Database operation failed.");
+        console.error(`[FirestoreGateway][${errorReferenceCode}] Error processing request:`, error);
+
+        try {
+            const db = getFirestore();
+            await db.collection("alerts").add({
+                type: "system",
+                action: actionIdStr,
+                entityId: entityIdStr,
+                orgId: orgIdStr === "unknown" ? null : orgIdStr,
+                uid: request.auth?.uid || "unauthenticated",
+                email: request.auth?.token?.email || null,
+                roleId: request.auth?.token?.roleId || "unknown",
+                payload: JSON.stringify(request.data?.payload || {}),
+                errorMessage: error.message || String(error),
+                errorReferenceCode,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                createdBy: request.auth?.uid || "system",
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedBy: request.auth?.uid || "system",
+                isArchived: false
+            });
+        } catch (logError) {
+            console.error(`[FirestoreGateway][${errorReferenceCode}] Failed to save security alert:`, logError);
+        }
+
+        // Throw sanitized error to frontend with reference code
+        const status = error instanceof HttpsError ? error.code : "invalid-argument";
+        throw new HttpsError(status, `Richiesta non valida o permessi insufficienti. Riferimento errore: ${errorReferenceCode}`);
     }
 });

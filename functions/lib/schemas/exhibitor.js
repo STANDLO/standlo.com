@@ -7,7 +7,7 @@ exports.ExhibitorSchema = base_1.BaseSchema.extend({});
 exports.ExhibitorCreateSchema = (0, base_1.createCreationSchema)(exports.ExhibitorSchema);
 exports.ExhibitorUpdateSchema = (0, base_1.createUpdateSchema)(exports.ExhibitorSchema);
 exports.ExhibitorSearchSchema = base_1.PaginationQuerySchema.extend({
-    name: zod_1.z.string().optional()
+    name: zod_1.z.string().optional(),
 });
 exports.ExhibitorPolicyMatrix = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -33,5 +33,6 @@ exports.ExhibitorPolicyMatrix = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };
 //# sourceMappingURL=exhibitor.js.map
