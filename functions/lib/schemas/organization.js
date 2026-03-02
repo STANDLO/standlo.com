@@ -25,6 +25,7 @@ exports.OrganizationSchema = base_1.BaseSchema.extend({
     website: zod_1.z.string().url("URL sito web non valido.").optional(),
     logoUrl: zod_1.z.string().optional().describe(JSON.stringify({ type: "gallery", label: "Logo Aziendale" })),
     logoUrls: zod_1.z.array(zod_1.z.string()).optional(),
+    headquarterId: zod_1.z.string().optional(),
 });
 exports.OrganizationCreateSchema = (0, base_1.createCreationSchema)(exports.OrganizationSchema);
 exports.OrganizationUpdateSchema = (0, base_1.createUpdateSchema)(exports.OrganizationSchema);
@@ -113,6 +114,7 @@ exports.OrganizationPolicyMatrix = {
         }
     },
     // Same default strict read-only for others...
+    standlo_design: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     electrician: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },

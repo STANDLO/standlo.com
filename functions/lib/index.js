@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.webInterface = exports.brain = exports.firestoreGateway = exports.choreography = exports.orchestrator = exports.beforeSignIn = exports.beforeCreate = exports.systemLocales = void 0;
+exports.canvas = exports.brain = exports.firestoreGateway = exports.choreography = exports.orchestrator = exports.beforeSignIn = exports.beforeCreate = exports.systemLocales = void 0;
 const identity_1 = require("firebase-functions/v2/identity");
 const admin = __importStar(require("firebase-admin"));
 const firestore_1 = require("firebase-admin/firestore");
@@ -122,6 +122,6 @@ var firestore_2 = require("./gateways/firestore"); // Prevent naming collisions 
 Object.defineProperty(exports, "firestoreGateway", { enumerable: true, get: function () { return firestore_2.firestore; } });
 var brain_1 = require("./gateways/brain");
 Object.defineProperty(exports, "brain", { enumerable: true, get: function () { return brain_1.brain; } });
-var webInterface_1 = require("./gateways/webInterface");
-Object.defineProperty(exports, "webInterface", { enumerable: true, get: function () { return webInterface_1.webInterface; } });
+var canvas_1 = require("./gateways/canvas");
+Object.defineProperty(exports, "canvas", { enumerable: true, get: function () { return canvas_1.canvas; } });
 //# sourceMappingURL=index.js.map

@@ -16,7 +16,23 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
     }
 
     try {
-        const parsedData = OrganizationSchema.partial().parse(orgData);
+        // Recursively remove empty strings and nulls from the payload so Zod treats them as undefined/optional
+        const sanitizePayload = (obj: any): any => {
+            if (obj === null || obj === undefined || obj === "") return undefined;
+            if (Array.isArray(obj)) return obj.map(sanitizePayload).filter(x => x !== undefined);
+            if (typeof obj === "object") {
+                const cleaned: any = {};
+                for (const [key, val] of Object.entries(obj)) {
+                    const cleanedVal = sanitizePayload(val);
+                    if (cleanedVal !== undefined) cleaned[key] = cleanedVal;
+                }
+                return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+            }
+            return obj;
+        };
+
+        const cleanedOrgData = sanitizePayload(orgData) || {};
+        const parsedData = OrganizationSchema.partial().parse(cleanedOrgData);
 
         // Clean up undefined values from parsedData as Firestore rejects them
         const sanitizedData = Object.fromEntries(
@@ -67,12 +83,15 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
                 code: `${locationPrefix}-${vatStr}`,
                 name: parsedData.name || "Default Headquarter",
                 type: "headquarter",
-                address: parsedData.place ? JSON.stringify(parsedData.place) : null,
+                place: parsedData.place || null, // Updated to use the new object structure instead of a stringified 'address'
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                 createdBy: uid,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
                 updatedBy: uid,
             });
+
+            // Set the new warehouse as the headquarter on the organization record
+            batch.update(orgRef, { headquarterId: warehouseId });
         }
 
         // 5. Upgrade Custom Claims via Admin SDK
@@ -117,7 +136,9 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         console.error("[Orchestrator][onboardOrganization] Error:", error);
         if (error instanceof Error) {
             if (error.name === "ZodError") {
-                throw new HttpsError("invalid-argument", "Organization schema validation failed.", (error as { errors?: unknown }).errors);
+                const zodErrors = (error as { errors?: unknown }).errors;
+                console.error("[Orchestrator][onboardOrganization] Zod Validation Issues:", JSON.stringify(zodErrors, null, 2));
+                throw new HttpsError("invalid-argument", "Organization schema validation failed.", zodErrors);
             }
             throw new HttpsError("internal", error.message || "An internal error occurred during onboarding.");
         }

@@ -4,13 +4,11 @@ import * as React from "react"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { getAuth, onAuthStateChanged, User } from "firebase/auth"
-import { getFirestore, doc, updateDoc } from "firebase/firestore"
 import { app } from "@/core/firebase"
 
 import { Button } from "@/components/ui/Button"
+import { updateUserTheme } from "@/app/actions/theme"
 
-// Inizializza Firestore (lato client)
-const db = getFirestore(app)
 const auth = getAuth(app)
 
 export function SwitchTheme() {
@@ -35,14 +33,10 @@ export function SwitchTheme() {
 
         // 2. Se l'utente è loggato, aggiorna le preferenze in remoto.
         // Questo causerà la riscrittura del custom claim dal cloud al prossimo login
-        // e lo terrà persistente su altri device.
+        // e lo terrà persistente su altri device. Server Action is used to comply with Firestore rules.
         if (user && user.uid) {
             try {
-                const userRef = doc(db, "users", user.uid)
-                await updateDoc(userRef, {
-                    "claims.theme": newTheme
-                })
-                console.log(`Saved new theme preference '${newTheme}' for user ${user.uid}`)
+                await updateUserTheme(newTheme);
             } catch (error) {
                 console.error("Failed to sync theme to Firestore:", error)
             }
@@ -62,13 +56,13 @@ export function SwitchTheme() {
             variant="outline"
             size="icon"
             onClick={toggleTheme}
-            className="w-9 h-9 border-transparent rounded-full"
+            className="layout-header-action-btn"
             title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
         >
             {theme === "light" ? (
-                <Moon className="h-[1.2rem] w-[1.2rem] text-slate-600 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="h-[1.2rem] w-[1.2rem] transition-all dark:-rotate-90 dark:scale-0" />
             ) : (
-                <Sun className="h-[1.2rem] w-[1.2rem] text-slate-400 transition-all dark:rotate-0 dark:scale-100" />
+                <Sun className="h-[1.2rem] w-[1.2rem] transition-all dark:rotate-0 dark:scale-100" />
             )}
             <span className="sr-only">Toggle theme</span>
         </Button>

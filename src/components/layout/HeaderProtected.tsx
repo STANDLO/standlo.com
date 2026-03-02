@@ -2,13 +2,15 @@
 
 import * as React from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Menu, X, Globe, Moon, User, Settings as SettingsIcon, LogOut } from "lucide-react";
+import { Menu, X, User, Headset, LogOut } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import { Button } from "../ui/Button";
+import { Button, buttonVariants } from "../ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import { Link } from "@/i18n/routing";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { SwitchLocale } from "@/components/ui/SwitchLocale";
+import { SwitchTheme } from "@/components/ui/SwitchTheme";
 
 export interface NavItem {
     label: string;
@@ -55,7 +57,7 @@ export function HeaderProtected({ navItems, roleContext, userName, organizationN
         }
     };
 
-    const IconList = LucideIcons as unknown as Record<string, React.ElementType>;
+    const IconList = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>;
 
     return (
         <header className="layout-header-protected">
@@ -66,31 +68,31 @@ export function HeaderProtected({ navItems, roleContext, userName, organizationN
             </div>
 
             <div className="layout-header-group relative" ref={menuRef}>
-                <div className="layout-header-user-info hidden md:flex flex-col items-end mr-2">
-                    <span className="layout-header-user-org font-semibold">{organizationName || t("header.organization_fallback")}</span>
-                    <span className="layout-header-user-role text-muted-foreground text-xs">{userName || t("header.user_fallback")}</span>
+                <div className="layout-header-user-info">
+                    <span className="layout-header-user-org">{organizationName || t("header.organization_fallback")}</span>
+                    <span className="layout-header-user-role">{userName || t("header.user_fallback")}</span>
                 </div>
 
                 <Button
                     variant="outline"
                     size="icon"
-                    className="ml-2 rounded-full border border-border"
+                    className="layout-header-mobile-toggle"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                 >
                     {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                 </Button>
 
                 {isMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-72 rounded-md border border-border bg-popover text-popover-foreground shadow-lg shadow-black/5 z-50">
-                        <div className="p-4 border-b border-border">
-                            <div className="font-semibold text-sm">{organizationName || t("header.organization_fallback")}</div>
-                            <div className="text-xs text-muted-foreground">{userName || t("header.user_fallback")}</div>
-                            <div className="mt-1 inline-flex items-center rounded-sm bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                    <div className="layout-header-dropdown-menu">
+                        <div className="layout-header-dropdown-header">
+                            <div className="layout-header-dropdown-title">{organizationName || t("header.organization_fallback")}</div>
+                            <div className="layout-header-dropdown-subtitle">{userName || t("header.user_fallback")}</div>
+                            <div className="layout-header-dropdown-badge">
                                 {roleContext}
                             </div>
                         </div>
 
-                        <nav className="p-2 space-y-1 border-b border-border">
+                        <nav className="layout-header-dropdown-nav">
                             {navItems.map((item, idx) => {
                                 const href = `/${locale}${item.href}`;
                                 const isActive = item.matchPattern
@@ -105,10 +107,10 @@ export function HeaderProtected({ navItems, roleContext, userName, organizationN
                                         href={item.href as React.ComponentProps<typeof Link>["href"]}
                                         onClick={() => setIsMenuOpen(false)}
                                         className={cn(
-                                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                                            "layout-header-nav-item",
                                             isActive
-                                                ? "bg-primary/10 text-primary"
-                                                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                                                ? "layout-header-nav-item-active"
+                                                : "layout-header-nav-item-inactive"
                                         )}
                                     >
                                         {Icon && <Icon className="h-4 w-4" />}
@@ -118,25 +120,29 @@ export function HeaderProtected({ navItems, roleContext, userName, organizationN
                             })}
                         </nav>
 
-                        <div className="p-4 border-b border-border grid grid-cols-4 gap-2">
-                            <Button variant="outline" size="icon" className="w-full h-10 text-muted-foreground hover:text-foreground">
-                                <Globe className="h-5 w-5" />
-                            </Button>
-                            <Button variant="outline" size="icon" className="w-full h-10 text-muted-foreground hover:text-foreground">
-                                <Moon className="h-5 w-5" />
-                            </Button>
-                            <Button variant="outline" size="icon" className="w-full h-10 text-muted-foreground hover:text-foreground">
-                                <User className="h-5 w-5" />
-                            </Button>
-                            <Button variant="outline" size="icon" className="w-full h-10 text-muted-foreground hover:text-foreground">
-                                <SettingsIcon className="h-5 w-5" />
-                            </Button>
+                        <div className="layout-header-actions-grid">
+                            <div className="flex items-center justify-center">
+                                <SwitchLocale />
+                            </div>
+                            <div className="flex items-center justify-center">
+                                <SwitchTheme />
+                            </div>
+                            <div className="flex items-center justify-center">
+                                <Link href="/profile" onClick={() => setIsMenuOpen(false)} className={cn(buttonVariants({ variant: "outline", size: "icon" }), "layout-header-action-btn")}>
+                                    <User className="h-[1.2rem] w-[1.2rem]" />
+                                </Link>
+                            </div>
+                            <div className="flex items-center justify-center">
+                                <Link href="/partner/support" onClick={() => setIsMenuOpen(false)} className={cn(buttonVariants({ variant: "outline", size: "icon" }), "layout-header-action-btn")}>
+                                    <Headset className="h-[1.2rem] w-[1.2rem]" />
+                                </Link>
+                            </div>
                         </div>
 
-                        <div className="p-2">
+                        <div className="layout-header-dropdown-footer">
                             <Button
                                 variant="outline"
-                                className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                className="layout-header-logout-btn"
                                 onClick={() => {
                                     setIsMenuOpen(false);
                                     handleLogout();

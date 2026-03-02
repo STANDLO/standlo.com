@@ -29,17 +29,26 @@ export function FormOnboarding({ locale }: { locale: string }) {
                     console.log("=== AUTH READY BUT NO USER FOUND ===");
                 }
 
-                const webInterface = httpsCallable(functions, "webInterface");
-                // Richiediamo lo schema per le Organizzazioni. Per l'onboarding usiamo ruolo pending 
-                // con permessi di compilazione abilitati
-                const res = await webInterface({
-                    actionId: "getSchema",
-                    roleId: "pending"
-                });
-
-                const data = res.data as { status: string, manifest?: { organization?: { fields?: SDUIField[] } } };
+                // Richiediamo lo schema per le Organizzazioni dal livello Edge API per l'onboarding
+                const response = await fetch("/api/schemas/manifest?entity=organization&role=pending");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch SDUI manifest");
+                }
+                const data = await response.json();
                 if (data.status === "success" && data.manifest?.organization?.fields) {
-                    setFields(data.manifest.organization.fields);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const translatedFields = data.manifest.organization.fields.map((f: any) => {
+                        const newLabel = f.name === "name" ? t("orgNameLabel") :
+                            f.name === "vat" ? t("vatLabel") :
+                                f.name === "sdi" ? t("sdiLabel") :
+                                    f.name === "iban" ? t("ibanLabel") :
+                                        f.name === "roleId" ? t("roleLabel") :
+                                            f.name === "place" ? t("addressLabel") :
+                                                f.name === "logo" ? t("logoLabel") :
+                                                    f.label || f.name;
+                        return { ...f, label: newLabel };
+                    });
+                    setFields(translatedFields);
                 } else {
                     throw new Error("Invalid manifest payload");
                 }
@@ -52,7 +61,7 @@ export function FormOnboarding({ locale }: { locale: string }) {
         };
 
         fetchSchema();
-    }, []);
+    }, [t]);
 
     const onSubmit = async (formData: Record<string, unknown>) => {
         setIsSubmitting(true);

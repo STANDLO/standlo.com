@@ -49,7 +49,25 @@ async function onboardOrganization(uid, orgData) {
         throw new https_1.HttpsError("invalid-argument", "Organization payload is missing or empty.");
     }
     try {
-        const parsedData = schemas_1.OrganizationSchema.partial().parse(orgData);
+        // Recursively remove empty strings and nulls from the payload so Zod treats them as undefined/optional
+        const sanitizePayload = (obj) => {
+            if (obj === null || obj === undefined || obj === "")
+                return undefined;
+            if (Array.isArray(obj))
+                return obj.map(sanitizePayload).filter(x => x !== undefined);
+            if (typeof obj === "object") {
+                const cleaned = {};
+                for (const [key, val] of Object.entries(obj)) {
+                    const cleanedVal = sanitizePayload(val);
+                    if (cleanedVal !== undefined)
+                        cleaned[key] = cleanedVal;
+                }
+                return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+            }
+            return obj;
+        };
+        const cleanedOrgData = sanitizePayload(orgData) || {};
+        const parsedData = schemas_1.OrganizationSchema.partial().parse(cleanedOrgData);
         // Clean up undefined values from parsedData as Firestore rejects them
         const sanitizedData = Object.fromEntries(Object.entries(parsedData).filter(([, v]) => v !== undefined));
         // 3. Define the actual active status
@@ -83,12 +101,14 @@ async function onboardOrganization(uid, orgData) {
                 code: `${locationPrefix}-${vatStr}`,
                 name: parsedData.name || "Default Headquarter",
                 type: "headquarter",
-                address: parsedData.place ? JSON.stringify(parsedData.place) : null,
+                place: parsedData.place || null, // Updated to use the new object structure instead of a stringified 'address'
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                 createdBy: uid,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
                 updatedBy: uid,
             });
+            // Set the new warehouse as the headquarter on the organization record
+            batch.update(orgRef, { headquarterId: warehouseId });
         }
         // 5. Upgrade Custom Claims via Admin SDK
         const newClaims = Object.assign(Object.assign({}, currentCustomClaims), { role: role || "pending", onboarding: true, orgId: orgRootId, orgName: parsedData.name || null, logoUrl: parsedData.logoUrl || null });
@@ -116,7 +136,9 @@ async function onboardOrganization(uid, orgData) {
         console.error("[Orchestrator][onboardOrganization] Error:", error);
         if (error instanceof Error) {
             if (error.name === "ZodError") {
-                throw new https_1.HttpsError("invalid-argument", "Organization schema validation failed.", error.errors);
+                const zodErrors = error.errors;
+                console.error("[Orchestrator][onboardOrganization] Zod Validation Issues:", JSON.stringify(zodErrors, null, 2));
+                throw new https_1.HttpsError("invalid-argument", "Organization schema validation failed.", zodErrors);
             }
             throw new https_1.HttpsError("internal", error.message || "An internal error occurred during onboarding.");
         }

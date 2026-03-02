@@ -109,5 +109,4 @@ export { orchestrator } from "./gateways/orchestrator";
 export { choreography } from "./gateways/choreography";
 export { firestore as firestoreGateway } from "./gateways/firestore"; // Prevent naming collisions with 'firebase-admin/firestore' export
 export { brain } from "./gateways/brain";
-export { webInterface } from "./gateways/webInterface";
-
+export { canvas } from "./gateways/canvas";

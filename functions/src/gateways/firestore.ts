@@ -20,7 +20,7 @@ export const firestore = onCall({
             throw new HttpsError("unauthenticated", "User must be authenticated to access Firestore gateway.");
         }
 
-        const db = getFirestore();
+        const db = getFirestore(admin.app(), "standlo");
         const data = request.data as GatewayRequest;
         const { correlationId, idempotencyKey, orgId, entityId, actionId, payload, limit, cursor, orderBy, filters } = data;
 
@@ -123,7 +123,7 @@ export const firestore = onCall({
                 const parsedKeysLen = Object.keys(parsedResult.data).length;
                 if (payloadKeysLen !== parsedKeysLen) {
                     console.warn(`[SecurityAlert] Extra fields stripped during Create on ${entityId}`);
-                    await db.collection("alerts").add({
+                    await db.collection("admin/security/alerts").add({
                         type: "schema_mismatch",
                         action: "create",
                         entityId,
@@ -175,7 +175,7 @@ export const firestore = onCall({
                 const payloadKeysLen = Object.keys(payload).filter(k => k !== 'id').length;
                 const parsedKeysLen = Object.keys(updateData).length;
                 if (payloadKeysLen !== parsedKeysLen) {
-                    await db.collection("alerts").add({
+                    await db.collection("admin/security/alerts").add({
                         type: "schema_mismatch",
                         action: "update",
                         entityId,
@@ -203,6 +203,14 @@ export const firestore = onCall({
                 if (!payload?.id || typeof payload.id !== "string") {
                     throw new HttpsError("invalid-argument", "Soft delete requires an 'id' inside payload.");
                 }
+
+                if (entityId === "warehouse" && orgId) {
+                    const orgDoc = await db.collection("organizations").doc(orgId).get();
+                    if (orgDoc.exists && orgDoc.data()?.headquarterId === payload.id) {
+                        throw new HttpsError("permission-denied", "Il magazzino principale (Headquarter) non può essere eliminato.");
+                    }
+                }
+
                 const docRef = collectionRef.doc(payload.id);
                 await docRef.update({
                     deletedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -239,8 +247,8 @@ export const firestore = onCall({
         console.error(`[FirestoreGateway][${errorReferenceCode}] Error processing request:`, error);
 
         try {
-            const db = getFirestore();
-            await db.collection("alerts").add({
+            const db = getFirestore(admin.app(), "standlo");
+            await db.collection("admin/security/alerts").add({
                 type: "system",
                 action: actionIdStr,
                 entityId: entityIdStr,

@@ -28,6 +28,8 @@ __exportStar(require("./workcenter"), exports);
 __exportStar(require("./shelve"), exports);
 __exportStar(require("./tool"), exports);
 __exportStar(require("./stand"), exports);
+__exportStar(require("./build"), exports);
+__exportStar(require("./emergency"), exports);
 __exportStar(require("./assembly"), exports);
 __exportStar(require("./part"), exports);
 __exportStar(require("./process"), exports);
@@ -43,4 +45,6 @@ __exportStar(require("./apikey"), exports);
 __exportStar(require("./call"), exports);
 __exportStar(require("./product"), exports);
 __exportStar(require("./rent"), exports);
+__exportStar(require("./canvas"), exports);
+__exportStar(require("./canvasMaterial"), exports);
 //# sourceMappingURL=index.js.map

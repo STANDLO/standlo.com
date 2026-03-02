@@ -51,11 +51,13 @@ exports.Registry = {
     shelve: { scope: "tenant", name: "shelves", schema: schemas.ShelveSchema },
     tool: { scope: "global", name: "tools", schema: schemas.ToolSchema },
     stand: { scope: "global", name: "stands", schema: schemas.StandSchema },
+    build: { scope: "global", name: "builds", schema: schemas.BuildSchema },
+    emergency: { scope: "global", name: "emergencies", schema: schemas.EmergencySchema },
     assembly: { scope: "global", name: "assemblies", schema: schemas.AssemblySchema },
     part: { scope: "global", name: "parts", schema: schemas.PartSchema },
     process: { scope: "global", name: "processes", schema: schemas.ProcessSchema },
     calendar: { scope: "tenant", name: "calendars", schema: schemas.CalendarSlotSchema },
-    task: { scope: "tenant", name: "activities", schema: schemas.TaskSchema },
+    task: { scope: "tenant", name: "tasks", schema: schemas.TaskSchema },
     rent: { scope: "tenant", name: "rents", schema: schemas.RentSchema },
     message: { scope: "tenant", name: "messages", schema: schemas.MessageSchema },
     notification: { scope: "tenant", name: "notifications", schema: schemas.NotificationSchema },
@@ -64,7 +66,8 @@ exports.Registry = {
     tax: { scope: "tenant", name: "taxes", schema: schemas.TaxSchema },
     apikey: { scope: "tenant", name: "apikeys", schema: schemas.ApiKeySchema },
     call: { scope: "global", name: "apicalls", schema: schemas.CallSchema },
-    alert: { scope: "global", name: "alerts", schema: schemas.AlertSchema },
+    alert: { scope: "global", name: "admin/security/alerts", schema: schemas.AlertSchema },
+    product: { scope: "tenant", name: "products", schema: schemas.ProductSchema },
 };
 function getEntityConfig(entityId) {
     const config = exports.Registry[entityId];

@@ -28,6 +28,19 @@ export const orchestrator = onCall({
         }
         return onboardOrganization(request.auth.uid, payload as Record<string, unknown>);
     }
+
+    if (actionId === "activate_user") {
+        if (!payload) {
+            throw new HttpsError("invalid-argument", "Payload is required to activate user.");
+        }
+        const { activateUser } = await import("../orchestrator/admin");
+        return activateUser(request.auth.uid, payload as Record<string, unknown>);
+    }
+
+    if (actionId === "get_admin_kpis") {
+        const { getAdminKpis } = await import("../orchestrator/admin");
+        return getAdminKpis(request.auth.uid);
+    }
     // --- ROUTER END ---
 
     return {

@@ -65,14 +65,15 @@ export async function proxy(request: NextRequest) {
                 const requestedArea = areaMatch[1];
                 const roleArea = areaMatch[2]; // ex: 'customer' inside /it/partner/customer
 
-                // If they are accessing a generic area outside partner, only auth and debug are allowed
-                if (requestedArea !== 'partner' && requestedArea !== 'auth' && requestedArea !== 'debug' && requestedArea !== 'onboarding') {
+                // If they are accessing a generic area outside partner, only auth, debug, and profile are allowed
+                if (requestedArea !== 'partner' && requestedArea !== 'auth' && requestedArea !== 'debug' && requestedArea !== 'onboarding' && requestedArea !== 'profile') {
                     url.pathname = `/${locale}/partner/${role}`;
                     return NextResponse.redirect(url);
                 }
 
-                // If they are inside partner and the role in the URL doesn't match their JWT role
-                if (requestedArea === 'partner' && roleArea && roleArea !== role) {
+                // If they are inside partner and the role in the URL doesn't match their JWT role or is missing
+                // exception added for 'support' as it's accessible globally across partners
+                if (requestedArea === 'partner' && (!roleArea || (roleArea !== role && roleArea !== 'support'))) {
                     url.pathname = `/${locale}/partner/${role}`;
                     return NextResponse.redirect(url);
                 }

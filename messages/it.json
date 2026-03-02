@@ -21,7 +21,8 @@
         "tiler": "Piastrellista",
         "driver": "Autista",
         "forkliftdriver": "Mulettista",
-        "promoter": "Promoter"
+        "promoter": "Promoter",
+        "standlo_design": "STANDLO - Design System"
     },
     "Common": {
         "noResults": "Nessun risultato trovato.",
@@ -72,7 +73,8 @@
             "auth/network-request-failed": "Errore di connessione. Controlla la tua rete.",
             "auth/popup-closed-by-user": "La finestra di accesso è stata chiusa prima del completamento.",
             "auth/account-exists-with-different-credential": "Hai già un account con questa email associato a un altro provider.",
-            "default": "Si è verificato un errore imprevisto. Ti preghiamo di riprovare."
+            "default": "Si è verificato un errore imprevisto. Ti preghiamo di riprovare.",
+            "auth-missing-terms": "Devi accettare la Privacy Policy e i Termini di Servizio prima di continuare."
         },
         "VerifyEmail": {
             "title": "Verifica il tuo indirizzo Email",
@@ -111,7 +113,7 @@
     "Onboarding": {
         "title": "Completa il tuo Profilo B2B",
         "subtitle": "Per continuare ad utilizzare Standlo, abbiamo bisogno di alcune informazioni obbligatorie per la fatturazione.",
-        "orgNameLabel": "Ragione Sociale",
+        "orgNameLabel": "Ragione Sociale / Denominazione sociale",
         "logoLabel": "Logo Aziendale",
         "roleLabel": "Seleziona il tuo ruolo",
         "vatLabel": "Partita IVA",
@@ -124,6 +126,9 @@
         "InputPlace": {
             "placeholder": "Cerca un indirizzo con Google..."
         }
+    },
+    "Canvas": {
+        "title": "Editor 3D Canvas"
     },
     "Brand": {
         "name": "STANDLO",
@@ -151,6 +156,7 @@
         }
     },
     "components": {
+        "canvas": "Canvas",
         "dashboard": "Dashboard",
         "orders": "Ordini",
         "catalog": "Catalogo",
@@ -185,7 +191,8 @@
             "painter": "Pittore",
             "technician": "Tecnico",
             "driver": "Trasportatore",
-            "promoter": "Promoter"
+            "promoter": "Promoter",
+            "standlo_design": "STANDLO Design"
         },
         "devMode": {
             "title": "Work in Progress",

@@ -28,6 +28,7 @@ export const OrganizationSchema = BaseSchema.extend({
     website: z.string().url("URL sito web non valido.").optional(),
     logoUrl: z.string().optional().describe(JSON.stringify({ type: "gallery", label: "Logo Aziendale" })),
     logoUrls: z.array(z.string()).optional(),
+    headquarterId: z.string().optional(),
 });
 
 export type Organization = z.infer<typeof OrganizationSchema>;
@@ -120,6 +121,7 @@ export const OrganizationPolicyMatrix: Record<RoleId, EntityPolicy> = {
         }
     },
     // Same default strict read-only for others...
+    standlo_design: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     electrician: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },

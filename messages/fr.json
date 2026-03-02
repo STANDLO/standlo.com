@@ -21,7 +21,8 @@
         "tiler": "Carreleur",
         "driver": "Chauffeur",
         "forkliftdriver": "Cariste",
-        "promoter": "Promoteur"
+        "promoter": "Promoteur",
+        "standlo_design": "STANDLO - Design System"
     },
     "Brand": {
         "name": "STANDLO",
@@ -97,7 +98,8 @@
             "auth/network-request-failed": "Erreur réseau. Veuillez vérifier votre connexion.",
             "auth/popup-closed-by-user": "La fenêtre de connexion a été fermée avant son terme.",
             "auth/account-exists-with-different-credential": "Vous avez déjà un compte avec cet e-mail lié à un autre fournisseur.",
-            "default": "Une erreur inattendue s'est produite. Veuillez réessayer."
+            "default": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+            "auth-missing-terms": "Vous devez accepter la politique de confidentialité et les conditions générales avant de continuer."
         },
         "VerifyEmail": {
             "title": "Vérifiez votre adresse e-mail",
@@ -136,7 +138,7 @@
     "Onboarding": {
         "title": "Complétez votre profil B2B",
         "subtitle": "Pour continuer à utiliser Standlo, nous avons besoin de certaines informations obligatoires pour la facturation.",
-        "orgNameLabel": "Nom de l'entreprise",
+        "orgNameLabel": "Raison Sociale / Dénomination",
         "logoLabel": "Logo de l'entreprise",
         "roleLabel": "Sélectionnez votre rôle",
         "vatLabel": "Numéro de TVA",

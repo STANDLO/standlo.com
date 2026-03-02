@@ -7,13 +7,13 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                primary: "ui-btn-primary",
-                primaryMuted: "ui-btn-primary-muted",
-                primaryReadonly: "ui-btn-primary-readonly",
-                secondary: "ui-btn-secondary",
-                secondaryMuted: "ui-btn-secondary-muted",
-                secondaryReadonly: "ui-btn-secondary-readonly",
-                outline: "ui-btn-outline",
+                primary: "bg-primary text-primary-foreground focus-visible:ring-ring hover:bg-primary/90",
+                primaryMuted: "bg-primary/20 text-primary-foreground/80 focus-visible:ring-ring cursor-not-allowed",
+                primaryReadonly: "bg-primary text-primary-foreground opacity-50 focus-visible:ring-ring cursor-default pointer-events-none",
+                secondary: "bg-secondary text-secondary-foreground focus-visible:ring-secondary hover:bg-secondary/80",
+                secondaryMuted: "bg-secondary/20 text-secondary-foreground/80 focus-visible:ring-secondary cursor-not-allowed",
+                secondaryReadonly: "bg-secondary text-secondary-foreground opacity-50 focus-visible:ring-secondary cursor-default pointer-events-none",
+                outline: "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground text-foreground",
             },
             size: {
                 default: "h-9 px-4 py-2",

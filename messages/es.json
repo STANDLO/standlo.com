@@ -21,7 +21,8 @@
         "tiler": "Alicatador",
         "driver": "Conductor",
         "forkliftdriver": "Conductor de Carretilla",
-        "promoter": "Promotor"
+        "promoter": "Promotor",
+        "standlo_design": "STANDLO - Design System"
     },
     "Brand": {
         "name": "STANDLO",
@@ -97,7 +98,8 @@
             "auth/network-request-failed": "Error de red. Por favor, comprueba tu conexión.",
             "auth/popup-closed-by-user": "La ventana de inicio de sesión se cerró antes de completar.",
             "auth/account-exists-with-different-credential": "Ya tienes una cuenta con este correo vinculada a otro proveedor.",
-            "default": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo."
+            "default": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+            "auth-missing-terms": "Debe aceptar la Política de Privacidad y los Términos y Condiciones antes de continuar."
         },
         "VerifyEmail": {
             "title": "Verifica tu dirección de Correo",
@@ -136,7 +138,7 @@
     "Onboarding": {
         "title": "Completa tu Perfil B2B",
         "subtitle": "Para continuar usando Standlo, necesitamos cierta información obligatoria para facturación.",
-        "orgNameLabel": "Razón Social",
+        "orgNameLabel": "Razón Social / Denominación",
         "logoLabel": "Logotipo de la Empresa",
         "roleLabel": "Selecciona tu rol",
         "vatLabel": "Número de IVA",

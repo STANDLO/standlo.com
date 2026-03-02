@@ -55,7 +55,7 @@ exports.firestore = (0, https_1.onCall)({
     enforceAppCheck: true,
     consumeAppCheckToken: false,
 }, async (request) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     const errorReferenceCode = crypto.randomUUID();
     let entityIdStr = "unknown";
     let actionIdStr = "unknown";
@@ -64,7 +64,7 @@ exports.firestore = (0, https_1.onCall)({
         if (!request.auth) {
             throw new https_1.HttpsError("unauthenticated", "User must be authenticated to access Firestore gateway.");
         }
-        const db = (0, firestore_1.getFirestore)();
+        const db = (0, firestore_1.getFirestore)(admin.app(), "standlo");
         const data = request.data;
         const { correlationId, idempotencyKey, orgId, entityId, actionId, payload, limit, cursor, orderBy, filters } = data;
         entityIdStr = entityId || "unknown";
@@ -154,7 +154,7 @@ exports.firestore = (0, https_1.onCall)({
                 const parsedKeysLen = Object.keys(parsedResult.data).length;
                 if (payloadKeysLen !== parsedKeysLen) {
                     console.warn(`[SecurityAlert] Extra fields stripped during Create on ${entityId}`);
-                    await db.collection("alerts").add({
+                    await db.collection("admin/security/alerts").add({
                         type: "schema_mismatch",
                         action: "create",
                         entityId,
@@ -188,11 +188,11 @@ exports.firestore = (0, https_1.onCall)({
                     throw new https_1.HttpsError("invalid-argument", `Zod validation failed: ${JSON.stringify(parsedResult.error.issues)}`);
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const _k = parsedResult.data, { id } = _k, updateData = __rest(_k, ["id"]);
+                const _l = parsedResult.data, { id } = _l, updateData = __rest(_l, ["id"]);
                 const payloadKeysLen = Object.keys(payload).filter(k => k !== 'id').length;
                 const parsedKeysLen = Object.keys(updateData).length;
                 if (payloadKeysLen !== parsedKeysLen) {
-                    await db.collection("alerts").add({
+                    await db.collection("admin/security/alerts").add({
                         type: "schema_mismatch",
                         action: "update",
                         entityId,
@@ -217,6 +217,12 @@ exports.firestore = (0, https_1.onCall)({
             case "soft_delete": {
                 if (!(payload === null || payload === void 0 ? void 0 : payload.id) || typeof payload.id !== "string") {
                     throw new https_1.HttpsError("invalid-argument", "Soft delete requires an 'id' inside payload.");
+                }
+                if (entityId === "warehouse" && orgId) {
+                    const orgDoc = await db.collection("organizations").doc(orgId).get();
+                    if (orgDoc.exists && ((_b = orgDoc.data()) === null || _b === void 0 ? void 0 : _b.headquarterId) === payload.id) {
+                        throw new https_1.HttpsError("permission-denied", "Il magazzino principale (Headquarter) non può essere eliminato.");
+                    }
                 }
                 const docRef = collectionRef.doc(payload.id);
                 await docRef.update({
@@ -251,22 +257,22 @@ exports.firestore = (0, https_1.onCall)({
     catch (error) {
         console.error(`[FirestoreGateway][${errorReferenceCode}] Error processing request:`, error);
         try {
-            const db = (0, firestore_1.getFirestore)();
-            await db.collection("alerts").add({
+            const db = (0, firestore_1.getFirestore)(admin.app(), "standlo");
+            await db.collection("admin/security/alerts").add({
                 type: "system",
                 action: actionIdStr,
                 entityId: entityIdStr,
                 orgId: orgIdStr === "unknown" ? null : orgIdStr,
-                uid: ((_b = request.auth) === null || _b === void 0 ? void 0 : _b.uid) || "unauthenticated",
-                email: ((_d = (_c = request.auth) === null || _c === void 0 ? void 0 : _c.token) === null || _d === void 0 ? void 0 : _d.email) || null,
-                roleId: ((_f = (_e = request.auth) === null || _e === void 0 ? void 0 : _e.token) === null || _f === void 0 ? void 0 : _f.roleId) || "unknown",
-                payload: JSON.stringify(((_g = request.data) === null || _g === void 0 ? void 0 : _g.payload) || {}),
+                uid: ((_c = request.auth) === null || _c === void 0 ? void 0 : _c.uid) || "unauthenticated",
+                email: ((_e = (_d = request.auth) === null || _d === void 0 ? void 0 : _d.token) === null || _e === void 0 ? void 0 : _e.email) || null,
+                roleId: ((_g = (_f = request.auth) === null || _f === void 0 ? void 0 : _f.token) === null || _g === void 0 ? void 0 : _g.roleId) || "unknown",
+                payload: JSON.stringify(((_h = request.data) === null || _h === void 0 ? void 0 : _h.payload) || {}),
                 errorMessage: error.message || String(error),
                 errorReferenceCode,
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                createdBy: ((_h = request.auth) === null || _h === void 0 ? void 0 : _h.uid) || "system",
+                createdBy: ((_j = request.auth) === null || _j === void 0 ? void 0 : _j.uid) || "system",
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                updatedBy: ((_j = request.auth) === null || _j === void 0 ? void 0 : _j.uid) || "system",
+                updatedBy: ((_k = request.auth) === null || _k === void 0 ? void 0 : _k.uid) || "system",
                 isArchived: false
             });
         }

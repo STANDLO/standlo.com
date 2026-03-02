@@ -32,8 +32,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-montserrat);
 }
 
 @layer base {
@@ -66,59 +65,28 @@
 
     --radius: 0.5rem;
   }
+}
 
-  /* Supporto Tema Scuro tramite preferenza OS o classe .dark */
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --background: 220 60% 4%;
-      --foreground: 0 0% 98%;
-      --card: 220 60% 6%;
-      --card-foreground: 0 0% 98%;
-      --popover: 220 60% 4%;
-      --popover-foreground: 0 0% 98%;
-
-      /* PRIMARY: #003399 leggermente più luminoso su fondo scuro */
-      --primary: 220 100% 45%;
-      --primary-foreground: 0 0% 100%;
-
-      /* SECONDARY: #FFCC00 (H:48 S:100% L:50%) */
-      --secondary: 48 100% 45%;
-      --secondary-foreground: 220 100% 10%;
-
-      --muted: 220 60% 15%;
-      --muted-foreground: 220 10% 65%;
-      --accent: 220 60% 15%;
-      --accent-foreground: 0 0% 98%;
-      --destructive: 0 62% 30%;
-      --destructive-foreground: 0 0% 98%;
-
-      --border: 220 60% 15%;
-      --input: 220 60% 15%;
-      --ring: 220 100% 45%;
-    }
-  }
-
-  .dark {
-    --background: 220 60% 4%;
-    --foreground: 0 0% 98%;
-    --card: 220 60% 6%;
-    --card-foreground: 0 0% 98%;
-    --popover: 220 60% 4%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 220 100% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 48 100% 45%;
-    --secondary-foreground: 220 100% 10%;
-    --muted: 220 60% 15%;
-    --muted-foreground: 220 10% 65%;
-    --accent: 220 60% 15%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 220 60% 15%;
-    --input: 220 60% 15%;
-    --ring: 220 100% 45%;
-  }
+.dark {
+  --background: 220 60% 4%;
+  --foreground: 0 0% 98%;
+  --card: 220 60% 6%;
+  --card-foreground: 0 0% 98%;
+  --popover: 220 60% 4%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 220 100% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 48 100% 45%;
+  --secondary-foreground: 220 100% 10%;
+  --muted: 220 60% 15%;
+  --muted-foreground: 220 10% 65%;
+  --accent: 220 60% 15%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 60% 15%;
+  --input: 220 60% 15%;
+  --ring: 220 100% 45%;
 }
 
 @layer base {
@@ -161,34 +129,6 @@
   /* UI Button Semantic Classes */
   .ui-btn {
     @apply inline-flex items-center justify-center rounded-md text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1;
-  }
-
-  .ui-btn-primary {
-    @apply bg-primary text-primary-foreground focus-visible:ring-ring hover:bg-primary/90;
-  }
-
-  .ui-btn-primary-muted {
-    @apply bg-primary/20 text-primary-foreground/80 focus-visible:ring-ring cursor-not-allowed;
-  }
-
-  .ui-btn-primary-readonly {
-    @apply bg-primary text-primary-foreground opacity-50 focus-visible:ring-ring cursor-default pointer-events-none;
-  }
-
-  .ui-btn-secondary {
-    @apply bg-secondary text-secondary-foreground focus-visible:ring-secondary hover:bg-secondary/80;
-  }
-
-  .ui-btn-secondary-muted {
-    @apply bg-secondary/20 text-secondary-foreground/80 focus-visible:ring-secondary cursor-not-allowed;
-  }
-
-  .ui-btn-secondary-readonly {
-    @apply bg-secondary text-secondary-foreground opacity-50 focus-visible:ring-secondary cursor-default pointer-events-none;
-  }
-
-  .ui-btn-outline {
-    @apply border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground;
   }
 
   /* UI Input Semantic Classes */
@@ -540,11 +480,128 @@
   }
 
   .layout-content-area {
-    @apply flex-1 overflow-y-auto w-full relative;
+    @apply flex-1 flex flex-col overflow-y-auto w-full relative;
+  }
+
+  .layout-content-area-canvas {
+    @apply flex-1 flex flex-col overflow-hidden w-full relative;
   }
 
   .layout-content-container {
-    @apply mx-auto max-w-6xl p-4 md:p-8 w-full;
+    @apply mx-auto max-w-6xl p-4 md:p-8 w-full flex-1 flex flex-col;
+  }
+
+  .layout-content-full {
+    @apply flex-1 flex flex-col w-full overflow-hidden;
+  }
+
+  /* Canvas Editor Semantic Classes */
+  .ui-canvas-root {
+    @apply flex-1 flex flex-col w-full bg-background overflow-hidden relative;
+  }
+
+  .ui-canvas-header {
+    @apply flex-none flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border shadow-sm z-20 relative;
+  }
+
+  .ui-canvas-header-left {
+    @apply flex items-center gap-3;
+  }
+
+  .ui-canvas-header-icon-box {
+    @apply p-2 bg-primary/10 text-primary rounded-md;
+  }
+
+  .ui-canvas-header-icon {
+    @apply w-5 h-5;
+  }
+
+  .ui-canvas-header-title {
+    @apply font-semibold leading-none;
+  }
+
+  .ui-canvas-header-subtitle {
+    @apply text-[10px] text-muted-foreground uppercase tracking-widest mt-1;
+  }
+
+  .ui-canvas-header-right {
+    @apply flex items-center gap-2;
+  }
+
+  .ui-canvas-toolbar-group {
+    @apply flex items-center bg-muted/50 rounded-lg p-1 mr-4 border;
+  }
+
+  .ui-canvas-toolbar-btn {
+    @apply px-3 py-1.5 text-xs font-semibold rounded-md transition-colors;
+  }
+
+  .ui-canvas-toolbar-btn-active {
+    @apply bg-background shadow-sm text-foreground;
+  }
+
+  .ui-canvas-toolbar-btn-inactive {
+    @apply text-muted-foreground hover:text-foreground;
+  }
+
+  .ui-canvas-btn-icon {
+    @apply w-3.5 h-3.5 inline mr-1.5;
+  }
+
+  .ui-canvas-action-btn {
+    @apply h-8 w-8 text-muted-foreground;
+  }
+
+  .ui-canvas-action-icon {
+    @apply w-4 h-4;
+  }
+
+  .ui-canvas-separator {
+    @apply w-px h-6 bg-border mx-1;
+  }
+
+  .ui-canvas-export-btn {
+    @apply h-8;
+  }
+
+  .ui-canvas-export-icon {
+    @apply w-4 h-4 mr-2;
+  }
+
+  .ui-canvas-save-btn {
+    @apply h-8;
+  }
+
+  .ui-canvas-save-icon {
+    @apply w-4 h-4 mr-2;
+  }
+
+  .ui-canvas-main-area {
+    @apply flex-1 flex overflow-hidden relative;
+  }
+
+  .ui-canvas-sidebar-left {
+    @apply w-72 flex-none border-r bg-card/50 flex flex-col relative z-10;
+  }
+
+  .ui-canvas-viewport {
+    @apply flex-1 relative bg-gradient-to-b from-stone-50 to-stone-100 dark:from-zinc-950 dark:to-black;
+  }
+
+  .ui-canvas-sidebar-right {
+    @apply w-72 flex-none border-l bg-card/50 flex flex-col pt-4;
+  }
+
+  .ui-canvas-sidebar-header {
+    @apply px-4 pb-3 border-b;
+  }
+
+  .ui-canvas-sidebar-title {
+    @apply text-sm font-semibold;
+  }
+
+  .ui-canvas-sidebar-empty {
+    @apply flex-1 overflow-y-auto p-4 flex items-center justify-center text-center text-sm text-muted-foreground italic;
   }
 
   /* Header Protected Semantic Classes */
@@ -558,6 +615,74 @@
 
   .layout-header-brand-link {
     @apply flex items-center;
+  }
+
+  .layout-header-user-info {
+    @apply hidden md:flex flex-col items-end mr-2;
+  }
+
+  .layout-header-user-org {
+    @apply font-semibold;
+  }
+
+  .layout-header-user-role {
+    @apply text-muted-foreground text-xs;
+  }
+
+  .layout-header-mobile-toggle {
+    @apply ml-2 rounded-full border border-border;
+  }
+
+  .layout-header-dropdown-menu {
+    @apply absolute right-0 top-full mt-2 w-72 rounded-md border border-border bg-popover text-popover-foreground shadow-lg shadow-black/5 z-50;
+  }
+
+  .layout-header-dropdown-header {
+    @apply p-4 border-b border-border;
+  }
+
+  .layout-header-dropdown-title {
+    @apply font-semibold text-sm;
+  }
+
+  .layout-header-dropdown-subtitle {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .layout-header-dropdown-badge {
+    @apply mt-1 inline-flex items-center rounded-sm bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary;
+  }
+
+  .layout-header-dropdown-nav {
+    @apply p-2 space-y-1 border-b border-border;
+  }
+
+  .layout-header-nav-item {
+    @apply flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors;
+  }
+
+  .layout-header-nav-item-active {
+    @apply bg-primary/10 text-primary;
+  }
+
+  .layout-header-nav-item-inactive {
+    @apply text-muted-foreground hover:bg-accent hover:text-foreground;
+  }
+
+  .layout-header-actions-grid {
+    @apply p-4 border-b border-border grid grid-cols-4 gap-2;
+  }
+
+  .layout-header-action-btn {
+    @apply w-9 h-9 border-transparent rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-colors;
+  }
+
+  .layout-header-dropdown-footer {
+    @apply p-2;
+  }
+
+  .layout-header-logout-btn {
+    @apply w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive;
   }
 
   /* Dashboard Pages Semantic Classes */

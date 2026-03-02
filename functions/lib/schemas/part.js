@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PartPolicyMatrix = exports.PartSearchSchema = exports.PartUpdateSchema = exports.PartCreateSchema = exports.PartSchema = void 0;
+exports.PartPolicyMatrix = exports.PartSearchSchema = exports.PartUpdateSchema = exports.PartCreateSchema = exports.PartToolNodeSchema = exports.PartProcessNodeSchema = exports.PartSchema = void 0;
 const zod_1 = require("zod");
 const base_1 = require("./base");
 const primitives_1 = require("./primitives");
@@ -17,7 +17,23 @@ exports.PartSchema = base_1.BaseSchema.extend({
         attribute: zod_1.z.string(), // e.g. 'width_cm'
         type: zod_1.z.enum(['string', 'number', 'boolean']),
         options: zod_1.z.array(zod_1.z.union([zod_1.z.string(), zod_1.z.number()])).optional()
-    })).optional()
+    })).optional(),
+    gltfUrl: zod_1.z.string().optional().describe("URL to the Draco-compressed .glb file stored in Firebase Storage"),
+    sockets: zod_1.z.array(zod_1.z.object({
+        id: zod_1.z.string(),
+        type: zod_1.z.enum(['male', 'female', 'neutral']),
+        position: zod_1.z.tuple([zod_1.z.number(), zod_1.z.number(), zod_1.z.number()]).describe("[x, y, z] coordinates relative to part center"),
+        rotation: zod_1.z.tuple([zod_1.z.number(), zod_1.z.number(), zod_1.z.number(), zod_1.z.number()]).optional().describe("Quaternion [x, y, z, w] for socket orientation")
+    })).default([]),
+});
+// --- SUBCOLLECTION SCHEMAS ---
+exports.PartProcessNodeSchema = zod_1.z.object({
+    processId: zod_1.z.string(),
+    quantity: zod_1.z.number()
+});
+exports.PartToolNodeSchema = zod_1.z.object({
+    toolId: zod_1.z.string(),
+    quantity: zod_1.z.number()
 });
 exports.PartCreateSchema = (0, base_1.createCreationSchema)(exports.PartSchema);
 exports.PartUpdateSchema = (0, base_1.createUpdateSchema)(exports.PartSchema);
@@ -30,10 +46,11 @@ exports.PartPolicyMatrix = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    manager: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
+    manager: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_design: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
     electrician: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     plumber: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     carpenter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },

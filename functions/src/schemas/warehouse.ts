@@ -3,11 +3,21 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 
+export const WarehouseTypes = ['headquarter', 'fair', 'site', 'showroom'] as const;
+
 export const WarehouseSchema = BaseSchema.extend({
-    code: z.string(), // e.g. 'IT-20017-03133760128'
-    name: z.string(), // e.g. 'Acme Corp Logistics'
-    type: z.enum(['headquarter', 'fair', 'site', 'showroom']).default('headquarter'),
-    address: z.string().optional()
+    name: z.string(), // Override BaseSchema to make it required
+    type: z.enum(WarehouseTypes).default('headquarter'),
+    place: z.object({
+        fullAddress: z.string().optional(),
+        address: z.string().optional(),
+        city: z.string().optional(),
+        province: z.string().optional(),
+        zipCode: z.string().optional(),
+        country: z.string().optional(),
+        googlePlaceId: z.string().optional(),
+        coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
+    }).optional().describe(JSON.stringify({ type: "place", required: true, label: "Luogo" })),
 });
 export type Warehouse = z.infer<typeof WarehouseSchema>;
 
@@ -16,14 +26,15 @@ export const WarehouseUpdateSchema = createUpdateSchema(WarehouseSchema);
 export const WarehouseSearchSchema = PaginationQuerySchema.extend({
     name: z.string().optional(),
     code: z.string().optional(),
-    type: z.enum(['headquarter', 'fair', 'site', 'showroom']).optional(),
+    type: z.enum(WarehouseTypes).optional(),
 });
 
 export const WarehousePolicyMatrix: Record<RoleId, EntityPolicy> = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    provider: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
     manager: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
+    standlo_design: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },

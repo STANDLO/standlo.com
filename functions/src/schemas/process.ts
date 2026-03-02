@@ -2,12 +2,19 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-import { LocalizedStringSchema, RoleIdSchema } from "./primitives";
+import { LocalizedStringSchema } from "./primitives";
+
+export const ProcessRoleSchema = z.enum([
+    'manager', 'architect', 'engineer', 'designer', 'electrician', 'plumber',
+    'carpenter', 'cabinetmaker', 'dryliner', 'ironworker', 'windowfitter',
+    'glazier', 'riggers', 'standbuilder', 'plasterer', 'painter', 'tiler',
+    'driver', 'forkliftdriver', 'promoter'
+]);
 
 export const ProcessSchema = BaseSchema.extend({
     name: LocalizedStringSchema,
     description: LocalizedStringSchema.optional(),
-    requiredRole: RoleIdSchema.optional(), // Skill Matching & Security
+    requiredRole: ProcessRoleSchema.optional(), // Skill Matching & Security
     timeMatrix: z.array(z.object({
         quantityThreshold: z.number(), // e.g. up to 1, up to 10
         setupTimeMinutes: z.number(), // Prep time
@@ -21,7 +28,7 @@ export const ProcessCreateSchema = createCreationSchema(ProcessSchema);
 export const ProcessUpdateSchema = createUpdateSchema(ProcessSchema);
 export const ProcessSearchSchema = PaginationQuerySchema.extend({
     name: z.string().optional(),
-    requiredRole: RoleIdSchema.optional(),
+    requiredRole: ProcessRoleSchema.optional(),
 });
 
 export const ProcessPolicyMatrix: Record<RoleId, EntityPolicy> = {
@@ -29,6 +36,7 @@ export const ProcessPolicyMatrix: Record<RoleId, EntityPolicy> = {
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     manager: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
+    standlo_design: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },

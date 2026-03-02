@@ -75,13 +75,13 @@ export function SwitchLocale() {
                 size="icon"
                 ref={buttonRef}
                 onClick={handleToggle}
-                className="w-9 h-9 border-transparent rounded-full flex items-center justify-center gap-1"
+                className="layout-header-action-btn"
                 title="Change language"
             >
                 {currentLocaleObj ? (
                     <span className="text-lg leading-none">{currentLocaleObj.flag}</span>
                 ) : (
-                    <Globe className="h-[1.2rem] w-[1.2rem] text-slate-600 dark:text-slate-400" />
+                    <Globe className="h-[1.2rem] w-[1.2rem]" />
                 )}
                 <span className="sr-only">Switch language</span>
             </Button>

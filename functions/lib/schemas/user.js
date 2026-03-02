@@ -36,6 +36,7 @@ exports.UserPolicyMatrix = {
         }
     },
     designer: defaultPolicy,
+    standlo_design: defaultPolicy,
     pending: defaultPolicy,
     customer: defaultPolicy,
     provider: defaultPolicy,

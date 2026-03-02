@@ -62,8 +62,8 @@ export type ProcessRelation = z.infer<typeof ProcessRelationSchema>;
 export const CalendarRelationSchema = z.object({ id: z.string(), name: z.string() });
 export type CalendarRelation = z.infer<typeof CalendarRelationSchema>;
 
-export const ActivityRelationSchema = z.object({ id: z.string(), name: z.string() });
-export type ActivityRelation = z.infer<typeof ActivityRelationSchema>;
+export const TaskRelationSchema = z.object({ id: z.string(), name: z.string() });
+export type TaskRelation = z.infer<typeof TaskRelationSchema>;
 
 export const MessageRelationSchema = z.object({ id: z.string(), name: z.string() });
 export type MessageRelation = z.infer<typeof MessageRelationSchema>;

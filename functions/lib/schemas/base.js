@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PaginationQuerySchema = exports.ProtectedSystemFields = exports.BaseSchema = exports.DocumentMetaSchema = exports.DocumentUpdateSchema = exports.FieldUpdateSchema = exports.RoleRelationSchema = exports.CallRelationSchema = exports.ApiKeyRelationSchema = exports.TaxRelationSchema = exports.PaymentRelationSchema = exports.InvoiceRelationSchema = exports.NotificationRelationSchema = exports.MessageRelationSchema = exports.ActivityRelationSchema = exports.CalendarRelationSchema = exports.ProcessRelationSchema = exports.PartRelationSchema = exports.AssemblyRelationSchema = exports.StandRelationSchema = exports.ToolRelationSchema = exports.ShelveRelationSchema = exports.WorkcenterRelationSchema = exports.WarehouseRelationSchema = exports.ExhibitorRelationSchema = exports.ExhibitionRelationSchema = exports.FairRelationSchema = exports.ProjectRelationSchema = exports.OrganizationRelationSchema = exports.UserRelationSchema = exports.LocalizedStringSchema = void 0;
+exports.PaginationQuerySchema = exports.ProtectedSystemFields = exports.BaseSchema = exports.DocumentMetaSchema = exports.DocumentUpdateSchema = exports.FieldUpdateSchema = exports.RoleRelationSchema = exports.CallRelationSchema = exports.ApiKeyRelationSchema = exports.TaxRelationSchema = exports.PaymentRelationSchema = exports.InvoiceRelationSchema = exports.NotificationRelationSchema = exports.MessageRelationSchema = exports.TaskRelationSchema = exports.CalendarRelationSchema = exports.ProcessRelationSchema = exports.PartRelationSchema = exports.AssemblyRelationSchema = exports.StandRelationSchema = exports.ToolRelationSchema = exports.ShelveRelationSchema = exports.WorkcenterRelationSchema = exports.WarehouseRelationSchema = exports.ExhibitorRelationSchema = exports.ExhibitionRelationSchema = exports.FairRelationSchema = exports.ProjectRelationSchema = exports.OrganizationRelationSchema = exports.UserRelationSchema = exports.LocalizedStringSchema = void 0;
 exports.createCreationSchema = createCreationSchema;
 exports.createUpdateSchema = createUpdateSchema;
 exports.createResponseSchema = createResponseSchema;
@@ -37,7 +37,7 @@ exports.AssemblyRelationSchema = zod_1.z.object({ id: zod_1.z.string(), name: zo
 exports.PartRelationSchema = zod_1.z.object({ id: zod_1.z.string(), name: zod_1.z.string() });
 exports.ProcessRelationSchema = zod_1.z.object({ id: zod_1.z.string(), name: zod_1.z.string() });
 exports.CalendarRelationSchema = zod_1.z.object({ id: zod_1.z.string(), name: zod_1.z.string() });
-exports.ActivityRelationSchema = zod_1.z.object({ id: zod_1.z.string(), name: zod_1.z.string() });
+exports.TaskRelationSchema = zod_1.z.object({ id: zod_1.z.string(), name: zod_1.z.string() });
 exports.MessageRelationSchema = zod_1.z.object({ id: zod_1.z.string(), name: zod_1.z.string() });
 exports.NotificationRelationSchema = zod_1.z.object({ id: zod_1.z.string(), name: zod_1.z.string() });
 exports.InvoiceRelationSchema = zod_1.z.object({ id: zod_1.z.string(), name: zod_1.z.string() });

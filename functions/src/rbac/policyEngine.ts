@@ -145,12 +145,20 @@ export function generateNavigationManifest(roleId: RoleId): NavItemManifest[] {
                 { labelKey: "projects", path: `/partner/${roleId}/projects`, icon: "Construction" },
             ];
         case "designer":
+        case "architect":
+        case "engineer":
+        case "standlo_design":
             return [
                 {
                     labelKey: "dashboard",
                     path: `/partner/${roleId}`,
                     icon: "LayoutDashboard",
                     matchPattern: `/partner/${roleId}/dashboard`,
+                },
+                {
+                    labelKey: "canvas",
+                    path: `/partner/${roleId}/canvas`,
+                    icon: "Cuboid",
                 },
             ];
         case "provider":

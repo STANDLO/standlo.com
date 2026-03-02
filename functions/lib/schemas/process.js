@@ -1,13 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProcessPolicyMatrix = exports.ProcessSearchSchema = exports.ProcessUpdateSchema = exports.ProcessCreateSchema = exports.ProcessSchema = void 0;
+exports.ProcessPolicyMatrix = exports.ProcessSearchSchema = exports.ProcessUpdateSchema = exports.ProcessCreateSchema = exports.ProcessSchema = exports.ProcessRoleSchema = void 0;
 const zod_1 = require("zod");
 const base_1 = require("./base");
 const primitives_1 = require("./primitives");
+exports.ProcessRoleSchema = zod_1.z.enum([
+    'manager', 'architect', 'engineer', 'designer', 'electrician', 'plumber',
+    'carpenter', 'cabinetmaker', 'dryliner', 'ironworker', 'windowfitter',
+    'glazier', 'riggers', 'standbuilder', 'plasterer', 'painter', 'tiler',
+    'driver', 'forkliftdriver', 'promoter'
+]);
 exports.ProcessSchema = base_1.BaseSchema.extend({
     name: primitives_1.LocalizedStringSchema,
     description: primitives_1.LocalizedStringSchema.optional(),
-    requiredRole: primitives_1.RoleIdSchema.optional(), // Skill Matching & Security
+    requiredRole: exports.ProcessRoleSchema.optional(), // Skill Matching & Security
     timeMatrix: zod_1.z.array(zod_1.z.object({
         quantityThreshold: zod_1.z.number(), // e.g. up to 1, up to 10
         setupTimeMinutes: zod_1.z.number(), // Prep time
@@ -19,13 +25,14 @@ exports.ProcessCreateSchema = (0, base_1.createCreationSchema)(exports.ProcessSc
 exports.ProcessUpdateSchema = (0, base_1.createUpdateSchema)(exports.ProcessSchema);
 exports.ProcessSearchSchema = base_1.PaginationQuerySchema.extend({
     name: zod_1.z.string().optional(),
-    requiredRole: primitives_1.RoleIdSchema.optional(),
+    requiredRole: exports.ProcessRoleSchema.optional(),
 });
 exports.ProcessPolicyMatrix = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     manager: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
+    standlo_design: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },

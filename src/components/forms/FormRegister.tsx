@@ -85,6 +85,10 @@ export function FormRegister() {
     };
 
     const loginWithGoogle = async () => {
+        if (!acceptedTerms) {
+            setError(t("Errors.auth-missing-terms") || "You must accept the Privacy Policy and Terms & Conditions before continuing.");
+            return;
+        }
         setIsLoading(true);
         setError(null);
         try {
@@ -101,6 +105,10 @@ export function FormRegister() {
     };
 
     const loginWithGithub = async () => {
+        if (!acceptedTerms) {
+            setError(t("Errors.auth-missing-terms") || "You must accept the Privacy Policy and Terms & Conditions before continuing.");
+            return;
+        }
         setIsLoading(true);
         setError(null);
         try {
@@ -121,7 +129,7 @@ export function FormRegister() {
             footerActionText={t("Register.loginAction")}
             onGoogleLogin={loginWithGoogle}
             onGithubLogin={loginWithGithub}
-            isLoading={isLoading || !acceptedTerms}
+            isLoading={isLoading}
         >
             <form onSubmit={onSubmit} className="layout-auth-form">
                 {error && (

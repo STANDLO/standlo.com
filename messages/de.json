@@ -21,7 +21,8 @@
         "tiler": "Fliesenleger",
         "driver": "Fahrer",
         "forkliftdriver": "Gabelstaplerfahrer",
-        "promoter": "Promoter"
+        "promoter": "Promoter",
+        "standlo_design": "STANDLO - Design System"
     },
     "Brand": {
         "name": "STANDLO",
@@ -92,7 +93,8 @@
             "auth/network-request-failed": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung.",
             "auth/popup-closed-by-user": "Das Anmeldefenster wurde vor dem Abschluss geschlossen.",
             "auth/account-exists-with-different-credential": "Sie haben bereits ein Konto mit dieser E-Mail-Adresse, das mit einem anderen Anbieter verknüpft ist.",
-            "default": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+            "default": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+            "auth-missing-terms": "Sie müssen die Datenschutzrichtlinie und die Allgemeinen Geschäftsbedingungen akzeptieren, bevor Sie fortfahren können."
         },
         "VerifyEmail": {
             "title": "Bestätigen Sie Ihre E-Mail-Adresse",
@@ -131,7 +133,7 @@
     "Onboarding": {
         "title": "Vervollständigen Sie Ihr B2B-Profil",
         "subtitle": "Um Standlo weiterhin nutzen zu können, benötigen wir einige obligatorische Rechnungsinformationen.",
-        "orgNameLabel": "Firmenname",
+        "orgNameLabel": "Firmenname / Gesellschaftsname",
         "logoLabel": "Firmenlogo",
         "roleLabel": "Wählen Sie Ihre Rolle",
         "vatLabel": "Umsatzsteuer-Identifikationsnummer",
@@ -139,6 +141,11 @@
         "ibanLabel": "IBAN",
         "addressLabel": "Eingetragene Büroadresse",
         "submitButton": "Profil vervollständigen"
+    },
+    "Common": {
+        "noResults": "Keine Ergebnisse gefunden.",
+        "loadMore": "Mehr laden",
+        "genericError": "Bei der Verarbeitung Ihrer Anfrage ist ein Problem aufgetreten."
     },
     "Components": {
         "InputPlace": {
@@ -149,6 +156,7 @@
         "dashboard": "Dashboard",
         "orders": "Bestellungen",
         "catalog": "Katalog",
+        "organization": "Organisation",
         "organizations": "Organisationen",
         "settings": "Einstellungen",
         "projects": "Projekte",
