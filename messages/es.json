@@ -26,9 +26,9 @@
     },
     "Brand": {
         "name": "STANDLO",
-        "slogan": "The Global Factory",
-        "description": "STANDLO nació para resolver el caos de las obras temporales, pero su lógica es universal. Ya sea un rascacielos, un showroom en París, una planta fotovoltaica o un producto de diseño, STANDLO coordina la transformación de la idea en realidad física. Eliminamos la ineficiencia estructural de la intermediación para cada \"cosa erigida\" en el mundo.",
-        "copyright": "© {year} STANDLO S.A. Todos los derechos reservados."
+        "slogan": "Temporary Information Modeling",
+        "description": "STANDLO presenta TIM (Temporary Information Modeling): el sistema operativo que transforma datos en estructuras físicas. Gestiona stands de ferias y módulos de emergencia con sincronía milimétrica, pagos instantáneos y logística predictiva. Bienvenidos al Temporary Flow.",
+        "copyright": "© {year} STANDLO SÜ Todos los derechos reservados."
     },
     "Dashboard": {
         "Designer": {

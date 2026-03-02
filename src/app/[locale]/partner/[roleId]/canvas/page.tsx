@@ -15,7 +15,6 @@ import { use } from "react";
 
 export default function Canvas3DEditorPage({ params }: { params: Promise<{ roleId: string, locale: string }> }) {
     const { roleId, locale } = use(params);
-    const fallbackTitle = "Canvas 3D Editor";
     const searchParams = useSearchParams();
     const entityId = searchParams.get("id"); // Retrieve Canvas document ID
     const [xrError, setXrError] = useState<Error | null>(null);
@@ -67,8 +66,8 @@ export default function Canvas3DEditorPage({ params }: { params: Promise<{ roleI
                         <Cuboid className="ui-canvas-header-icon" />
                     </div>
                     <div>
-                        <h1 className="ui-canvas-header-title">{fallbackTitle}</h1>
-                        <p className="ui-canvas-header-subtitle">Standlo Architecture</p>
+                        <h1 className="ui-canvas-header-title">Design System</h1>
+                        <p className="ui-canvas-header-subtitle">Temporary Information Modeling</p>
                     </div>
                 </div>
 

@@ -26,9 +26,9 @@
     },
     "Brand": {
         "name": "STANDLO",
-        "slogan": "The Global Factory",
-        "description": "STANDLO est né pour résoudre le chaos des chantiers temporaires, mais sa logique est universelle. Qu'il s'agisse d'un gratte-ciel, d'un showroom à Paris, d'une centrale photovoltaïque ou d'un produit de design, STANDLO coordonne la transformation de l'idée en réalité physique. Nous éliminons l'inefficacité structurelle de l'intermédiation pour chaque \"chose érigée\" dans le monde.",
-        "copyright": "© {year} STANDLO S.A. Tous droits réservés."
+        "slogan": "Temporary Information Modeling",
+        "description": "STANDLO présente TIM (Temporary Information Modeling) : le système d'exploitation qui transforme les données en structures physiques. Gérez des stands d'exposition et des modules d'urgence avec une synchronisation millimétrique, des paiements instantanés et une logistique prédictive. Bienvenue dans le Temporary Flow.",
+        "copyright": "© {year} STANDLO SÜ Tous droits réservés."
     },
     "Dashboard": {
         "Designer": {
