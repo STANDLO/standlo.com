@@ -132,7 +132,7 @@ Include capacità avanzate sviluppate iterativamente:
 
 ## 10. Project Management & GitHub Single Source of Truth
 L'intero ciclo di vita dello sviluppo e l'orchestrazione delle architetture sono tracciate tramite GitHub e la GitHub CLI (`gh`). 
-L'unica Source of Truth del project management risiede nell'organizzazione GitHub di STANDLO (es. `https://github.com/orgs/STANDLO/projects/[ID]`).
+L'unica Source of Truth del project manage ment risiede nell'organizzazione GitHub di STANDLO (es. `https://github.com/orgs/STANDLO/projects/[ID]`).
 I piani architetturali generati dagli Agenti AI (Artefatti Locali) vengono costruiti nell'ambiente di sviluppo e, una volta approvati, vengono frammentati in rigorose GitHub Issues automatiche, assegnate programmaticamente alle Project Boards. 
 
 *(Fine Master Context)*
