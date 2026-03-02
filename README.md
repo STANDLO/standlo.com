@@ -21,36 +21,35 @@ L'architettura NEXT.js è concepita come un "consumatore UI sottile". Tutta la l
 
 ---
 
-## 2. Architettura dei Gateways 
+## 2. Architettura dei Gateways & API
 
-L'interazione tra Frontend e DB as-a-service (Firestore) è schermata da un Pattern a Microservizi basato su **5 Funzioni Gateway Callable (`onCall`)**. Ogni singola funzione è protetta preventivamente da Firebase AppCheck Edge Enforcement.
+L'interazione tra Frontend e DB as-a-service (Firestore) è schermata da un Pattern a Microservizi basato su **Cloud Functions (`onCall`)** e **Next.js API Routes**. Ogni singola funzione Firebase è protetta preventivamente da Firebase AppCheck Edge Enforcement (salvo eccezioni mirate).
 
 ### 2.1 Orchestrator
 È la funzione preposta alle macchine a stati critiche (es. Flusso di Onboarding, Creazione dinamica di account B2B esterni) o a logiche multi-dominio che richiedono operazioni "privilegiate" garantite solo dall'esecuzione server-side tramite Firebase Admin SDK.
 - **Scopo Principale**: Iniettare token e Custom Claims, approvare identità, validare setup iniziali e lanciare scritture su più collezioni Firestore garantendo transazionalità.
 - **Come Aggiornarlo**: Le sue ramificazioni si trovano in `functions/src/orchestrator/`.
 
-### 2.2 WebInterface (Server-Driven UI e RBAC Layouting)
-È il cuore pulsante dinamico del Frontend. Espone chiamate RPC sicure (`rpc`) che ritornano dinamicamente al frontend non solo i dati, ma le regole di rendering UI e l'albero di navigazione.
-- **Scopo Principale**: Fornire lo Zod Mapping per l'autogenerazione dei form su Frontend (SDUI) e fornire il **Navigation Manifest** basato sull'identità crittografata dell'utente.
-- **Come aggiungere al Navigator**: Per modificare il menu laterale, intervenire sul file `functions/src/rbac/policyEngine.ts` nella funzione `generateNavigationManifest(roleId)`. Questo restituisce al Layout del frontend rotte come `dashboard`, `projects`, e setta la gerarchia visiva. Nessun link è hardcoded in React.
-- **Come modificare i permessi RBAC**: I permessi di ogni entità (READ, WRITE, CREATE) sono definiti in matrici precise accanto ai loro file di schema in `functions/src/schemas/` (es. `OrganizationPolicyMatrix` in `organization.ts`). Il motore di navigazione li legge da `PolicyMatrices` sempre dentro `policyEngine.ts`.
-
-### 2.3 Firestore Gateway
-È l'unico Data Access Layer standardizzato e controllato per l'interazione bidirezionale Frontend<->DB che non necessita di logiche massive custom.
+### 2.2 Firestore Gateway
+È l'unico Data Access Layer standardizzato e controllato per l'interazione bidirezionale Frontend<->DB.
 - **Scopo Principale**: Orchestra in totale autonomia le operazioni CRUD (`list`, `create`, `read`, `update`, `soft_delete`), applicando impaginazione server-side, multi-tenant isolation e filtraggio composto nativo.
-- **EntityRegistry & Sicurezza**: Utilizza un `EntityRegistry` centrale per mappare `entityId` ai percorsi Firestore esatti e agli Zod Schemas corrispondenti. Qualsiasi manomissione del payload rispetto allo schema atteso genera automaticamente un **Security Alert** tracciato su Firestore.
-- **Error Hashing & Context Enrichment**: In caso di eccezioni (es. permessi, validazione), il Gateway genera un `errorReferenceCode` univoco e lo invia al frontend. I log estesi (comprendenti User-Agent, IP, payload e Request Context) vengono salvati in sicurezza nella collection `alerts`.
-- **Long-Term Archiving**: Gestisce nativamente l'esclusione di default dei record soft-deleted e archiviati (`isArchived: true`), mantenendo le collection veloci e sicure tramite Indici Composti.
+- **EntityRegistry & Sicurezza**: Utilizza un `EntityRegistry` centrale per mappare `entityId` ai percorsi Firestore esatti e agli Zod Schemas corrispondenti. Qualsiasi manomissione del payload rispetto allo schema atteso genera automaticamente un **Security Alert**.
+- **Error Hashing & Context Enrichment**: In caso di eccezioni, genera un `errorReferenceCode` univoco e lo invia al frontend. I log estesi vengono salvati in sicurezza nella collection `alerts`.
+- **Long-Term Archiving**: Gestisce nativamente l'esclusione di default dei record soft-deleted e archiviati (`isArchived: true`).
+
+### 2.3 Canvas
+Gateway specializzato per l'infrastruttura 3D (WebGL / React Three Fiber) e la logica del Master Catalog delle Parts e Materials.
+- **Scopo Principale**: Risolvere gerarchie complesse di asset 3D, validare trasformazioni, interrogare il BIM catalog e serializzare lo stato del Canvas.
+- **Sicurezza Dedicata**: Implementa AppCheck controllato (disattivato in scenari pubblici o iframe anonimi) e garantisce il lockdown RBAC in scrittura. Le Master Parts sono read-only per l'utente, unicamente manipolabili tramite lo Standlo Admin Studio.
 
 ### 2.4 Choreography
 Coda asincrona per task _fire-and-forget_ e code distribuite. 
-- **Scopo Principale**: Gestione di trigger asincroni (event listeners su insert/update Firestore per ricalcoli, statistiche, clean-up o messaggistica heavy come server push e mailers).
+- **Scopo Principale**: Gestione di trigger asincroni (event listeners su insert/update Firestore per ricalcoli, statistiche, clean-up o messaggistica heavy).
 - **Architettura in Evoluzione**: Separato dalle chiamate onCall sincrone per evitare che il frontend attenda code di timeout estenuanti.
 
 ### 2.5 Brain
-L'interfaccia verso le Intelligenze Artificiali / LLMs (attualmente in via di evoluzione e documentazione dinamica).
-- **Scopo Principale**: Agente AI Centralizzato, gestirà in futuro logiche come orchestrazione AI/Processi automatizzati, parsing multimodale per PDF architettonici e RAG su vector database proprietari per estrarre storicità STANDLO.
+L'interfaccia verso le Intelligenze Artificiali / LLMs.
+- **Scopo Principale**: Agente AI Centralizzato, destinato a orchestrare RAG, generative design, automation pipeline e automazione del workflow di progetto.
 
 ---
 
@@ -66,7 +65,7 @@ La sicurezza di STANDLO è strutturata su sessioni non statali (JWT Custom Claim
   - `location`: Estratto dalla residenza/Sede (composto per default da CountryCode e ZipCode, es. `IT-20017`). Abilita future categorizzazioni spaziali in filter-free edge resolution.
   - **Dynamic Entity IDs**: `${role}Id` e `${role}Name`, auto-costruiti e serializzati, per tracciamento granulare del path specifico all'interno di relazioni multiple complesse.
 - **Latenza Zero HTTP Edge Middleware**: In `/src/proxy.ts`, Edge valuta il payload JWT in frazioni di millisecondo ed instrada i route `/[locale]/[role]/...` rigettando cross-contamination o redirezionando al processo di *onboarding* qualificato.
-- **Navigation (SDUI)**: Il menu (`LayoutProtected`) esegue una Fetch SSR che chiama la `WebInterface` (`policyEngine.ts`) traducendo all'istante i flag di cui sopra in Sidebar Navigations vive. 
+- **Navigation (SDUI) & API Manifest**: Il menu (layout) esegue una Fetch SSR che chiama l'endpoint interno Next.js `/api/schemas/manifest`. Questo endpoint legge i permessi architetturali definiti in `functions/src/schemas/` e traduce all'istante i branch RBAC in Sidebar Navigations vive basandosi sull'identità dell'utente. Nessun link è hardcoded in React. 
 
 ---
 
@@ -118,14 +117,16 @@ L'operatività base per testare il codice in locale:
    - `npm run cloud` o equivalente: Seguire le istruzioni DevSecOps o gli automatismi CI/CD previsti dal workflow. Nativamente Vercel-like in staging.
 
 ## 9. Standlo Admin Studio (Control Panel & Local Developer GUI)
-Ecosistema Low-Code parallelo installato isolatamente nella cartella root `/admin`. É un'applicazione Next.js nativa con accesso Firebase "God Mode" (tramite Firebase Admin SDK) per bypassare restrizioni e permettere interventi totali. Mai rilasciata in produzione (inserita in `.gitignore`).
-Include capacità avanzate:
-- **Visual Schema & Policy Editor (NoCode):** Interfaccia drag-and-drop per l'astrazione JSON->Zod. Riscrive file sorgente come `schemas/organization.ts` e `policyEngine.ts` dinamicamente con introspezione di `UIFieldMeta`.
-- **Safe Generation Pipeline (AST Validation):** Middleware node che parsifica virtualmente tramite *TypeScript Compiler API* e formatta con *Prettier* prima di innescare save su file physicali, ostacolando Syntax Error letali.
-- **Interactive Role Impersonation:** Motore QA integrato. Selettore "Impersonifica" inietta dinamicamente il RoleID ai Meta-Form per simulare cosa vede l'utente con l'attuale filtro Zod.
-- **Universal Admin CRUD:** Re-implementa i Meta-Form (`FormList`, `Create`, `Detail`) ma con privilegi assoluti, rendendolo l'Internal Panel definitivo per aggiustare/ispezionare entità DB con Meta-UI.
-- **Security Alerts Dashboard:** Sincronizzazione in tempo reale dal Backend Firestore Gateway degli alert Security Deposit (manipolazioni data, permessi mancanti).
-- **Monorepo Component Reusability:** Importa e aliasa (via turbopack e tsconfig) i percorsi UI `src/` del main project per continuità visiva Zero-Boilerplate.
+Ecosistema Low-Code parallelo installato isolatamente nella cartella root `/admin`. É un'applicazione Next.js nativa con un ambiente protetto ("God Mode" via Firebase Admin SDK) per l'amministrazione generale, bypassando le restrizioni frontali del tenant. Mai rilasciata in produzione (inserita in `.gitignore`).
+Include capacità avanzate sviluppate iterativamente:
+- **Flussi User Activation:** Dashboard dedicata in cui gli owner possono esaminare ed approvare/rifiutare le Organizzazioni in onboarding (Partner Application Pending). Questo scatena autonomamente i trigger Orchestrator (esecuzione di `approveOrganizationApplication`).
+- **Canvas Master Catalog Management:** Interfaccia CRUD Master per la gestione assoluta delle parti fisiche del BIM, Materiali globali (Color, Finish) bloccati in produzione ma alterabili dinamicamente qui. Questo alimenta le Collection Firestore lette passivamente dal Canvas 3D.
+- **Visual Schema & Policy Editor (NoCode):** Interfaccia drag-and-drop per l'astrazione JSON->Zod. Riscrive file sorgente strutturali per l'RBAC.
+- **Safe Generation Pipeline (AST Validation):** Middleware node che parsifica virtualmente tramite *TypeScript Compiler API* e formatta con *Prettier* prima di iniettare sorgente físico.
+- **Interactive Role Impersonation:** Motore QA integrato per impersonare tenant generici.
+- **Universal Admin CRUD:** Re-implementazione dei Meta-Form standard con poteri totali (es. reset di flag `isArchived`, soft deletes o ripristino hard entities).
+- **Security Alerts Dashboard:** Sincronizzazione real-time delle intrusioni intercettate dai Gateway o da Payload manipolati.
+- **Monorepo Component Reusability:** Importazione in Alias mode (via `../src/`) dei layout globali, così da rispecchiare coerentemente design tokens e framework SDUI in un compartimento isolato.
 
 ---
 
