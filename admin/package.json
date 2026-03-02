@@ -1,0 +1,27 @@
+{
+  "name": "admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "rm -rf .next && next dev -p 4000",
+    "build": "next build",
+    "start": "next start -p 4000",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "prettier": "^3.8.1",
+    "ts-morph": "^27.0.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/forge-viewer": "^7.99.1",
+    "@types/node": "^20",
+    "@types/prettier": "^2.7.3",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,208 @@
+@import "tailwindcss";
+
+/* Ensure Tailwind v4 scans this exact workspace for utility classes */
+@source "../app";
+@source "../components";
+
+@theme {
+    --color-border: hsl(var(--border));
+    --color-input: hsl(var(--input));
+    --color-ring: hsl(var(--ring));
+    --color-background: hsl(var(--background));
+    --color-foreground: hsl(var(--foreground));
+
+    --color-primary: hsl(var(--primary));
+    --color-primary-foreground: hsl(var(--primary-foreground));
+
+    --color-secondary: hsl(var(--secondary));
+    --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+    --color-destructive: hsl(var(--destructive));
+    --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+    --color-muted: hsl(var(--muted));
+    --color-muted-foreground: hsl(var(--muted-foreground));
+
+    --color-accent: hsl(var(--accent));
+    --color-accent-foreground: hsl(var(--accent-foreground));
+
+    --color-popover: hsl(var(--popover));
+    --color-popover-foreground: hsl(var(--popover-foreground));
+
+    --color-card: hsl(var(--card));
+    --color-card-foreground: hsl(var(--card-foreground));
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+}
+
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 220 10% 4%;
+        --card: 0 0% 100%;
+        --card-foreground: 220 10% 4%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 220 10% 4%;
+        --primary: 220 100% 30%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 48 100% 50%;
+        --secondary-foreground: 220 100% 15%;
+        --muted: 220 14% 96%;
+        --muted-foreground: 220 9% 46%;
+        --accent: 220 14% 96%;
+        --accent-foreground: 220 10% 4%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 210 20% 98%;
+        --border: 220 13% 91%;
+        --input: 220 13% 91%;
+        --ring: 220 100% 30%;
+        --radius: 0.5rem;
+    }
+}
+
+.dark {
+    --background: 220 60% 4%;
+    --foreground: 0 0% 98%;
+    --card: 220 60% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 220 60% 4%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 220 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 48 100% 45%;
+    --secondary-foreground: 220 100% 10%;
+    --muted: 220 60% 15%;
+    --muted-foreground: 220 10% 65%;
+    --accent: 220 60% 15%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 60% 15%;
+    --input: 220 60% 15%;
+    --ring: 220 100% 45%;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+/* Base custom classes explicitly used by the copied admin components */
+@layer components {
+
+    /* UI Card Semantic Classes */
+    .ui-card {
+        @apply rounded-xl border bg-card text-card-foreground shadow;
+    }
+
+    .ui-card-header {
+        @apply flex flex-col space-y-1.5 p-6;
+    }
+
+    .ui-card-title {
+        @apply font-semibold leading-none tracking-tight;
+    }
+
+    .ui-card-description {
+        @apply text-sm text-muted-foreground;
+    }
+
+    .ui-card-content {
+        @apply p-6 pt-0;
+    }
+
+    .ui-card-footer {
+        @apply flex items-center p-6 pt-0;
+    }
+
+    /* UI Button Semantic Classes */
+    .ui-btn {
+        @apply inline-flex items-center justify-center rounded-md text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1;
+    }
+
+    /* UI Input Semantic Classes */
+    .ui-input {
+        @apply flex w-full rounded-md border text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1;
+    }
+
+    .ui-input-primary {
+        @apply border-input bg-transparent px-3 py-1 focus-visible:ring-ring;
+    }
+
+    .ui-input-primary-muted {
+        @apply border-input bg-primary/5 px-3 py-1 focus-visible:ring-ring opacity-70 cursor-not-allowed;
+    }
+
+    .ui-input-primary-readonly {
+        @apply border-transparent bg-transparent px-0 py-1 ring-0 cursor-default focus-visible:ring-0 shadow-none;
+    }
+
+    /* Checkbox / Forms */
+    .ui-checkbox-container {
+        @apply flex items-start gap-4 mt-4;
+    }
+
+    .ui-checkbox-input {
+        @apply mt-1 w-4 h-4 shrink-0 rounded appearance-none border border-input bg-background text-emerald-500 checked:bg-emerald-500 checked:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-background transition-all cursor-pointer relative after:content-['✓'] after:absolute after:text-primary-foreground after:text-xs after:left-0.5 after:top-[-1px] after:opacity-0 checked:after:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    /* Lists / Table Semantic Classes */
+    .ui-list-container {
+        @apply w-full;
+    }
+
+    .ui-list-wrapper {
+        @apply rounded-md border bg-card;
+    }
+
+    .ui-table {
+        @apply w-full caption-bottom text-sm relative;
+    }
+
+    .ui-table-thead {
+        @apply [&_tr]:border-b bg-muted/50 text-muted-foreground w-full;
+    }
+
+    .ui-table-tr {
+        @apply border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted;
+    }
+
+    .ui-table-th {
+        @apply h-10 px-4 text-left align-middle font-medium;
+    }
+
+    .ui-table-tbody {
+        @apply [&_tr:last-child]:border-0;
+    }
+
+    .ui-table-td {
+        @apply p-4 align-middle;
+    }
+
+    .ui-table-skeleton {
+        @apply h-4 w-full animate-pulse bg-muted rounded;
+    }
+
+    .ui-table-empty {
+        @apply p-4 text-center text-muted-foreground h-24;
+    }
+
+    .ui-pagination-container {
+        @apply flex items-center justify-between px-2 mt-4;
+    }
+
+    .ui-pagination-text {
+        @apply text-sm text-muted-foreground;
+    }
+
+    .ui-pagination-actions {
+        @apply flex items-center space-x-2;
+    }
+}
