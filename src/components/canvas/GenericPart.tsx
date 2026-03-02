@@ -2,9 +2,9 @@
 
 import { useRef } from "react";
 import { CanvasEntity, useCanvasStore } from "./store";
-import { ThreeEvent } from "@react-three/fiber";
+import { ThreeEvent, useFrame } from "@react-three/fiber";
 import { TransformControls, Sphere } from "@react-three/drei";
-import { RigidBody } from "@react-three/rapier";
+import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import * as THREE from "three";
 
 interface GenericPartProps {
@@ -13,6 +13,7 @@ interface GenericPartProps {
 
 export default function GenericPart({ entity }: GenericPartProps) {
     const groupRef = useRef<THREE.Group>(null!);
+    const rigidBodyRef = useRef<RapierRigidBody>(null);
 
     const selectedEntityId = useCanvasStore((state) => state.selectedEntityId);
     const selectEntity = useCanvasStore((state) => state.selectEntity);
@@ -27,6 +28,14 @@ export default function GenericPart({ entity }: GenericPartProps) {
     const isParametricCyl = entity.baseEntityId.startsWith("parametric_cylinder");
 
     const dimensions = [1, 1, 1] as [number, number, number];
+
+    useFrame(() => {
+        if (isSelected && rigidBodyRef.current && groupRef.current) {
+            // Keep the kinematic rigid body strictly synced with the visual group dragged by TransformControls
+            rigidBodyRef.current.setNextKinematicTranslation(groupRef.current.position);
+            rigidBodyRef.current.setNextKinematicRotation(groupRef.current.quaternion);
+        }
+    });
 
     const handleClick = (e: ThreeEvent<MouseEvent>) => {
         e.stopPropagation();
@@ -117,6 +126,7 @@ export default function GenericPart({ entity }: GenericPartProps) {
                   ActiveEvents.COLLISION_EVENTS is implied by callbacks.
                 */}
                 <RigidBody
+                    ref={rigidBodyRef}
                     type={isSelected ? "kinematicPosition" : "fixed"}
                     colliders="cuboid"
                     onCollisionEnter={() => setEntityCollision(entity.id, true)}

@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useRef, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import {
-    OrbitControls,
+    CameraControls,
     Environment,
     Grid,
     ContactShadows,
@@ -34,6 +34,7 @@ const CanvasEntitiesRenderer = () => {
 export default function CanvasEditor() {
     const mode = useCanvasStore((state) => state.mode);
     const viewMode = useCanvasStore((state) => state.viewMode);
+    const cameraControlsRef = useRef<CameraControls>(null);
 
     // Grid size depends on the mode
     const gridSize = mode === "stand" ? 20 : 5;
@@ -46,13 +47,29 @@ export default function CanvasEditor() {
     const bloomThreshold = 1.0;
     const debugPhysics = false;
 
+    // React to viewMode changes to animate camera
+    useEffect(() => {
+        if (!cameraControlsRef.current) return;
+        const cc = cameraControlsRef.current;
+
+        if (viewMode === "2D") {
+            // Top-down view
+            cc.setLookAt(0, 50, 0, 0, 0, 0, true);
+        } else if (viewMode === "3D") {
+            // Isometric-ish view
+            cc.setLookAt(15, 15, 15, 0, 0, 0, true);
+        }
+    }, [viewMode]);
+
     return (
         <div className="w-full h-full relative bg-stone-50 dark:bg-black">
 
             <Canvas
                 shadows
-                camera={viewMode === "2D" ? { position: [0, 10, 0], fov: 45 } : { position: [5, 5, 5], fov: 45 }}
-                orthographic={viewMode === "2D"}
+                camera={{ position: [15, 15, 15], fov: 45 }}
+                // Orthographic behavior is managed dynamically or via CameraControls if needed,
+                // but for seamless transitions, a perspective camera at a high distance with low FOV can simulate orthographic,
+                // or we use setLookAt. We stick to perspective for smooth interpolation out-of-the-box.
                 gl={{ preserveDrawingBuffer: true }} // Required for .toDataURL() exports
             >
                 <Suspense fallback={null}>
@@ -93,7 +110,13 @@ export default function CanvasEditor() {
                     />
 
                     {/* Interactive Camera Controls */}
-                    <OrbitControls makeDefault />
+                    <CameraControls
+                        ref={cameraControlsRef}
+                        makeDefault
+                        minDistance={2}
+                        maxDistance={100}
+                        maxPolarAngle={viewMode === "2D" ? 0 : Math.PI / 2 + 0.1} // Restrict going below ground in 3D, strict top-down in 2D
+                    />
 
                     {/* Orientation Gizmo */}
                     <GizmoHelper

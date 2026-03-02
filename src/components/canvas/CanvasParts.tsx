@@ -2,6 +2,8 @@ import React from "react";
 import { CanvasCard } from "@/components/ui/CanvasCard";
 import { Search, Cuboid, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useCanvasStore } from "./store";
+import { v4 as uuidv4 } from "uuid";
 
 // Dummy data for visual representation until hooked up to React Query + AST
 const DUMMY_PARTS = [
@@ -12,6 +14,22 @@ const DUMMY_PARTS = [
 ];
 
 export function CanvasParts() {
+    const addEntity = useCanvasStore((state) => state.addEntity);
+
+    const handleAdd = (part: typeof DUMMY_PARTS[0]) => {
+        addEntity({
+            id: uuidv4(),
+            baseEntityId: part.name.toLowerCase().includes("panel") ? "parametric_box_panel" : "parametric_cylinder_pillar",
+            type: "part",
+            position: [0, 5, 0], // Drop from slightly above
+            rotation: [0, 0, 0, 1],
+            sockets: [
+                { id: uuidv4(), type: "male", position: [0.5, 0, 0], rotation: [0, 0, 0, 1] },
+                { id: uuidv4(), type: "female", position: [-0.5, 0, 0], rotation: [0, 0, 0, 1] }
+            ]
+        });
+    };
+
     return (
         <CanvasCard
             title={
@@ -44,7 +62,12 @@ export function CanvasParts() {
                             <div className="text-sm font-medium">{part.name}</div>
                             <div className="text-xs text-muted-foreground">{part.category}</div>
                         </div>
-                        <Button variant="outline" size="icon" className="opacity-0 group-hover:opacity-100 h-7 w-7 transition-opacity border-none">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="opacity-0 group-hover:opacity-100 h-7 w-7 transition-opacity border-none"
+                            onClick={() => handleAdd(part)}
+                        >
                             <Plus className="w-4 h-4" />
                         </Button>
                     </div>
