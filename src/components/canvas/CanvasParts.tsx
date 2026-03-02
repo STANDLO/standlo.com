@@ -44,7 +44,7 @@ export function CanvasParts() {
                             <div className="text-sm font-medium">{part.name}</div>
                             <div className="text-xs text-muted-foreground">{part.category}</div>
                         </div>
-                        <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 h-7 w-7 transition-opacity">
+                        <Button variant="outline" size="icon" className="opacity-0 group-hover:opacity-100 h-7 w-7 transition-opacity border-none">
                             <Plus className="w-4 h-4" />
                         </Button>
                     </div>
