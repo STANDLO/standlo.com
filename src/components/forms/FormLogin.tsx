@@ -55,6 +55,28 @@ export function FormLogin() {
         });
 
         if (res.ok) {
+            try {
+                let sessionId = localStorage.getItem("standlo_session");
+                if (!sessionId) {
+                    sessionId = crypto.randomUUID();
+                    localStorage.setItem("standlo_session", sessionId);
+                }
+                const trackHeaders: Record<string, string> = {
+                    "Content-Type": "application/json",
+                    ...headers
+                };
+                fetch("/api/gateway", {
+                    method: "POST",
+                    headers: trackHeaders,
+                    body: JSON.stringify({
+                        actionId: "auth_event",
+                        payload: { type: "login", sessionId }
+                    })
+                }).catch(e => console.error("Auth tracker error:", e));
+            } catch (e) {
+                console.error("Session init error:", e);
+            }
+
             // Let the edge proxy redirect the user based on their role
             window.location.href = "/";
         } else {

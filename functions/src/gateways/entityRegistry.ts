@@ -14,6 +14,7 @@ export const Registry: Record<string, EntityConfig> = {
     // Global Elements
     organization: { scope: "global", name: "organizations", schema: schemas.OrganizationSchema },
     user: { scope: "global", name: "users", schema: schemas.UserSchema },
+    auth: { scope: "global", name: "auth", schema: schemas.AuthEventSchema },
 
     // Multi-tenant Elements
     fair: { scope: "global", name: "fairs", schema: schemas.FairSchema },

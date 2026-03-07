@@ -44,6 +44,7 @@ exports.orchestrator = (0, https_1.onCall)({
     cors: process.env.FUNCTIONS_EMULATOR === "true" ? true : ["https://standlo.com", "https://www.standlo.com"],
     consumeAppCheckToken: false,
 }, async (request) => {
+    var _a;
     // 1. Mandatory Auth check
     if (!request.auth) {
         throw new https_1.HttpsError("unauthenticated", "User must be authenticated to access Orchestrator.");
@@ -55,6 +56,25 @@ exports.orchestrator = (0, https_1.onCall)({
     console.log(`[Orchestrator] Details: orgId=${orgId}, userId=${userId}, roleId=${roleId}, idempotencyKey=${idempotencyKey}, payload=${!!payload}`);
     // TODO: Verify idempotencyKey against Firestore 'idempotency_locks' to prevent duplicated logic execution
     // --- ROUTER START ---
+    if (actionId === "auth_event") {
+        if (!payload) {
+            throw new https_1.HttpsError("invalid-argument", "Payload is required for auth events.");
+        }
+        let ipAddress;
+        const forwardedFor = request.rawRequest.headers['x-forwarded-for'];
+        if (typeof forwardedFor === 'string') {
+            ipAddress = forwardedFor.split(',')[0].trim();
+        }
+        else if (Array.isArray(forwardedFor)) {
+            ipAddress = forwardedFor[0].trim();
+        }
+        else {
+            ipAddress = (_a = request.rawRequest.socket) === null || _a === void 0 ? void 0 : _a.remoteAddress;
+        }
+        const userAgent = request.rawRequest.headers['user-agent'];
+        const { handleAuthEvent } = await Promise.resolve().then(() => __importStar(require("../orchestrator/auth")));
+        return handleAuthEvent(request.auth.uid, ipAddress, userAgent, payload);
+    }
     if (actionId === "onboard_organization") {
         if (!payload) {
             throw new https_1.HttpsError("invalid-argument", "Payload is required for onboarding.");

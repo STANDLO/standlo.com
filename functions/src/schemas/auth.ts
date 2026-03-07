@@ -10,3 +10,27 @@ export type { RoleId };
 */
 export const RoleSchema = BaseSchema.extend({});
 export type Role = z.infer<typeof RoleSchema>;
+
+/*
+* Auth Event Schema (Event Sourcing)
+*/
+export const AuthEventSchema = BaseSchema.extend({
+    type: z.enum([
+        "create",
+        "verify",
+        "onboarding",
+        "login",
+        "logout",
+        "session_refresh",
+        "delete"
+    ]),
+    uid: z.string(),
+    email: z.string().email().optional(),
+
+    // Enriched Fields
+    sessionId: z.string().uuid().optional(),
+    ipAddress: z.string().optional(),
+    userAgent: z.string().optional()
+});
+export type AuthEvent = z.infer<typeof AuthEventSchema>;
+export type AuthEventDocument = AuthEvent & { id: string };

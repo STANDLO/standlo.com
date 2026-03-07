@@ -25,6 +25,27 @@ export const orchestrator = onCall({
     // TODO: Verify idempotencyKey against Firestore 'idempotency_locks' to prevent duplicated logic execution
 
     // --- ROUTER START ---
+    if (actionId === "auth_event") {
+        if (!payload) {
+            throw new HttpsError("invalid-argument", "Payload is required for auth events.");
+        }
+
+        let ipAddress: string | undefined;
+        const forwardedFor = request.rawRequest.headers['x-forwarded-for'];
+        if (typeof forwardedFor === 'string') {
+            ipAddress = forwardedFor.split(',')[0].trim();
+        } else if (Array.isArray(forwardedFor)) {
+            ipAddress = forwardedFor[0].trim();
+        } else {
+            ipAddress = request.rawRequest.socket?.remoteAddress;
+        }
+
+        const userAgent = request.rawRequest.headers['user-agent'];
+
+        const { handleAuthEvent } = await import("../orchestrator/auth");
+        return handleAuthEvent(request.auth.uid, ipAddress, userAgent, payload as Record<string, unknown>);
+    }
+
     if (actionId === "onboard_organization") {
         if (!payload) {
             throw new HttpsError("invalid-argument", "Payload is required for onboarding.");

@@ -99,6 +99,19 @@ export function FormOnboarding({ locale }: { locale: string }) {
 
                 // Update Edge cookies
                 await fetch("/api/auth/login", { headers });
+
+                // Log the final onboarding completion step to the Orchestrator
+                const sessionId = localStorage.getItem("standlo_session");
+                if (sessionId) {
+                    await fetch("/api/gateway", {
+                        method: "POST",
+                        headers,
+                        body: JSON.stringify({
+                            actionId: "auth_event",
+                            payload: { type: "onboarding", sessionId }
+                        })
+                    }).catch(() => { });
+                }
             }
 
             // Redirect on success

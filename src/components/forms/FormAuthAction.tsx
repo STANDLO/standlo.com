@@ -63,6 +63,19 @@ export function FormAuthAction({ locale }: { locale: string }) {
                         // Update Edge cookie session so proxy.ts gets the new 'email_verified' claim
                         await fetch("/api/auth/login", { headers });
 
+                        // Log verification event to orchestrator
+                        const sessionId = localStorage.getItem("standlo_session");
+                        if (sessionId) {
+                            fetch("/api/gateway", {
+                                method: "POST",
+                                headers,
+                                body: JSON.stringify({
+                                    actionId: "auth_event",
+                                    payload: { type: "verify", sessionId }
+                                })
+                            }).catch(() => { });
+                        }
+
                         setStatus("success");
                         setMessage(t("VerifyEmail.successMessage", { fallback: "Email verified successfully! Redirecting..." }));
                         setTimeout(() => {

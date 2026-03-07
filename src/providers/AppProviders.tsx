@@ -35,6 +35,66 @@ function GoogleAppCheckSync() {
     return null;
 }
 
+// Helper component to track session refreshes globally
+function SessionTrackerSync() {
+    React.useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        let unsubscribe: () => void;
+
+        import("@/core/firebase").then(({ auth, appCheck }) => {
+            import("firebase/auth").then(({ onIdTokenChanged }) => {
+                unsubscribe = onIdTokenChanged(auth, async (user) => {
+                    if (user) {
+                        try {
+                            const sessionId = localStorage.getItem("standlo_session");
+                            if (!sessionId) return; // Not tracked or fresh login handles it
+
+                            const token = await user.getIdToken().catch(() => null);
+                            if (!token) return;
+
+                            const headers: Record<string, string> = {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`
+                            };
+
+                            if (appCheck) {
+                                try {
+                                    const { getToken } = await import("firebase/app-check");
+                                    const appCheckTokenResponse = await getToken(appCheck, false);
+                                    if (appCheckTokenResponse.token) {
+                                        headers["X-Firebase-AppCheck"] = appCheckTokenResponse.token;
+                                    }
+                                } catch {
+                                    console.warn("Failed AppCheck token on background refresh");
+                                }
+                            }
+
+                            // Emit session refresh telemetry without awaiting
+                            fetch("/api/gateway", {
+                                method: "POST",
+                                headers,
+                                body: JSON.stringify({
+                                    actionId: "auth_event",
+                                    payload: { type: "session_refresh", sessionId }
+                                })
+                            }).catch(() => { });
+                        } catch {
+                            console.error("Session refresh tracker failed");
+                        }
+                    }
+                });
+            });
+        });
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, []);
+
+    return null;
+}
+
 export function AppProviders({
     children,
     messages,
@@ -48,6 +108,7 @@ export function AppProviders({
         <NextIntlClientProvider locale={locale} messages={messages} timeZone="Europe/Rome">
             <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""} libraries={['places']}>
                 <GoogleAppCheckSync />
+                <SessionTrackerSync />
                 <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
                     {children}
                 </NextThemesProvider>
