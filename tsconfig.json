@@ -39,6 +39,12 @@
   "exclude": [
     "node_modules",
     "admin",
-    "admin/**/*"
+    "admin/**/*",
+    "functions",
+    "functions/**/*",
+    "scripts",
+    "scripts/**/*",
+    "seed",
+    "seed/**/*"
   ]
 }
