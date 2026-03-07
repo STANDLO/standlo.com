@@ -52,10 +52,11 @@ const admin = __importStar(require("firebase-admin"));
 const crypto = __importStar(require("crypto"));
 exports.firestore = (0, https_1.onCall)({
     region: "europe-west4",
-    enforceAppCheck: true,
+    enforceAppCheck: process.env.FUNCTIONS_EMULATOR === "true" ? false : true,
+    cors: process.env.FUNCTIONS_EMULATOR === "true" ? true : ["https://standlo.com", "https://www.standlo.com"],
     consumeAppCheckToken: false,
 }, async (request) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     const errorReferenceCode = crypto.randomUUID();
     let entityIdStr = "unknown";
     let actionIdStr = "unknown";
@@ -67,14 +68,16 @@ exports.firestore = (0, https_1.onCall)({
         const db = (0, firestore_1.getFirestore)(admin.app(), "standlo");
         const data = request.data;
         const { correlationId, idempotencyKey, orgId, entityId, actionId, payload, limit, cursor, orderBy, filters } = data;
+        // Seletion precedence: 1. Explicit payload, 2. User's Token Custom Claim
+        const resolvedOrgId = orgId || ((_a = request.auth.token) === null || _a === void 0 ? void 0 : _a.orgId);
         entityIdStr = entityId || "unknown";
         actionIdStr = actionId || "unknown";
-        orgIdStr = orgId || "unknown";
+        orgIdStr = resolvedOrgId || "unknown";
         console.log(`[Firestore][${correlationId || 'no-corr-id'}] Action: ${actionId} | Entity: ${entityId} | User: ${request.auth.uid}`);
         if (!entityId) {
             throw new https_1.HttpsError("invalid-argument", "EntityId is required.");
         }
-        const path = (0, entityRegistry_1.buildCollectionPath)(entityId, orgId);
+        const path = (0, entityRegistry_1.buildCollectionPath)(entityId, resolvedOrgId);
         const config = (0, entityRegistry_1.getEntityConfig)(entityId);
         const collectionRef = db.collection(path);
         // 1. Idempotency Check for Write Actions
@@ -87,7 +90,7 @@ exports.firestore = (0, https_1.onCall)({
                 return {
                     status: "success",
                     actionId,
-                    data: (_a = lockSnap.data()) === null || _a === void 0 ? void 0 : _a.result,
+                    data: (_b = lockSnap.data()) === null || _b === void 0 ? void 0 : _b.result,
                     cached: true
                 };
             }
@@ -145,12 +148,16 @@ exports.firestore = (0, https_1.onCall)({
             case "create": {
                 if (!payload)
                     throw new https_1.HttpsError("invalid-argument", "Create requires a payload.");
-                const parsedResult = config.schema.safeParse(payload);
+                // Strip timestamps that might arrive as unparsed strings from the client
+                // to avoid Zod schema validation mismatch (expected Date, received string).
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { createdAt, updatedAt, deletedAt, endLifeTime } = payload, clientPayload = __rest(payload, ["createdAt", "updatedAt", "deletedAt", "endLifeTime"]);
+                const parsedResult = config.schema.safeParse(clientPayload);
                 if (!parsedResult.success) {
                     throw new https_1.HttpsError("invalid-argument", `Zod validation failed: ${JSON.stringify(parsedResult.error.issues)}`);
                 }
                 // Security Alert: Mismatch between submitted data and Zod schema
-                const payloadKeysLen = Object.keys(payload).length;
+                const payloadKeysLen = Object.keys(clientPayload).length;
                 const parsedKeysLen = Object.keys(parsedResult.data).length;
                 if (payloadKeysLen !== parsedKeysLen) {
                     console.warn(`[SecurityAlert] Extra fields stripped during Create on ${entityId}`);
@@ -159,19 +166,31 @@ exports.firestore = (0, https_1.onCall)({
                         action: "create",
                         entityId,
                         uid: request.auth.uid,
-                        payload: JSON.stringify(payload),
+                        payload: JSON.stringify(clientPayload),
                         errorMessage: "Extra fields stripped during Create",
                         errorReferenceCode: crypto.randomUUID(),
-                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                        createdAt: firestore_1.FieldValue.serverTimestamp(),
                         createdBy: request.auth.uid,
-                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firestore_1.FieldValue.serverTimestamp(),
                         updatedBy: request.auth.uid,
                         isArchived: false
                     });
                 }
-                const newRef = collectionRef.doc();
-                const now = admin.firestore.FieldValue.serverTimestamp();
-                const docData = Object.assign(Object.assign({}, parsedResult.data), { orgId: orgId || null, createdBy: request.auth.uid, createdAt: now, updatedAt: now, deletedAt: null, isArchived: false });
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const providedId = parsedResult.data.id || clientPayload.id;
+                let newRef;
+                if (providedId && typeof providedId === 'string') {
+                    newRef = collectionRef.doc(providedId);
+                    const existingSnap = await newRef.get();
+                    if (existingSnap.exists) {
+                        throw new https_1.HttpsError("already-exists", `Document with ID ${providedId} already exists.`);
+                    }
+                }
+                else {
+                    newRef = collectionRef.doc(crypto.randomUUID());
+                }
+                const now = firestore_1.FieldValue.serverTimestamp();
+                const docData = Object.assign(Object.assign({}, parsedResult.data), { orgId: resolvedOrgId || null, createdBy: request.auth.uid, createdAt: now, updatedAt: now, deletedAt: null, isArchived: false });
                 await newRef.set(docData);
                 resultData = Object.assign({ id: newRef.id }, docData);
                 break;
@@ -180,16 +199,19 @@ exports.firestore = (0, https_1.onCall)({
                 if (!payload || !payload.id || typeof payload.id !== 'string') {
                     throw new https_1.HttpsError("invalid-argument", "Update requires payload details including an 'id'.");
                 }
+                // Strip timestamps that might arrive as unparsed strings from the client
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { createdAt, updatedAt, deletedAt, endLifeTime } = payload, clientPayload = __rest(payload, ["createdAt", "updatedAt", "deletedAt", "endLifeTime"]);
                 // Allow partial updates for existing fields
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const partialSchema = config.schema.partial ? config.schema.partial() : config.schema;
-                const parsedResult = partialSchema.safeParse(payload);
+                const parsedResult = partialSchema.safeParse(clientPayload);
                 if (!parsedResult.success) {
                     throw new https_1.HttpsError("invalid-argument", `Zod validation failed: ${JSON.stringify(parsedResult.error.issues)}`);
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const _l = parsedResult.data, { id } = _l, updateData = __rest(_l, ["id"]);
-                const payloadKeysLen = Object.keys(payload).filter(k => k !== 'id').length;
+                const _m = parsedResult.data, { id } = _m, updateData = __rest(_m, ["id"]);
+                const payloadKeysLen = Object.keys(clientPayload).filter(k => k !== 'id').length;
                 const parsedKeysLen = Object.keys(updateData).length;
                 if (payloadKeysLen !== parsedKeysLen) {
                     await db.collection("admin/security/alerts").add({
@@ -197,17 +219,17 @@ exports.firestore = (0, https_1.onCall)({
                         action: "update",
                         entityId,
                         uid: request.auth.uid,
-                        payload: JSON.stringify(payload),
+                        payload: JSON.stringify(clientPayload),
                         errorMessage: "Extra fields stripped during Update",
                         errorReferenceCode: crypto.randomUUID(),
-                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                        createdAt: firestore_1.FieldValue.serverTimestamp(),
                         createdBy: request.auth.uid,
-                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firestore_1.FieldValue.serverTimestamp(),
                         updatedBy: request.auth.uid,
                         isArchived: false
                     });
                 }
-                updateData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+                updateData.updatedAt = firestore_1.FieldValue.serverTimestamp();
                 updateData.updatedBy = request.auth.uid;
                 const docRef = collectionRef.doc(id);
                 await docRef.update(updateData);
@@ -220,15 +242,15 @@ exports.firestore = (0, https_1.onCall)({
                 }
                 if (entityId === "warehouse" && orgId) {
                     const orgDoc = await db.collection("organizations").doc(orgId).get();
-                    if (orgDoc.exists && ((_b = orgDoc.data()) === null || _b === void 0 ? void 0 : _b.headquarterId) === payload.id) {
+                    if (orgDoc.exists && ((_c = orgDoc.data()) === null || _c === void 0 ? void 0 : _c.headquarterId) === payload.id) {
                         throw new https_1.HttpsError("permission-denied", "Il magazzino principale (Headquarter) non può essere eliminato.");
                     }
                 }
                 const docRef = collectionRef.doc(payload.id);
                 await docRef.update({
-                    deletedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    deletedAt: firestore_1.FieldValue.serverTimestamp(),
                     deletedBy: request.auth.uid,
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+                    updatedAt: firestore_1.FieldValue.serverTimestamp()
                 });
                 resultData = { id: payload.id, softDeleted: true };
                 break;
@@ -244,7 +266,7 @@ exports.firestore = (0, https_1.onCall)({
                 correlationId,
                 userId: request.auth.uid,
                 result: resultData,
-                createdAt: admin.firestore.FieldValue.serverTimestamp()
+                createdAt: firestore_1.FieldValue.serverTimestamp()
             });
         }
         return {
@@ -263,16 +285,16 @@ exports.firestore = (0, https_1.onCall)({
                 action: actionIdStr,
                 entityId: entityIdStr,
                 orgId: orgIdStr === "unknown" ? null : orgIdStr,
-                uid: ((_c = request.auth) === null || _c === void 0 ? void 0 : _c.uid) || "unauthenticated",
-                email: ((_e = (_d = request.auth) === null || _d === void 0 ? void 0 : _d.token) === null || _e === void 0 ? void 0 : _e.email) || null,
-                roleId: ((_g = (_f = request.auth) === null || _f === void 0 ? void 0 : _f.token) === null || _g === void 0 ? void 0 : _g.roleId) || "unknown",
-                payload: JSON.stringify(((_h = request.data) === null || _h === void 0 ? void 0 : _h.payload) || {}),
+                uid: ((_d = request.auth) === null || _d === void 0 ? void 0 : _d.uid) || "unauthenticated",
+                email: ((_f = (_e = request.auth) === null || _e === void 0 ? void 0 : _e.token) === null || _f === void 0 ? void 0 : _f.email) || null,
+                roleId: ((_h = (_g = request.auth) === null || _g === void 0 ? void 0 : _g.token) === null || _h === void 0 ? void 0 : _h.roleId) || "unknown",
+                payload: JSON.stringify(((_j = request.data) === null || _j === void 0 ? void 0 : _j.payload) || {}),
                 errorMessage: error.message || String(error),
                 errorReferenceCode,
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                createdBy: ((_j = request.auth) === null || _j === void 0 ? void 0 : _j.uid) || "system",
-                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                updatedBy: ((_k = request.auth) === null || _k === void 0 ? void 0 : _k.uid) || "system",
+                createdAt: firestore_1.FieldValue.serverTimestamp(),
+                createdBy: ((_k = request.auth) === null || _k === void 0 ? void 0 : _k.uid) || "system",
+                updatedAt: firestore_1.FieldValue.serverTimestamp(),
+                updatedBy: ((_l = request.auth) === null || _l === void 0 ? void 0 : _l.uid) || "system",
                 isArchived: false
             });
         }

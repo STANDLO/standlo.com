@@ -5,8 +5,9 @@ interface CanvasCardProps {
     title: string | ReactNode;
     children: ReactNode;
     onClose?: () => void;
-    position?: "left" | "right" | "center" | "bottom-right" | "top-right";
+    position?: "left" | "right" | "center" | "bottom-right" | "top-right" | "top-left";
     width?: string;
+    transparent?: boolean;
     className?: string; // Additional classes for overriding standard behaviors
 }
 
@@ -16,6 +17,7 @@ export function CanvasCard({
     onClose,
     position = "right",
     width = "w-80",
+    transparent = false,
     className = ""
 }: CanvasCardProps) {
     // Determine absolute positioning classes based on standard locations
@@ -25,6 +27,7 @@ export function CanvasCard({
             case "left": return "left-4 top-20 bottom-4";
             case "right": return "right-4 top-20 bottom-4";
             case "top-right": return "right-4 top-20 h-auto max-h-[60vh]";
+            case "top-left": return "left-4 top-4 h-auto max-h-[60vh]";
             case "bottom-right": return "right-4 bottom-4 h-auto max-h-[40vh]";
             case "center": return "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-auto max-h-[80vh]";
             default: return "";
@@ -35,12 +38,13 @@ export function CanvasCard({
         <div
             className={`
                 absolute flex flex-col z-40
-                rounded-2xl border border-border/50 shadow-2xl
-                bg-background/80 backdrop-blur-md
-                overflow-hidden ${width} ${getPositionClasses()} ${className}
+                rounded-2xl overflow-hidden ${width} ${getPositionClasses()} ${className}
+                ${transparent
+                    ? "bg-transparent shadow-none border-none"
+                    : "border border-border/50 shadow-2xl bg-background/80 backdrop-blur-md"}
             `}
         >
-            <div className="flex shrink-0 items-center justify-between p-4 border-b border-border/10 bg-muted/20">
+            <div className={`flex shrink-0 items-center justify-between p-4 ${transparent ? "" : "border-b border-border/10 bg-muted/20"}`}>
                 <h3 className="font-semibold text-sm tracking-tight flex items-center gap-2">
                     {title}
                 </h3>

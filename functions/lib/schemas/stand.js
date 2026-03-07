@@ -1,32 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StandPolicyMatrix = exports.StandSearchSchema = exports.StandUpdateSchema = exports.StandCreateSchema = exports.StandToolNodeSchema = exports.StandProcessNodeSchema = exports.StandPartNodeSchema = exports.StandAssemblyNodeSchema = exports.StandCanvasNodeSchema = exports.StandSchema = void 0;
+exports.StandPolicyMatrix = exports.StandSearchSchema = exports.StandUpdateSchema = exports.StandCreateSchema = exports.StandProcessNodeSchema = exports.StandPartNodeSchema = exports.StandBundleNodeSchema = exports.StandAssemblyNodeSchema = exports.StandSchema = void 0;
 const zod_1 = require("zod");
 const base_1 = require("./base");
-exports.StandSchema = base_1.BaseSchema.extend({});
+exports.StandSchema = base_1.BaseSchema.extend({
+    // Financial properties
+    cost: zod_1.z.number().optional().describe("Internal standard cost"),
+    price: zod_1.z.number().optional().describe("External standard price"),
+});
 // --- SUBCOLLECTION SCHEMAS ---
-exports.StandCanvasNodeSchema = zod_1.z.object({
-    entityId: zod_1.z.string().describe("Can be a Part ID or an Assembly ID"),
-    entityType: zod_1.z.enum(['part', 'assembly']),
-    position: zod_1.z.tuple([zod_1.z.number(), zod_1.z.number(), zod_1.z.number()]),
-    rotation: zod_1.z.tuple([zod_1.z.number(), zod_1.z.number(), zod_1.z.number(), zod_1.z.number()])
+exports.StandAssemblyNodeSchema = base_1.BaseNodeSchema.extend({
+    assemblyId: zod_1.z.string()
 });
-exports.StandAssemblyNodeSchema = zod_1.z.object({
-    assemblyId: zod_1.z.string(),
-    quantity: zod_1.z.number()
+exports.StandBundleNodeSchema = base_1.BaseNodeSchema.extend({
+    bundleId: zod_1.z.string()
 });
-exports.StandPartNodeSchema = zod_1.z.object({
-    partId: zod_1.z.string(),
-    quantity: zod_1.z.number()
+exports.StandPartNodeSchema = base_1.BaseNodeSchema.extend({
+    partId: zod_1.z.string()
 });
-exports.StandProcessNodeSchema = zod_1.z.object({
-    processId: zod_1.z.string(),
-    quantity: zod_1.z.number()
-});
-exports.StandToolNodeSchema = zod_1.z.object({
-    toolId: zod_1.z.string(),
-    quantity: zod_1.z.number()
-});
+exports.StandProcessNodeSchema = base_1.BaseProcessSchema.extend({});
 exports.StandCreateSchema = (0, base_1.createCreationSchema)(exports.StandSchema);
 exports.StandUpdateSchema = (0, base_1.createUpdateSchema)(exports.StandSchema);
 exports.StandSearchSchema = base_1.PaginationQuerySchema.extend({

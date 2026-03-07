@@ -157,6 +157,23 @@ export type LocalizedString = z.infer<typeof LocalizedStringSchema>;
 export type BaseEntity = z.infer<typeof BaseSchema>;
 
 /**
+ * Node Schemas for Subcollections
+ */
+export const BaseNodeSchema = BaseSchema.extend({
+    position: z.tuple([z.number(), z.number(), z.number()]).default([0, 0, 0]),
+    rotation: z.tuple([z.number(), z.number(), z.number()]).default([0, 0, 0]),
+    textureId: z.string().optional()
+});
+export type BaseNodeEntity = z.infer<typeof BaseNodeSchema>;
+
+export const BaseProcessSchema = BaseSchema.extend({
+    processId: z.string(),
+    quantity: z.number().default(1),
+    duration: z.number().optional()
+});
+export type BaseProcessEntity = z.infer<typeof BaseProcessSchema>;
+
+/**
  * API RBAC Schema Generators (Livello Controller)
  * Astrazioni riutilizzabili per creare automaticamente i payload di
  * Creazione, Aggiornamento, e Risposta di ogni Master Schema.

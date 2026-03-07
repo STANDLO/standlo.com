@@ -26,6 +26,7 @@ const payment_1 = require("../schemas/payment");
 const tax_1 = require("../schemas/tax");
 const apikey_1 = require("../schemas/apikey");
 const call_1 = require("../schemas/call");
+const pipeline_1 = require("../schemas/pipeline");
 const PolicyMatrices = {
     organization: organization_1.OrganizationPolicyMatrix,
     user: user_1.UserPolicyMatrix,
@@ -50,7 +51,8 @@ const PolicyMatrices = {
     payment: payment_1.PaymentPolicyMatrix,
     tax: tax_1.TaxPolicyMatrix,
     apikey: apikey_1.ApiKeyPolicyMatrix,
-    call: call_1.CallPolicyMatrix
+    call: call_1.CallPolicyMatrix,
+    pipeline: pipeline_1.PipelinePolicyMatrix
 };
 /**
  * Utility to generate a dynamic UI Manifest based on a Zod Schema and the Role Policy

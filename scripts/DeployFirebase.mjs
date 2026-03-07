@@ -10,6 +10,9 @@ try {
     console.log('📦 Installing functions dependencies (npm ci)...');
     execSync('npm install', { cwd: functionsDir, stdio: 'inherit' });
 
+    // 1.5 Patch firebase-functions Eventarc namespace bug
+    execSync('node scripts/patchFirebaseFunctions.mjs', { cwd: process.cwd(), stdio: 'inherit' });
+
     // 2. Build via tsc
     console.log('🔨 Compiling TypeScript...');
     execSync('npm run build', { cwd: functionsDir, stdio: 'inherit' });

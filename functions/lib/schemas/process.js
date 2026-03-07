@@ -4,22 +4,20 @@ exports.ProcessPolicyMatrix = exports.ProcessSearchSchema = exports.ProcessUpdat
 const zod_1 = require("zod");
 const base_1 = require("./base");
 const primitives_1 = require("./primitives");
-exports.ProcessRoleSchema = zod_1.z.enum([
-    'manager', 'architect', 'engineer', 'designer', 'electrician', 'plumber',
-    'carpenter', 'cabinetmaker', 'dryliner', 'ironworker', 'windowfitter',
-    'glazier', 'riggers', 'standbuilder', 'plasterer', 'painter', 'tiler',
-    'driver', 'forkliftdriver', 'promoter'
-]);
+exports.ProcessRoleSchema = zod_1.z.enum(primitives_1.SystemRoleOptions.map(o => o.value));
 exports.ProcessSchema = base_1.BaseSchema.extend({
-    name: primitives_1.LocalizedStringSchema,
-    description: primitives_1.LocalizedStringSchema.optional(),
+    name: zod_1.z.string(),
+    phase: zod_1.z.enum(['CLIENT IN', 'DESIGN/ENG', 'CLIENT APP.', 'FABRICATION', 'WAREHOUSE', 'LOGISTICS', 'ON-SITE', 'STRIKE', 'RECOVERY', 'CLOSING']).optional(),
+    description: zod_1.z.string().optional(),
     requiredRole: exports.ProcessRoleSchema.optional(), // Skill Matching & Security
     timeMatrix: zod_1.z.array(zod_1.z.object({
         quantityThreshold: zod_1.z.number(), // e.g. up to 1, up to 10
         setupTimeMinutes: zod_1.z.number(), // Prep time
         executionTimeMinutes: zod_1.z.number(), // Execution time per unit
         cleanupTimeMinutes: zod_1.z.number() // Cleanup time
-    })).default([])
+    })).default([]),
+    cost: zod_1.z.number().optional().describe("Internal standard cost (e.g. per hr)"),
+    price: zod_1.z.number().optional().describe("External standard price (e.g. per hr)"),
 });
 exports.ProcessCreateSchema = (0, base_1.createCreationSchema)(exports.ProcessSchema);
 exports.ProcessUpdateSchema = (0, base_1.createUpdateSchema)(exports.ProcessSchema);

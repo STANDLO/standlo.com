@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { CanvasEntity, useCanvasStore } from "./store";
-import { ThreeEvent, useFrame } from "@react-three/fiber";
+import { ThreeEvent, useFrame, useLoader } from "@react-three/fiber";
 import { TransformControls, Sphere } from "@react-three/drei";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import * as THREE from "three";
@@ -21,13 +21,37 @@ export default function GenericPart({ entity }: GenericPartProps) {
     const updateEntityRotation = useCanvasStore((state) => state.updateEntityRotation);
 
     const setEntityCollision = useCanvasStore((state) => state.setEntityCollision);
+    const playbackStep = useCanvasStore((state) => state.playbackStep);
+
+    // Determine if entity should be hidden by assembly timeline
+    const isHidden = playbackStep !== null && typeof entity.order === "number" && entity.order > playbackStep;
 
     const isSelected = selectedEntityId === entity.id;
 
     const isParametricBox = entity.baseEntityId.startsWith("parametric_box");
     const isParametricCyl = entity.baseEntityId.startsWith("parametric_cylinder");
+    const isCustomMesh = (entity.type as string) === "mesh" && entity.metadata;
 
     const dimensions = [1, 1, 1] as [number, number, number];
+
+    // Read applied texture URL and mapping properties prioritizing overrides
+    const appliedTextureUrl = entity.meshOverrides?.['$root']?.textureUrl || entity.metadata?.textureUrl || null;
+    const appliedRepeat = entity.meshOverrides?.['$root']?.textureRepeat || entity.metadata?.textureRepeat || null;
+    const appliedWrapSStr = entity.meshOverrides?.['$root']?.textureWrapS || entity.metadata?.textureWrapS || null;
+    const appliedWrapTStr = entity.meshOverrides?.['$root']?.textureWrapT || entity.metadata?.textureWrapT || null;
+
+    const textureMapOriginal = useLoader(THREE.TextureLoader, appliedTextureUrl ? [appliedTextureUrl as string] : [])[0];
+    const textureMap = textureMapOriginal ? textureMapOriginal.clone() : null;
+
+    // Configure Texture properties
+    if (textureMap) {
+        textureMap.wrapS = appliedWrapSStr === "RepeatWrapping" ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+        textureMap.wrapT = appliedWrapTStr === "RepeatWrapping" ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+        if (Array.isArray(appliedRepeat) && appliedRepeat.length === 2) {
+            textureMap.repeat.set(appliedRepeat[0], appliedRepeat[1]);
+        }
+        textureMap.needsUpdate = true;
+    }
 
     useFrame(() => {
         if (isSelected && rigidBodyRef.current && groupRef.current) {
@@ -108,9 +132,9 @@ export default function GenericPart({ entity }: GenericPartProps) {
         updateEntityRotation(entity.id, [finalRot.x, finalRot.y, finalRot.z, finalRot.w]);
     };
 
-    const colorBox = entity.isColliding ? "#ef4444" : (isSelected ? "#ff7b00" : "#d2b48c");
-    const colorCyl = entity.isColliding ? "#ef4444" : (isSelected ? "#ff7b00" : "#a9a9a9");
-    const colorWf = entity.isColliding ? "#ef4444" : (isSelected ? "red" : "gray");
+    const colorBox = entity.isColliding ? "#ef4444" : (isSelected ? "#3b82f6" : "#e2e8f0");
+    const colorCyl = entity.isColliding ? "#ef4444" : (isSelected ? "#3b82f6" : "#cbd5e1");
+    const colorWf = entity.isColliding ? "#ef4444" : (isSelected ? "#3b82f6" : "#a1a1aa");
 
     return (
         <>
@@ -119,6 +143,7 @@ export default function GenericPart({ entity }: GenericPartProps) {
                 position={entity.position}
                 quaternion={entity.rotation}
                 onClick={handleClick}
+                visible={!isHidden}
             >
                 {/* 
                   Rapier needs at least one body to be Kinematic to detect collisions with Fixed bodies.
@@ -132,31 +157,47 @@ export default function GenericPart({ entity }: GenericPartProps) {
                     onCollisionEnter={() => setEntityCollision(entity.id, true)}
                     onCollisionExit={() => setEntityCollision(entity.id, false)}
                 >
-                    {isParametricBox && (
+                    {isParametricBox && !isCustomMesh && (
                         <mesh castShadow receiveShadow>
                             <boxGeometry args={dimensions} />
                             <meshStandardMaterial
-                                color={colorBox}
+                                color={entity.meshOverrides?.['$root']?.color || colorBox}
                                 roughness={0.8}
                             />
                         </mesh>
                     )}
 
-                    {isParametricCyl && (
+                    {isParametricCyl && !isCustomMesh && (
                         <mesh castShadow receiveShadow>
                             <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
                             <meshStandardMaterial
-                                color={colorCyl}
+                                color={entity.meshOverrides?.['$root']?.color || colorCyl}
                                 metalness={0.5}
                                 roughness={0.2}
                             />
                         </mesh>
                     )}
 
-                    {!isParametricBox && !isParametricCyl && (
+                    {!isParametricBox && !isParametricCyl && !isCustomMesh && (
                         <mesh castShadow receiveShadow>
                             <boxGeometry args={[1, 1, 1]} />
-                            <meshStandardMaterial color={colorWf} wireframe />
+                            <meshStandardMaterial color={entity.meshOverrides?.['$root']?.color || colorWf} wireframe />
+                        </mesh>
+                    )}
+
+                    {isCustomMesh && entity.metadata && (
+                        <mesh castShadow receiveShadow>
+                            {entity.metadata.geometry === "box" && <boxGeometry args={entity.metadata.args as [number, number, number]} />}
+                            {entity.metadata.geometry === "sphere" && <sphereGeometry args={entity.metadata.args as [number, number, number]} />}
+                            {entity.metadata.geometry === "cylinder" && <cylinderGeometry args={entity.metadata.args as [number, number, number, number]} />}
+                            <meshStandardMaterial
+                                color={isSelected ? "#3b82f6" : entity.meshOverrides?.['$root']?.color || entity.metadata.color || "#ffffff"}
+                                map={textureMap || null}
+                                roughness={entity.metadata.roughness ?? 0.5}
+                                metalness={entity.metadata.metalness ?? 0.1}
+                                emissive={entity.isColliding ? "#ef4444" : "#000000"}
+                                emissiveIntensity={entity.isColliding ? 0.5 : 0}
+                            />
                         </mesh>
                     )}
                 </RigidBody>

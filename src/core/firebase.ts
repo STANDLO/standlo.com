@@ -2,7 +2,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, AppCheck } from "firebase/app-check";
 import { getStorage } from "firebase/storage";
-import { getFunctions } from "firebase/functions";
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -54,5 +54,13 @@ if (typeof window !== "undefined") {
 const auth = getAuth(app);
 const storage = getStorage(app);
 const functions = getFunctions(app, "europe-west4"); // Default region for KalexAI functions
+
+if (typeof window !== "undefined") {
+    // Check for emulator cookie AND verify we are in the Admin app via ENV flag
+    if (process.env.NEXT_PUBLIC_IS_ADMIN_APP === "true" && document.cookie.includes("firebase_env=emulator")) {
+        console.warn("⚠️ Firebase Emulators: Connecting to local function emulator");
+        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+    }
+}
 
 export { app, auth, appCheck, storage, functions, analytics };

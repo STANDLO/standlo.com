@@ -42,7 +42,7 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             // onAuthStateChanged will handle the state update
-        } catch (err: any) {
+        } catch {
             setError("Credenziali non valide.");
         }
     };

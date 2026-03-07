@@ -14,8 +14,9 @@ import {
 import { Physics } from "@react-three/rapier";
 import { XR, createXRStore } from "@react-three/xr";
 import { EffectComposer, N8AO, Bloom } from "@react-three/postprocessing";
+import * as THREE from "three";
 import { partsTunnel } from "./tunnel";
-import { useCanvasStore } from "./store";
+import { useCanvasStore, CanvasEntity } from "./store";
 import GenericPart from "./GenericPart";
 
 export const xrStore = createXRStore({ emulate: false, offerSession: false });
@@ -31,14 +32,20 @@ const CanvasEntitiesRenderer = () => {
     );
 };
 
-export default function CanvasEditor() {
-    const mode = useCanvasStore((state) => state.mode);
+interface CanvasEditorProps {
+    entityId?: string;
+    entityType?: string | null;
+}
+
+export default function CanvasEditor({ entityId, entityType }: CanvasEditorProps) {
     const viewMode = useCanvasStore((state) => state.viewMode);
     const cameraControlsRef = useRef<CameraControls>(null);
+    const addEntity = useCanvasStore((state) => state.addEntity);
+    const clearCanvas = useCanvasStore((state) => state.clearCanvas);
 
-    // Grid size depends on the mode
-    const gridSize = mode === "stand" ? 20 : 5;
-    const gridDivision = mode === "stand" ? 20 : 50;
+    // Fixed grid size for a consistent workspace (Three.js default: 1 unit = 1m)
+    const gridSize = 20;
+    const gridDivision = 50;
 
     // Hardcoded lighting intensities to replace Leva controls
     const ambientIntensity = 0.5;
@@ -61,11 +68,119 @@ export default function CanvasEditor() {
         }
     }, [viewMode]);
 
+    // Initialization logic: Fetch root entity (mesh or hierarchy nodes)
+    useEffect(() => {
+        if (!entityId) return;
+        let isMounted = true;
+
+        const fetchContextualRoot = async () => {
+            try {
+                const { auth } = await import("@/core/firebase");
+                const currentUser = auth.currentUser;
+                if (!currentUser) return;
+                const idToken = await currentUser.getIdToken();
+
+                let targetSchema = "mesh";
+                if (entityType === "part" || entityId.startsWith("PAR-")) targetSchema = "part";
+                else if (entityType === "assembly" || entityId.startsWith("ASS-")) targetSchema = "assembly";
+                else if (entityType === "stand" || entityId.startsWith("STA-")) targetSchema = "stand";
+
+                const res = await fetch(`/api/gateway?target=firestoreGateway`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({
+                        actionId: "read",
+                        entityId: targetSchema,
+                        payload: { id: entityId }
+                    })
+                });
+
+                if (res.ok && isMounted) {
+                    const jsonRes = await res.json();
+                    const data = jsonRes.result?.data || jsonRes.data || jsonRes.result || jsonRes;
+                    const unwrappedData = data.data || data; // handle deep nesting
+
+                    if (unwrappedData) {
+                        clearCanvas(); // Reset canvas state before injection
+
+                        if (targetSchema === "mesh") {
+                            addEntity({
+                                id: entityId,
+                                baseEntityId: `primitive_${unwrappedData.geometryType || "box"}`,
+                                type: "mesh",
+                                position: [0, (unwrappedData.dimensions?.[1] || 1) / 2, 0],
+                                rotation: [0, 0, 0, 1],
+                                sockets: [],
+                                order: 0,
+                                metadata: {
+                                    geometry: unwrappedData.geometryType || "box",
+                                    dimensions: unwrappedData.dimensions || [1, 1, 1],
+                                    materialId: unwrappedData.materialId,
+                                    textureId: unwrappedData.textureId
+                                }
+                            });
+                        } else {
+                            // Because objects are now in a sub-collection, we need a separate fetch to get them.
+                            // The Gateway `list` action can be used if we provide the subcollection path.
+                            try {
+                                const subRes = await fetch(`/api/gateway?target=firestoreGateway`, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "Authorization": `Bearer ${idToken}`
+                                    },
+                                    body: JSON.stringify({
+                                        actionId: "list",
+                                        entityId: `${targetSchema}/${entityId}/objects`, // Fetching the subcollection
+                                        payload: {}
+                                    })
+                                });
+                                if (subRes.ok) {
+                                    const subJson = await subRes.json();
+                                    const objectsList = subJson.result?.data || subJson.data || subJson.result || [];
+                                    const actualList = objectsList.data || objectsList;
+
+                                    if (Array.isArray(actualList)) {
+                                        // Sort objects by their order property to maintain assembly sequence
+                                        actualList.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                                        actualList.forEach((obj: Record<string, unknown>) => {
+                                            addEntity({
+                                                id: obj.id as string,
+                                                baseEntityId: obj.baseEntityId as string,
+                                                type: obj.type as "part" | "assembly" | "stand",
+                                                position: (obj.position as [number, number, number]) || [0, 0, 0],
+                                                rotation: (obj.rotation as [number, number, number, number]) || [0, 0, 0, 1],
+                                                sockets: [], // Will be populated when Master Catalog loads
+                                                order: (obj.order as number) || 0,
+                                                meshOverrides: obj.meshOverrides as CanvasEntity["meshOverrides"]
+                                            });
+                                        });
+                                    }
+                                }
+                            } catch (subErr) {
+                                console.error("Failed to fetch Canvas Objects subcollection:", subErr);
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Canvas Initialization fetch failed", e);
+            }
+        };
+
+        fetchContextualRoot();
+        return () => { isMounted = false; };
+    }, [entityId, entityType, addEntity, clearCanvas]);
+
     return (
-        <div className="w-full h-full relative bg-stone-50 dark:bg-black">
+        <div className="w-full h-full relative bg-[#f8f9fa] dark:bg-[#18181b]">
 
             <Canvas
-                shadows
+                shadows={{ type: THREE.PCFShadowMap }}
                 camera={{ position: [15, 15, 15], fov: 45 }}
                 // Orthographic behavior is managed dynamically or via CameraControls if needed,
                 // but for seamless transitions, a perspective camera at a high distance with low FOV can simulate orthographic,
@@ -90,15 +205,18 @@ export default function CanvasEditor() {
                         args={[gridSize, gridSize]}
                         cellSize={gridSize / gridDivision}
                         cellThickness={1}
-                        cellColor="#6f6f6f"
+                        cellColor="#e4e4e7"
                         sectionSize={1}
                         sectionThickness={1.5}
-                        sectionColor="#9d4b4b"
-                        fadeDistance={gridSize * 1.5}
+                        sectionColor="#a1a1aa"
+                        fadeDistance={Math.max(gridSize * 1.5, 30)}
                         fadeStrength={1}
                         followCamera={false}
                         infiniteGrid={true}
                     />
+
+                    {/* XYZ Axes Helper (Red: X, Green: Y, Blue: Z) */}
+                    <axesHelper args={[5]} />
 
                     {/* Soft Contact Shadows on the ground */}
                     <ContactShadows
@@ -120,7 +238,7 @@ export default function CanvasEditor() {
 
                     {/* Orientation Gizmo */}
                     <GizmoHelper
-                        alignment="bottom-right"
+                        alignment="top-right"
                         margin={[80, 80]}
                     >
                         <GizmoViewport axisColors={['#ff3653', '#8adb00', '#2c8fdf']} labelColor="black" />

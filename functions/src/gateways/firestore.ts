@@ -1,13 +1,14 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { GatewayRequest } from "../types";
 import { buildCollectionPath, getEntityConfig } from "./entityRegistry";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import * as admin from "firebase-admin";
 import * as crypto from "crypto";
 
 export const firestore = onCall({
     region: "europe-west4",
-    enforceAppCheck: true,
+    enforceAppCheck: process.env.FUNCTIONS_EMULATOR === "true" ? false : true,
+    cors: process.env.FUNCTIONS_EMULATOR === "true" ? true : ["https://standlo.com", "https://www.standlo.com"],
     consumeAppCheckToken: false,
 }, async (request) => {
     const errorReferenceCode = crypto.randomUUID();
@@ -24,9 +25,12 @@ export const firestore = onCall({
         const data = request.data as GatewayRequest;
         const { correlationId, idempotencyKey, orgId, entityId, actionId, payload, limit, cursor, orderBy, filters } = data;
 
+        // Seletion precedence: 1. Explicit payload, 2. User's Token Custom Claim
+        const resolvedOrgId = orgId || request.auth.token?.orgId;
+
         entityIdStr = entityId || "unknown";
         actionIdStr = actionId || "unknown";
-        orgIdStr = orgId || "unknown";
+        orgIdStr = resolvedOrgId || "unknown";
 
         console.log(`[Firestore][${correlationId || 'no-corr-id'}] Action: ${actionId} | Entity: ${entityId} | User: ${request.auth.uid}`);
 
@@ -34,7 +38,7 @@ export const firestore = onCall({
             throw new HttpsError("invalid-argument", "EntityId is required.");
         }
 
-        const path = buildCollectionPath(entityId, orgId);
+        const path = buildCollectionPath(entityId, resolvedOrgId);
         const config = getEntityConfig(entityId);
         const collectionRef = db.collection(path);
 
@@ -113,13 +117,18 @@ export const firestore = onCall({
             case "create": {
                 if (!payload) throw new HttpsError("invalid-argument", "Create requires a payload.");
 
-                const parsedResult = config.schema.safeParse(payload);
+                // Strip timestamps that might arrive as unparsed strings from the client
+                // to avoid Zod schema validation mismatch (expected Date, received string).
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { createdAt, updatedAt, deletedAt, endLifeTime, ...clientPayload } = payload;
+
+                const parsedResult = config.schema.safeParse(clientPayload);
                 if (!parsedResult.success) {
                     throw new HttpsError("invalid-argument", `Zod validation failed: ${JSON.stringify(parsedResult.error.issues)}`);
                 }
 
                 // Security Alert: Mismatch between submitted data and Zod schema
-                const payloadKeysLen = Object.keys(payload).length;
+                const payloadKeysLen = Object.keys(clientPayload).length;
                 const parsedKeysLen = Object.keys(parsedResult.data).length;
                 if (payloadKeysLen !== parsedKeysLen) {
                     console.warn(`[SecurityAlert] Extra fields stripped during Create on ${entityId}`);
@@ -128,22 +137,34 @@ export const firestore = onCall({
                         action: "create",
                         entityId,
                         uid: request.auth.uid,
-                        payload: JSON.stringify(payload),
+                        payload: JSON.stringify(clientPayload),
                         errorMessage: "Extra fields stripped during Create",
                         errorReferenceCode: crypto.randomUUID(),
-                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                        createdAt: FieldValue.serverTimestamp(),
                         createdBy: request.auth.uid,
-                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: FieldValue.serverTimestamp(),
                         updatedBy: request.auth.uid,
                         isArchived: false
                     });
                 }
 
-                const newRef = collectionRef.doc();
-                const now = admin.firestore.FieldValue.serverTimestamp();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const providedId = (parsedResult.data as any).id || (clientPayload as any).id;
+                let newRef: admin.firestore.DocumentReference;
+
+                if (providedId && typeof providedId === 'string') {
+                    newRef = collectionRef.doc(providedId);
+                    const existingSnap = await newRef.get();
+                    if (existingSnap.exists) {
+                        throw new HttpsError("already-exists", `Document with ID ${providedId} already exists.`);
+                    }
+                } else {
+                    newRef = collectionRef.doc(crypto.randomUUID());
+                }
+                const now = FieldValue.serverTimestamp();
                 const docData = {
                     ...parsedResult.data, // Strictly validated data
-                    orgId: orgId || null,
+                    orgId: resolvedOrgId || null,
                     createdBy: request.auth.uid,
                     createdAt: now,
                     updatedAt: now,
@@ -160,10 +181,14 @@ export const firestore = onCall({
                     throw new HttpsError("invalid-argument", "Update requires payload details including an 'id'.");
                 }
 
+                // Strip timestamps that might arrive as unparsed strings from the client
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { createdAt, updatedAt, deletedAt, endLifeTime, ...clientPayload } = payload;
+
                 // Allow partial updates for existing fields
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const partialSchema = (config.schema as any).partial ? (config.schema as any).partial() : config.schema;
-                const parsedResult = partialSchema.safeParse(payload);
+                const parsedResult = partialSchema.safeParse(clientPayload);
 
                 if (!parsedResult.success) {
                     throw new HttpsError("invalid-argument", `Zod validation failed: ${JSON.stringify(parsedResult.error.issues)}`);
@@ -172,7 +197,7 @@ export const firestore = onCall({
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const { id, ...updateData } = parsedResult.data as any;
 
-                const payloadKeysLen = Object.keys(payload).filter(k => k !== 'id').length;
+                const payloadKeysLen = Object.keys(clientPayload).filter(k => k !== 'id').length;
                 const parsedKeysLen = Object.keys(updateData).length;
                 if (payloadKeysLen !== parsedKeysLen) {
                     await db.collection("admin/security/alerts").add({
@@ -180,18 +205,18 @@ export const firestore = onCall({
                         action: "update",
                         entityId,
                         uid: request.auth.uid,
-                        payload: JSON.stringify(payload),
+                        payload: JSON.stringify(clientPayload),
                         errorMessage: "Extra fields stripped during Update",
                         errorReferenceCode: crypto.randomUUID(),
-                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                        createdAt: FieldValue.serverTimestamp(),
                         createdBy: request.auth.uid,
-                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: FieldValue.serverTimestamp(),
                         updatedBy: request.auth.uid,
                         isArchived: false
                     });
                 }
 
-                updateData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+                updateData.updatedAt = FieldValue.serverTimestamp();
                 updateData.updatedBy = request.auth.uid;
 
                 const docRef = collectionRef.doc(id);
@@ -213,9 +238,9 @@ export const firestore = onCall({
 
                 const docRef = collectionRef.doc(payload.id);
                 await docRef.update({
-                    deletedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    deletedAt: FieldValue.serverTimestamp(),
                     deletedBy: request.auth.uid,
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+                    updatedAt: FieldValue.serverTimestamp()
                 });
                 resultData = { id: payload.id, softDeleted: true };
                 break;
@@ -232,7 +257,7 @@ export const firestore = onCall({
                 correlationId,
                 userId: request.auth.uid,
                 result: resultData,
-                createdAt: admin.firestore.FieldValue.serverTimestamp()
+                createdAt: FieldValue.serverTimestamp()
             });
         }
 
@@ -259,9 +284,9 @@ export const firestore = onCall({
                 payload: JSON.stringify(request.data?.payload || {}),
                 errorMessage: error.message || String(error),
                 errorReferenceCode,
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                createdAt: FieldValue.serverTimestamp(),
                 createdBy: request.auth?.uid || "system",
-                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedAt: FieldValue.serverTimestamp(),
                 updatedBy: request.auth?.uid || "system",
                 isArchived: false
             });

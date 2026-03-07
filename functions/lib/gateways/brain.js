@@ -5,6 +5,7 @@ const https_1 = require("firebase-functions/v2/https");
 exports.brain = (0, https_1.onCall)({
     region: "europe-west4",
     enforceAppCheck: true,
+    cors: process.env.FUNCTIONS_EMULATOR === "true" ? true : ["https://standlo.com", "https://www.standlo.com"],
     consumeAppCheckToken: false,
 }, async (request) => {
     if (!request.auth) {

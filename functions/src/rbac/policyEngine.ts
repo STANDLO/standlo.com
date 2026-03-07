@@ -26,6 +26,7 @@ import { PaymentPolicyMatrix } from "../schemas/payment";
 import { TaxPolicyMatrix } from "../schemas/tax";
 import { ApiKeyPolicyMatrix } from "../schemas/apikey";
 import { CallPolicyMatrix } from "../schemas/call";
+import { PipelinePolicyMatrix } from "../schemas/pipeline";
 
 const PolicyMatrices: Record<string, Record<RoleId, EntityPolicy>> = {
     organization: OrganizationPolicyMatrix,
@@ -51,7 +52,8 @@ const PolicyMatrices: Record<string, Record<RoleId, EntityPolicy>> = {
     payment: PaymentPolicyMatrix,
     tax: TaxPolicyMatrix,
     apikey: ApiKeyPolicyMatrix,
-    call: CallPolicyMatrix
+    call: CallPolicyMatrix,
+    pipeline: PipelinePolicyMatrix
 };
 
 /**

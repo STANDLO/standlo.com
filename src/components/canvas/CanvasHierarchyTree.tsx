@@ -2,38 +2,7 @@ import React, { useState } from "react";
 import { CanvasCard } from "@/components/ui/CanvasCard";
 import { AlignLeft, ChevronRight, ChevronDown, Box, Layers, Cuboid } from "lucide-react";
 
-// Mock hierarchy mimicking Fusion 360 Browser
-const DUMMY_TREE = [
-    {
-        id: "root",
-        name: "Main Stand Document",
-        type: "stand",
-        expanded: true,
-        children: [
-            {
-                id: "a1",
-                name: "Reception Desk Assembly",
-                type: "assembly",
-                expanded: true,
-                children: [
-                    { id: "p1", name: "Front Panel (Wood)", type: "part" },
-                    { id: "p2", name: "Top Desk (Glass)", type: "part" }
-                ]
-            },
-            {
-                id: "a2",
-                name: "Right Wall Truss 3m",
-                type: "assembly",
-                expanded: false,
-                children: [
-                    { id: "p3", name: "Aluminium Profile 3m", type: "part" },
-                    { id: "p4", name: "Aluminium Profile 3m", type: "part" }
-                ]
-            },
-            { id: "p5", name: "Floor Carpet 5x5", type: "part" }
-        ]
-    }
-];
+import { useCanvasStore } from "./store";
 
 export interface TreeNodeType {
     id: string;
@@ -84,25 +53,38 @@ const TreeNode = ({ node, level = 0 }: { node: TreeNodeType, level?: number }) =
     );
 };
 
-export function CanvasHierarchyTree() {
+export function CanvasHierarchyTree({ entityId }: { entityId: string }) {
+    const entities = useCanvasStore((state) => state.entities);
+
+    // Map existing entities to the tree - this will be recursive later if parent-child relationships are added
+    const treeNodes: TreeNodeType[] = Object.values(entities).map(entity => ({
+        id: entity.id,
+        name: `${entity.type.charAt(0).toUpperCase() + entity.type.slice(1)} ${entity.id.slice(0, 4)}`,
+        type: entity.type,
+    }));
+
     return (
         <CanvasCard
+            transparent
             title={
                 <React.Fragment>
-                    <AlignLeft className="w-4 h-4 text-muted-foreground" />
-                    Browser
+                    <AlignLeft className="w-4 h-4 text-muted-foreground mr-1" />
+                    <span className="truncate">Canvas: {entityId.slice(0, 8)}...</span>
                 </React.Fragment>
             }
-            position="top-right"
+            position="top-left"
             width="w-64"
         >
-            <div className="text-xs text-muted-foreground mb-4 border-b border-border/10 pb-2">
-                Fusion 360 style component tree
-            </div>
             <div className="space-y-1">
-                {DUMMY_TREE.map(node => (
-                    <TreeNode key={node.id} node={node} />
-                ))}
+                {treeNodes.length === 0 ? (
+                    <div className="text-xs text-muted-foreground p-2 italic bg-muted/20 rounded-md">
+                        Drag parts or assemblies from the palette to start building.
+                    </div>
+                ) : (
+                    treeNodes.map(node => (
+                        <TreeNode key={node.id} node={node} />
+                    ))
+                )}
             </div>
         </CanvasCard>
     );

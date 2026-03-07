@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "rm -rf .next && next dev -p 4000",
+    "dev": "rm -rf .next && next dev -p 3001",
     "build": "next build",
     "start": "next start -p 4000",
-    "lint": "eslint"
+    "lint": "next lint"
   },
   "dependencies": {
+    "@xyflow/react": "^12.10.1",
     "prettier": "^3.8.1",
     "ts-morph": "^27.0.2"
   },

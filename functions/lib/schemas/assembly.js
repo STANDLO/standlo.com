@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AssemblyPolicyMatrix = exports.AssemblySearchSchema = exports.AssemblyUpdateSchema = exports.AssemblyCreateSchema = exports.AssemblyCanvasNodeSchema = exports.AssemblyToolNodeSchema = exports.AssemblyProcessNodeSchema = exports.AssemblyPartNodeSchema = exports.AssemblySchema = void 0;
+exports.AssemblyPolicyMatrix = exports.AssemblySearchSchema = exports.AssemblyUpdateSchema = exports.AssemblyCreateSchema = exports.AssemblyProcessNodeSchema = exports.AssemblyPartNodeSchema = exports.AssemblySchema = void 0;
 const zod_1 = require("zod");
 const base_1 = require("./base");
 const primitives_1 = require("./primitives");
@@ -8,6 +8,9 @@ exports.AssemblySchema = base_1.BaseSchema.extend({
     name: primitives_1.LocalizedStringSchema,
     description: primitives_1.LocalizedStringSchema.optional(),
     locationType: zod_1.z.enum(['warehouse', 'site']).default('warehouse'),
+    // Financial properties
+    cost: zod_1.z.number().optional().describe("Internal standard cost"),
+    price: zod_1.z.number().optional().describe("External standard price"),
     gltfUrl: zod_1.z.string().optional().describe("URL to a pre-baked .glb representation of this assembly (optional)"),
     sockets: zod_1.z.array(zod_1.z.object({
         id: zod_1.z.string(),
@@ -17,23 +20,10 @@ exports.AssemblySchema = base_1.BaseSchema.extend({
     })).default([]),
 });
 // --- SUBCOLLECTION SCHEMAS ---
-exports.AssemblyPartNodeSchema = zod_1.z.object({
-    partId: zod_1.z.string(),
-    quantity: zod_1.z.number()
+exports.AssemblyPartNodeSchema = base_1.BaseNodeSchema.extend({
+    partId: zod_1.z.string()
 });
-exports.AssemblyProcessNodeSchema = zod_1.z.object({
-    processId: zod_1.z.string(),
-    quantity: zod_1.z.number()
-});
-exports.AssemblyToolNodeSchema = zod_1.z.object({
-    toolId: zod_1.z.string(),
-    quantity: zod_1.z.number()
-});
-exports.AssemblyCanvasNodeSchema = zod_1.z.object({
-    partId: zod_1.z.string(),
-    position: zod_1.z.tuple([zod_1.z.number(), zod_1.z.number(), zod_1.z.number()]),
-    rotation: zod_1.z.tuple([zod_1.z.number(), zod_1.z.number(), zod_1.z.number(), zod_1.z.number()])
-});
+exports.AssemblyProcessNodeSchema = base_1.BaseProcessSchema.extend({});
 exports.AssemblyCreateSchema = (0, base_1.createCreationSchema)(exports.AssemblySchema);
 exports.AssemblyUpdateSchema = (0, base_1.createUpdateSchema)(exports.AssemblySchema);
 exports.AssemblySearchSchema = base_1.PaginationQuerySchema.extend({

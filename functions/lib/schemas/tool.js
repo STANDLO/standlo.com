@@ -3,7 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolPolicyMatrix = exports.ToolSearchSchema = exports.ToolUpdateSchema = exports.ToolCreateSchema = exports.ToolSchema = void 0;
 const zod_1 = require("zod");
 const base_1 = require("./base");
-exports.ToolSchema = base_1.BaseSchema.extend({});
+exports.ToolSchema = base_1.BaseSchema.extend({
+    cost: zod_1.z.number().optional().describe("Internal standard cost"),
+    price: zod_1.z.number().optional().describe("External standard price"),
+});
 exports.ToolCreateSchema = (0, base_1.createCreationSchema)(exports.ToolSchema);
 exports.ToolUpdateSchema = (0, base_1.createUpdateSchema)(exports.ToolSchema);
 exports.ToolSearchSchema = base_1.PaginationQuerySchema.extend({

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PaginationQuerySchema = exports.ProtectedSystemFields = exports.BaseSchema = exports.DocumentMetaSchema = exports.DocumentUpdateSchema = exports.FieldUpdateSchema = exports.RoleRelationSchema = exports.CallRelationSchema = exports.ApiKeyRelationSchema = exports.TaxRelationSchema = exports.PaymentRelationSchema = exports.InvoiceRelationSchema = exports.NotificationRelationSchema = exports.MessageRelationSchema = exports.TaskRelationSchema = exports.CalendarRelationSchema = exports.ProcessRelationSchema = exports.PartRelationSchema = exports.AssemblyRelationSchema = exports.StandRelationSchema = exports.ToolRelationSchema = exports.ShelveRelationSchema = exports.WorkcenterRelationSchema = exports.WarehouseRelationSchema = exports.ExhibitorRelationSchema = exports.ExhibitionRelationSchema = exports.FairRelationSchema = exports.ProjectRelationSchema = exports.OrganizationRelationSchema = exports.UserRelationSchema = exports.LocalizedStringSchema = void 0;
+exports.PaginationQuerySchema = exports.ProtectedSystemFields = exports.BaseProcessSchema = exports.BaseNodeSchema = exports.BaseSchema = exports.DocumentMetaSchema = exports.DocumentUpdateSchema = exports.FieldUpdateSchema = exports.RoleRelationSchema = exports.CallRelationSchema = exports.ApiKeyRelationSchema = exports.TaxRelationSchema = exports.PaymentRelationSchema = exports.InvoiceRelationSchema = exports.NotificationRelationSchema = exports.MessageRelationSchema = exports.TaskRelationSchema = exports.CalendarRelationSchema = exports.ProcessRelationSchema = exports.PartRelationSchema = exports.AssemblyRelationSchema = exports.StandRelationSchema = exports.ToolRelationSchema = exports.ShelveRelationSchema = exports.WorkcenterRelationSchema = exports.WarehouseRelationSchema = exports.ExhibitorRelationSchema = exports.ExhibitionRelationSchema = exports.FairRelationSchema = exports.ProjectRelationSchema = exports.OrganizationRelationSchema = exports.UserRelationSchema = exports.LocalizedStringSchema = void 0;
 exports.createCreationSchema = createCreationSchema;
 exports.createUpdateSchema = createUpdateSchema;
 exports.createResponseSchema = createResponseSchema;
@@ -97,6 +97,19 @@ exports.BaseSchema = zod_1.z.object({
     // Long-Term Archiving
     isArchived: zod_1.z.boolean().default(false),
     endLifeTime: zod_1.z.date().nullable().optional(),
+});
+/**
+ * Node Schemas for Subcollections
+ */
+exports.BaseNodeSchema = exports.BaseSchema.extend({
+    position: zod_1.z.tuple([zod_1.z.number(), zod_1.z.number(), zod_1.z.number()]).default([0, 0, 0]),
+    rotation: zod_1.z.tuple([zod_1.z.number(), zod_1.z.number(), zod_1.z.number()]).default([0, 0, 0]),
+    textureId: zod_1.z.string().optional()
+});
+exports.BaseProcessSchema = exports.BaseSchema.extend({
+    processId: zod_1.z.string(),
+    quantity: zod_1.z.number().default(1),
+    duration: zod_1.z.number().optional()
 });
 /**
  * API RBAC Schema Generators (Livello Controller)

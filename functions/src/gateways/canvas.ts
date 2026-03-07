@@ -1,19 +1,12 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
-
-import { getFirestore } from "firebase-admin/firestore";
-
-// Use the pre-initialized admin instance if available, otherwise initialize default.
-const app = admin.apps.length ? admin.app() : admin.initializeApp();
 
 const REGION = "europe-west4";
-const db = getFirestore(app, "standlo");
 
 /**
  * Interface for Canvas Actions
  */
 interface CanvasRequest {
-    actionId: "validateStructure" | "extractBOM" | "generateInstructions" | "createCanvas" | "updateCanvas" | "getCanvas" | "getCanvasMaterials" | "getCanvasTextures";
+    actionId: "validateStructure" | "extractBOM" | "generateInstructions";
     entityId?: string;
     entityType?: "stand" | "assembly" | "part";
     payload?: Record<string, unknown>;
@@ -98,102 +91,6 @@ async function generateInstructions(request: CanvasRequest) {
     }
 }
 
-/**
- * Creates a new Canvas entity (Part, Assembly, or Stand)
- */
-async function createCanvas(request: CanvasRequest, uid: string) {
-    const { entityType, payload } = request;
-
-    if (!entityType || !payload) {
-        throw new HttpsError("invalid-argument", "Missing entityType or payload for creation.");
-    }
-
-    try {
-        const docRef = db.collection("canvases").doc();
-        const now = admin.firestore.FieldValue.serverTimestamp();
-        const canvasData = {
-            ...payload,
-            id: docRef.id,
-            type: entityType,
-            ownerId: uid,
-            createdAt: now,
-            updatedAt: now,
-        };
-        await docRef.set(canvasData);
-        return { status: "success", id: docRef.id, data: canvasData };
-    } catch (error: unknown) {
-        throw new HttpsError("internal", `Failed to create Canvas entity: ${(error as Error).message}`);
-    }
-}
-
-/**
- * Updates an existing Canvas entity
- */
-async function updateCanvas(request: CanvasRequest) {
-    const { entityId, payload } = request;
-
-    if (!entityId || !payload) {
-        throw new HttpsError("invalid-argument", "Missing entityId or payload for update.");
-    }
-
-    try {
-        const docRef = db.collection("canvases").doc(entityId);
-        await docRef.update({
-            ...payload,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-        return { status: "success", id: entityId };
-    } catch (error: unknown) {
-        throw new HttpsError("internal", `Failed to update Canvas entity: ${(error as Error).message}`);
-    }
-}
-
-/**
- * Fetches a Canvas entity
- */
-async function getCanvas(request: CanvasRequest) {
-    const { entityId } = request;
-
-    if (!entityId) {
-        throw new HttpsError("invalid-argument", "Missing entityId.");
-    }
-
-    try {
-        const docSnap = await db.collection("canvases").doc(entityId).get();
-        if (!docSnap.exists) {
-            throw new HttpsError("not-found", "Canvas entity not found.");
-        }
-        return { status: "success", data: docSnap.data() };
-    } catch (error: unknown) {
-        throw new HttpsError("internal", `Failed to fetch Canvas entity: ${(error as Error).message}`);
-    }
-}
-
-/**
- * Fetches the dictionary of available Canvas Materials
- */
-async function getCanvasMaterials() {
-    try {
-        const snapshot = await db.collection("canvasMaterials").get();
-        const materials = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        return { status: "success", data: materials };
-    } catch (error: unknown) {
-        throw new HttpsError("internal", `Failed to fetch materials: ${(error as Error).message}`);
-    }
-}
-
-/**
- * Fetches the dictionary of available Canvas Textures
- */
-async function getCanvasTextures() {
-    try {
-        const snapshot = await db.collection("canvasTextures").get();
-        const textures = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        return { status: "success", data: textures };
-    } catch (error: unknown) {
-        throw new HttpsError("internal", `Failed to fetch textures: ${(error as Error).message}`);
-    }
-}
 
 /**
  * Canvas3D Firebase Gateway
@@ -202,6 +99,7 @@ async function getCanvasTextures() {
 export const canvas = onCall({
     region: REGION,
     enforceAppCheck: true,
+    cors: process.env.FUNCTIONS_EMULATOR === "true" ? true : ["https://standlo.com", "https://www.standlo.com"],
     consumeAppCheckToken: false
 }, async (request) => {
     // 1. Verify Authentication
@@ -219,16 +117,16 @@ export const canvas = onCall({
             return extractBOM(canvasReq);
         case "generateInstructions":
             return generateInstructions(canvasReq);
-        case "createCanvas":
-            return createCanvas(canvasReq, request.auth.uid);
-        case "updateCanvas":
-            return updateCanvas(canvasReq);
-        case "getCanvas":
-            return getCanvas(canvasReq);
-        case "getCanvasMaterials":
-            return getCanvasMaterials();
-        case "getCanvasTextures":
-            return getCanvasTextures();
+        // case "createCanvas":
+        //     return createCanvas(canvasReq, request.auth.uid);
+        // case "updateCanvas":
+        //     return updateCanvas(canvasReq);
+        // case "getCanvas":
+        //     return getCanvas(canvasReq);
+        // case "getCanvasMaterials":
+        //     return getCanvasMaterials();
+        // case "getCanvasTextures":
+        //     return getCanvasTextures();
         default:
             throw new HttpsError("invalid-argument", `Action '${canvasReq.actionId}' is not supported by the Canvas Gateway.`);
     }

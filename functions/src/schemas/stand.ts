@@ -1,44 +1,33 @@
 import { z } from "zod";
-import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
+import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema, BaseNodeSchema, BaseProcessSchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 
 export const StandSchema = BaseSchema.extend({
+    // Financial properties
+    cost: z.number().optional().describe("Internal standard cost"),
+    price: z.number().optional().describe("External standard price"),
 });
 export type Stand = z.infer<typeof StandSchema>;
 
 // --- SUBCOLLECTION SCHEMAS ---
-export const StandCanvasNodeSchema = z.object({
-    entityId: z.string().describe("Can be a Part ID or an Assembly ID"),
-    entityType: z.enum(['part', 'assembly']),
-    position: z.tuple([z.number(), z.number(), z.number()]),
-    rotation: z.tuple([z.number(), z.number(), z.number(), z.number()])
-});
-export type StandCanvasNode = z.infer<typeof StandCanvasNodeSchema>;
-
-export const StandAssemblyNodeSchema = z.object({
-    assemblyId: z.string(),
-    quantity: z.number()
+export const StandAssemblyNodeSchema = BaseNodeSchema.extend({
+    assemblyId: z.string()
 });
 export type StandAssemblyNode = z.infer<typeof StandAssemblyNodeSchema>;
 
-export const StandPartNodeSchema = z.object({
-    partId: z.string(),
-    quantity: z.number()
+export const StandBundleNodeSchema = BaseNodeSchema.extend({
+    bundleId: z.string()
+});
+export type StandBundleNode = z.infer<typeof StandBundleNodeSchema>;
+
+export const StandPartNodeSchema = BaseNodeSchema.extend({
+    partId: z.string()
 });
 export type StandPartNode = z.infer<typeof StandPartNodeSchema>;
 
-export const StandProcessNodeSchema = z.object({
-    processId: z.string(),
-    quantity: z.number()
-});
+export const StandProcessNodeSchema = BaseProcessSchema.extend({});
 export type StandProcessNode = z.infer<typeof StandProcessNodeSchema>;
-
-export const StandToolNodeSchema = z.object({
-    toolId: z.string(),
-    quantity: z.number()
-});
-export type StandToolNode = z.infer<typeof StandToolNodeSchema>;
 
 export const StandCreateSchema = createCreationSchema(StandSchema);
 export const StandUpdateSchema = createUpdateSchema(StandSchema);

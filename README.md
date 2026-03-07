@@ -26,11 +26,12 @@ L'architettura NEXT.js è concepita come un "consumatore UI sottile". Tutta la l
 L'interazione tra Frontend e Database è schermata da un Pattern a Microservizi basato su **Cloud Functions (`onCall`)** e **Next.js API Routes**. Tutte le chiamate pubbliche sono protette da Firebase AppCheck Edge Enforcement.
 
 ### 2.1 Orchestrator
-Funzione preposta alle state machines critiche (es. Flusso di Onboarding, Creazione dinamica tenant B2B).
-- **Scopo Principale**: Iniettare token e Custom Claims nel JWT, approvare identità, validare setup iniziali e lanciare scritture multi-collezione garantendo transazionalità.
+**Gateway Principale e Definitivo per le Cloud Functions.** Centralizza tutte le interazioni tra client e servizi backend.
+- **Scopo Principale**: Riceve tutte le richieste dal Frontend, ne valida l'autenticazione iniziale, e le instrada dinamicamente verso strati e funzioni specializzate in base allo use case (es. `firestoreGateway` per i CRUD, engine separati per calcoli specifici).
+- **Gestione Identità e Transazionalità**: Continua a orchestrare processi complessi come flussi di onboarding ed iniezione di custom claims nel JWT, garantendo l'esecuzione transazionale delle query cross-collezione.
 
-### 2.2 Firestore Gateway
-L'unico Data Access Layer standardizzato per l'interazione bidirezionale Frontend<->DB.
+### 2.2 Firestore Gateway (via Orchestrator)
+Data Access Layer standardizzato per l'interazione bidirezionale Frontend<->DB, ora orchestrato e reso inaccessibile direttamente dall'esterno (invocato dall'Orchestrator).
 - **Orchestrazione**: Gestisce operazioni CRUD in totale autonomia applicando RBAC, impaginazione server-side, multi-tenant isolation e filtraggio composto nativo.
 - **Sicurezza & Alerting**: Utilizza un `EntityRegistry` centrale. La manomissione dei payload genera **Security Alerts** silenti archiviati in `/alerts`.
 
@@ -46,6 +47,10 @@ Sistema di integrazione profonda per la preventivazione, logistica e trasformazi
 ### 2.5 Brain & AI Intelligence (Coherence)
 Interfaccia verso gli LLMs (es. Vertex AI Reasoning Engine).
 - **Scopo Principale**: Agente AI centralizzato preposto all'automazione del workflow progettuale, validazione assistita del design canvas, traduzioni massifiche e generazione dei manifest SDUI.
+
+### 2.6 Generative Correlation Architecture (STANDLO Core Pattern)
+Infrastruttura NoSQL per la gestione di Foreign Keys e l'integrità referenziale.
+- **Logica**: Una utility centrale (`correlate.ts`) reagisce agli onDocumentWritten di Firestore gestiti dal **Choreography Gateway**. Analizza gli schemi alla ricerca di naming standardizzati (`[entity]Id` come `meshId`, `partId`) e popola o pulisce automaticamente le relative sotto-collezioni reverse (es. `/meshes/{meshId}/parts/{partId}`) sfruttando aggregazioni batch (`arrayUnion`/`arrayRemove`) per prevenire collisioni e override manuali da parte degli handler transazionali primari.
 
 ---
 

@@ -1,3 +1,10 @@
+import * as fs from 'fs';
+process.on('uncaughtException', (err) => {
+    fs.appendFileSync('/Users/cristiankalexai/Progetti/standlo.com/worker-error.log', 'UNCAUGHT: ' + err.stack + '\n');
+});
+process.on('unhandledRejection', (reason) => {
+    fs.appendFileSync('/Users/cristiankalexai/Progetti/standlo.com/worker-error.log', 'UNHANDLED: ' + (reason instanceof Error ? reason.stack : reason) + '\n');
+});
 import { beforeUserCreated, beforeUserSignedIn } from "firebase-functions/v2/identity";
 import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
@@ -110,3 +117,10 @@ export { choreography } from "./gateways/choreography";
 export { firestore as firestoreGateway } from "./gateways/firestore"; // Prevent naming collisions with 'firebase-admin/firestore' export
 export { brain } from "./gateways/brain";
 export { canvas } from "./gateways/canvas";
+export { webhooks } from "./gateways/webhooks";
+export { pipelineTriggers } from "./gateways/firestoreTriggers";
+
+// ============================================================================
+// GENERATIVE CORRELATION (CORE)
+// ============================================================================
+export { correlateRoot, correlateSub } from "./choreography/correlator";

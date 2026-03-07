@@ -18,7 +18,7 @@ export default function NavigationManager() {
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        fetch("/api/navigation/manifest")
+        fetch("/admin/api/navigation/manifest")
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
@@ -61,7 +61,7 @@ export default function NavigationManager() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            const res = await fetch("/api/navigation/manifest", {
+            const res = await fetch("/admin/api/navigation/manifest", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

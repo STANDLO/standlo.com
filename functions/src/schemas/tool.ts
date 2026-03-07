@@ -3,7 +3,10 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 
-export const ToolSchema = BaseSchema.extend({});
+export const ToolSchema = BaseSchema.extend({
+    cost: z.number().optional().describe("Internal standard cost"),
+    price: z.number().optional().describe("External standard price"),
+});
 export type Tool = z.infer<typeof ToolSchema>;
 
 export const ToolCreateSchema = createCreationSchema(ToolSchema);

@@ -27,7 +27,7 @@ export default function RolesModelerPage() {
     const fetchRoles = async () => {
         try {
             setIsLoading(true);
-            const res = await fetch("/api/roles");
+            const res = await fetch("/admin/api/roles");
             const data = await res.json();
             setRoles(data || []);
         } catch (e) {
@@ -46,7 +46,7 @@ export default function RolesModelerPage() {
 
         try {
             setIsSubmitting(true);
-            const res = await fetch("/api/roles", {
+            const res = await fetch("/admin/api/roles", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: formattedId, label: newRoleLabel }),

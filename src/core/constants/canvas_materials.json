@@ -1,0 +1,35 @@
+[
+    {
+        "name": "MDF",
+        "baseColor": "#cdaa7d",
+        "roughness": 0.5,
+        "metalness": 0,
+        "opacity": 1,
+        "transparent": false,
+        "id": "19511f20-48b1-4ac9-a762-65cdb9a81dad",
+        "createdAt": "2026-03-04T08:53:38.902Z",
+        "updatedAt": "2026-03-04T08:53:38.902Z"
+    },
+    {
+        "name": "PLYWOOD",
+        "baseColor": "#e4d8c5",
+        "roughness": 0.5,
+        "metalness": 0,
+        "opacity": 1,
+        "transparent": false,
+        "id": "81488052-8603-4bc1-b51c-7a37e6db89b3",
+        "createdAt": "2026-03-04T08:55:16.893Z",
+        "updatedAt": "2026-03-04T12:13:37.577Z"
+    },
+    {
+        "name": "CHIPBOARD",
+        "baseColor": "#c2a377",
+        "roughness": 0.5,
+        "metalness": 0,
+        "opacity": 1,
+        "transparent": false,
+        "id": "fd975ffc-ae38-4f0e-b944-d5f5592d77d6",
+        "createdAt": "2026-03-04T08:56:33.680Z",
+        "updatedAt": "2026-03-04T12:14:17.579Z"
+    }
+]

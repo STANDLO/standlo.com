@@ -4,6 +4,7 @@ import { GatewayRequest } from "../types";
 export const brain = onCall({
     region: "europe-west4",
     enforceAppCheck: true,
+    cors: process.env.FUNCTIONS_EMULATOR === "true" ? true : ["https://standlo.com", "https://www.standlo.com"],
     consumeAppCheckToken: false,
 }, async (request) => {
     if (!request.auth) {

@@ -2,25 +2,25 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-import { LocalizedStringSchema } from "./primitives";
+import { SystemRoleOptions } from "./primitives";
 
-export const ProcessRoleSchema = z.enum([
-    'manager', 'architect', 'engineer', 'designer', 'electrician', 'plumber',
-    'carpenter', 'cabinetmaker', 'dryliner', 'ironworker', 'windowfitter',
-    'glazier', 'riggers', 'standbuilder', 'plasterer', 'painter', 'tiler',
-    'driver', 'forkliftdriver', 'promoter'
-]);
+export const ProcessRoleSchema = z.enum(
+    SystemRoleOptions.map(o => o.value) as [string, ...string[]]
+);
 
 export const ProcessSchema = BaseSchema.extend({
-    name: LocalizedStringSchema,
-    description: LocalizedStringSchema.optional(),
+    name: z.string(),
+    phase: z.enum(['CLIENT IN', 'DESIGN/ENG', 'CLIENT APP.', 'FABRICATION', 'WAREHOUSE', 'LOGISTICS', 'ON-SITE', 'STRIKE', 'RECOVERY', 'CLOSING']).optional(),
+    description: z.string().optional(),
     requiredRole: ProcessRoleSchema.optional(), // Skill Matching & Security
     timeMatrix: z.array(z.object({
         quantityThreshold: z.number(), // e.g. up to 1, up to 10
         setupTimeMinutes: z.number(), // Prep time
         executionTimeMinutes: z.number(), // Execution time per unit
         cleanupTimeMinutes: z.number() // Cleanup time
-    })).default([])
+    })).default([]),
+    cost: z.number().optional().describe("Internal standard cost (e.g. per hr)"),
+    price: z.number().optional().describe("External standard price (e.g. per hr)"),
 });
 export type Process = z.infer<typeof ProcessSchema>;
 

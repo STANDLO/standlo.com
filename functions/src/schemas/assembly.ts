@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
+import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema, BaseNodeSchema, BaseProcessSchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 import { LocalizedStringSchema } from "./primitives";
@@ -8,6 +8,11 @@ export const AssemblySchema = BaseSchema.extend({
     name: LocalizedStringSchema,
     description: LocalizedStringSchema.optional(),
     locationType: z.enum(['warehouse', 'site']).default('warehouse'),
+
+    // Financial properties
+    cost: z.number().optional().describe("Internal standard cost"),
+    price: z.number().optional().describe("External standard price"),
+
     gltfUrl: z.string().optional().describe("URL to a pre-baked .glb representation of this assembly (optional)"),
     sockets: z.array(z.object({
         id: z.string(),
@@ -19,30 +24,13 @@ export const AssemblySchema = BaseSchema.extend({
 export type Assembly = z.infer<typeof AssemblySchema>;
 
 // --- SUBCOLLECTION SCHEMAS ---
-export const AssemblyPartNodeSchema = z.object({
-    partId: z.string(),
-    quantity: z.number()
+export const AssemblyPartNodeSchema = BaseNodeSchema.extend({
+    partId: z.string()
 });
 export type AssemblyPartNode = z.infer<typeof AssemblyPartNodeSchema>;
 
-export const AssemblyProcessNodeSchema = z.object({
-    processId: z.string(),
-    quantity: z.number()
-});
+export const AssemblyProcessNodeSchema = BaseProcessSchema.extend({});
 export type AssemblyProcessNode = z.infer<typeof AssemblyProcessNodeSchema>;
-
-export const AssemblyToolNodeSchema = z.object({
-    toolId: z.string(),
-    quantity: z.number()
-});
-export type AssemblyToolNode = z.infer<typeof AssemblyToolNodeSchema>;
-
-export const AssemblyCanvasNodeSchema = z.object({
-    partId: z.string(),
-    position: z.tuple([z.number(), z.number(), z.number()]),
-    rotation: z.tuple([z.number(), z.number(), z.number(), z.number()])
-});
-export type AssemblyCanvasNode = z.infer<typeof AssemblyCanvasNodeSchema>;
 
 export const AssemblyCreateSchema = createCreationSchema(AssemblySchema);
 export const AssemblyUpdateSchema = createUpdateSchema(AssemblySchema);

@@ -24,7 +24,7 @@ export default function Home() {
 
   useEffect(() => {
     // 1. Load schemas
-    fetch("/api/schemas")
+    fetch("/admin/api/schemas")
       .then(r => r.json())
       .then(data => {
         if (data.success) {
@@ -39,7 +39,7 @@ export default function Home() {
     const orchestrator = httpsCallable(functions, "orchestrator");
     orchestrator({ actionId: "get_admin_kpis" })
       .then(result => {
-        const payload: any = result.data;
+        const payload = result.data as { status?: string; data?: { totalUsers: number; pendingUsers: number; recentAlerts: number; } };
         if (payload?.status === "success" && payload.data) {
           setKpis(payload.data);
         }
@@ -57,7 +57,7 @@ export default function Home() {
     }
     setCreating(true);
     try {
-      const res = await fetch("/api/schemas/create", {
+      const res = await fetch("/admin/api/schemas/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ entityName: name })

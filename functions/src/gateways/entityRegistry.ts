@@ -42,6 +42,14 @@ export const Registry: Record<string, EntityConfig> = {
     call: { scope: "global", name: "apicalls", schema: schemas.CallSchema },
     alert: { scope: "global", name: "admin/security/alerts", schema: schemas.AlertSchema },
     product: { scope: "tenant", name: "products", schema: schemas.ProductSchema },
+    canvas: { scope: "global", name: "canvases", schema: schemas.CanvasSchema },
+    material: { scope: "global", name: "materials", schema: schemas.MaterialSchema },
+    texture: { scope: "global", name: "textures", schema: schemas.TextureSchema },
+    mesh: { scope: "global", name: "meshes", schema: schemas.MeshSchema },
+    bundle: { scope: "global", name: "bundles", schema: schemas.BundleSchema },
+    pipeline: { scope: "global", name: "pipelines", schema: schemas.PipelineSchema },
+    pipeline_execution: { scope: "global", name: "pipelines_executions", schema: schemas.PipelineExecutionSchema },
+    ai_skill: { scope: "global", name: "ai_skills", schema: schemas.AISkillSchema },
 };
 
 export function getEntityConfig(entityId: string): EntityConfig {

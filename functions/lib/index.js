@@ -33,7 +33,14 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.canvas = exports.brain = exports.firestoreGateway = exports.choreography = exports.orchestrator = exports.beforeSignIn = exports.beforeCreate = exports.systemLocales = void 0;
+exports.correlateSub = exports.correlateRoot = exports.pipelineTriggers = exports.webhooks = exports.canvas = exports.brain = exports.firestoreGateway = exports.choreography = exports.orchestrator = exports.beforeSignIn = exports.beforeCreate = exports.systemLocales = void 0;
+const fs = __importStar(require("fs"));
+process.on('uncaughtException', (err) => {
+    fs.appendFileSync('/Users/cristiankalexai/Progetti/standlo.com/worker-error.log', 'UNCAUGHT: ' + err.stack + '\n');
+});
+process.on('unhandledRejection', (reason) => {
+    fs.appendFileSync('/Users/cristiankalexai/Progetti/standlo.com/worker-error.log', 'UNHANDLED: ' + (reason instanceof Error ? reason.stack : reason) + '\n');
+});
 const identity_1 = require("firebase-functions/v2/identity");
 const admin = __importStar(require("firebase-admin"));
 const firestore_1 = require("firebase-admin/firestore");
@@ -124,4 +131,14 @@ var brain_1 = require("./gateways/brain");
 Object.defineProperty(exports, "brain", { enumerable: true, get: function () { return brain_1.brain; } });
 var canvas_1 = require("./gateways/canvas");
 Object.defineProperty(exports, "canvas", { enumerable: true, get: function () { return canvas_1.canvas; } });
+var webhooks_1 = require("./gateways/webhooks");
+Object.defineProperty(exports, "webhooks", { enumerable: true, get: function () { return webhooks_1.webhooks; } });
+var firestoreTriggers_1 = require("./gateways/firestoreTriggers");
+Object.defineProperty(exports, "pipelineTriggers", { enumerable: true, get: function () { return firestoreTriggers_1.pipelineTriggers; } });
+// ============================================================================
+// GENERATIVE CORRELATION (CORE)
+// ============================================================================
+var correlator_1 = require("./choreography/correlator");
+Object.defineProperty(exports, "correlateRoot", { enumerable: true, get: function () { return correlator_1.correlateRoot; } });
+Object.defineProperty(exports, "correlateSub", { enumerable: true, get: function () { return correlator_1.correlateSub; } });
 //# sourceMappingURL=index.js.map

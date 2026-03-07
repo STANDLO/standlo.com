@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/Input";
  */
 export default function ParametricGenerator() {
     const addEntity = useCanvasStore((state) => state.addEntity);
+    const getNextOrder = useCanvasStore((state) => state.getNextOrder);
     const mode = useCanvasStore((state) => state.mode);
 
     const [shape, setShape] = useState<"box" | "cylinder">("box");
@@ -26,6 +27,7 @@ export default function ParametricGenerator() {
             id: uuidv4(),
             baseEntityId: `parametric_${shape}_${Date.now()}`,
             type: "part" as const,
+            order: getNextOrder(),
             position: [0, height / 2, 0] as [number, number, number],
             rotation: [0, 0, 0, 1] as [number, number, number, number],
             sockets: [

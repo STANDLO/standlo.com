@@ -95,7 +95,7 @@ export default function EditorPage() {
 
         setRenaming(true);
         try {
-            const res = await fetch("/api/schemas/rename", {
+            const res = await fetch("/admin/api/schemas/rename", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -185,7 +185,7 @@ export default function EditorPage() {
     };
 
     useEffect(() => {
-        fetch(`/api/schemas/${entity}`)
+        fetch(`/admin/api/schemas/${entity}`)
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
@@ -206,7 +206,7 @@ export default function EditorPage() {
         setSuccess(false);
 
         try {
-            const res = await fetch(`/api/schemas/${entity}`, {
+            const res = await fetch(`/admin/api/schemas/${entity}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

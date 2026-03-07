@@ -1,0 +1,72 @@
+[
+    {
+        "name": "WHITE",
+        "type": "color",
+        "valueLight": "#ffffff",
+        "wrapS": "RepeatWrapping",
+        "wrapT": "RepeatWrapping",
+        "repeat": [
+            1,
+            1
+        ],
+        "id": "c69c2394-f75d-400a-834e-b5e447e879b9",
+        "createdAt": "2026-03-04T08:57:10.727Z",
+        "updatedAt": "2026-03-04T08:57:10.727Z"
+    },
+    {
+        "name": "BLACK",
+        "type": "color",
+        "valueLight": "#000000",
+        "wrapS": "RepeatWrapping",
+        "wrapT": "RepeatWrapping",
+        "repeat": [
+            1,
+            1
+        ],
+        "id": "3b0b2d70-cd57-4cd6-b811-f4c45e7fe5e4",
+        "createdAt": "2026-03-04T08:57:23.836Z",
+        "updatedAt": "2026-03-04T08:57:23.836Z"
+    },
+    {
+        "name": "RED",
+        "type": "color",
+        "valueLight": "#ff0000",
+        "wrapS": "RepeatWrapping",
+        "wrapT": "RepeatWrapping",
+        "repeat": [
+            1,
+            1
+        ],
+        "id": "9a9fe3e9-396e-4fd3-b2ec-d111dba23e14",
+        "createdAt": "2026-03-04T08:57:37.907Z",
+        "updatedAt": "2026-03-04T08:57:37.907Z"
+    },
+    {
+        "name": "GREEN",
+        "type": "color",
+        "valueLight": "#00ff00",
+        "wrapS": "RepeatWrapping",
+        "wrapT": "RepeatWrapping",
+        "repeat": [
+            1,
+            1
+        ],
+        "id": "caff21c4-55a3-4541-9d62-738f6b76b6f1",
+        "createdAt": "2026-03-04T08:57:55.158Z",
+        "updatedAt": "2026-03-04T08:57:55.158Z"
+    },
+    {
+        "name": "BLUE",
+        "type": "color",
+        "valueLight": "#0000ff",
+        "wrapS": "RepeatWrapping",
+        "wrapT": "RepeatWrapping",
+        "repeat": [
+            1,
+            1
+        ],
+        "id": "72c20677-95d5-43ac-be61-5b07dedb4f8d",
+        "createdAt": "2026-03-04T08:58:21.056Z",
+        "updatedAt": "2026-03-04T08:58:21.056Z"
+    }
+]

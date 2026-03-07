@@ -21,7 +21,7 @@ export default function I18nManager() {
     const fetchStats = async () => {
         setLoading(true);
         try {
-            const res = await fetch("/api/i18n/status");
+            const res = await fetch("/admin/api/i18n/status");
             const data = await res.json();
             if (data.success) {
                 setStats(data.analysis);

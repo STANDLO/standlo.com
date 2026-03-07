@@ -532,6 +532,26 @@
     @apply flex items-center bg-muted/50 rounded-lg p-1 mr-4 border;
   }
 
+  .ui-canvas-viewer {
+    @apply flex items-center bg-muted/50 rounded-lg p-1 mr-4 border;
+  }
+
+  .canvas-header-viewer-2d {
+    @apply flex items-center;
+  }
+
+  .canvas-header-viewer-3d {
+    @apply flex items-center;
+  }
+
+  .canvas-header-viewer-xr {
+    @apply flex items-center;
+  }
+
+  .canvas-header-viewer-ar {
+    @apply flex items-center;
+  }
+
   .ui-canvas-toolbar-btn {
     @apply px-3 py-1.5 text-xs font-semibold rounded-md transition-colors;
   }

@@ -4,20 +4,62 @@ import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 import { LocalizedStringSchema } from "./primitives";
 
+export const PART_CATEGORIES_BY_SECTOR: Record<string, Record<string, string>> = {
+    exhibition: {
+        wood_panel: "Wood Panel",
+        furniture: "Furniture",
+        display: "Display",
+        structure: "Structure",
+        graphic: "Graphic",
+        lighting: "Lighting",
+        rigging: "Rigging",
+        decor: "Decor",
+        other: "Other"
+    },
+    construction: {
+        wood_panel: "Wood Panel",
+        metal_structure: "Metal Structure",
+        floor_panel: "Floor Panel",
+        glass: "Glass",
+        fasteners: "Fasteners",
+        paint: "Paint",
+        other: "Other"
+    },
+    audio_video: {
+        screen: "Screen",
+        audio_setup: "Audio Setup",
+        cables: "Cables",
+        camera: "Camera",
+        other: "Other"
+    },
+    electrical: {
+        lighting: "Lighting",
+        cables: "Cables",
+        switch: "Switch",
+        socket: "Socket",
+        other: "Other"
+    }
+};
+
 export const PartSchema = BaseSchema.extend({
-    name: LocalizedStringSchema,
+    name: z.string(),
     description: LocalizedStringSchema.optional(),
     sector: z.string(), // e.g. construction, exhibition
-    layer: z.string(), // e.g. rigging, floor, wall
+    category: z.string(), // e.g. Wood Panel, Fasteners, Cables
     isRentable: z.boolean().default(true),
     isSellable: z.boolean().default(true),
     isConsumable: z.boolean().default(false), // Consumables vs Assets
     baseUnit: z.string().default('pcs'), // 'pcs', 'sqm', 'lm'
-    variantsDefinition: z.array(z.object({
-        attribute: z.string(), // e.g. 'width_cm'
-        type: z.enum(['string', 'number', 'boolean']),
-        options: z.array(z.union([z.string(), z.number()])).optional()
-    })).optional(),
+
+    // Spatial properties for handling instances
+    position: z.tuple([z.number(), z.number(), z.number()]).default([0, 0, 0]),
+    rotation: z.tuple([z.number(), z.number(), z.number()]).default([0, 0, 0]),
+
+    // Financial properties
+    cost: z.number().optional().describe("Internal standard cost"),
+    price: z.number().optional().describe("External standard price"),
+
+    meshId: z.string().optional().describe("ID della Mesh di base da cui ereditare la geometria e il materiale nativo"),
     gltfUrl: z.string().optional().describe("URL to the Draco-compressed .glb file stored in Firebase Storage"),
     sockets: z.array(z.object({
         id: z.string(),
@@ -30,12 +72,14 @@ export type Part = z.infer<typeof PartSchema>;
 
 // --- SUBCOLLECTION SCHEMAS ---
 export const PartProcessNodeSchema = z.object({
+    id: z.string().uuid(),
     processId: z.string(),
     quantity: z.number()
 });
 export type PartProcessNode = z.infer<typeof PartProcessNodeSchema>;
 
 export const PartToolNodeSchema = z.object({
+    id: z.string().uuid(),
     toolId: z.string(),
     quantity: z.number()
 });
@@ -46,7 +90,7 @@ export const PartUpdateSchema = createUpdateSchema(PartSchema);
 export const PartSearchSchema = PaginationQuerySchema.extend({
     name: z.string().optional(),
     sector: z.string().optional(),
-    layer: z.string().optional(),
+    category: z.string().optional(),
 });
 
 export const PartPolicyMatrix: Record<RoleId, EntityPolicy> = {
