@@ -46,3 +46,8 @@ next-env.d.ts
 keys/*
 admin/.env*
 admin/scripts/
+
+# Build artifacts & logs
+/functions/lib/
+*.log
+/logs/
