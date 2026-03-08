@@ -10,33 +10,36 @@ function createZodSchemaFromJson(jsonSchemaStr: string): z.ZodTypeAny | null {
         if (!schemaObj.properties || Object.keys(schemaObj.properties).length === 0) return null;
 
         const shape: Record<string, z.ZodTypeAny> = {};
-        for (const [key, prop] of Object.entries(schemaObj.properties as Record<string, unknown>)) {
-            const p = prop as Record<string, any>;
+        const schemaProperties = schemaObj["properties"] as Record<string, unknown>;
+        for (const [key, prop] of Object.entries(schemaProperties)) {
+            const p = prop as Record<string, unknown>;
             let zodType: z.ZodTypeAny = z.string();
 
-            if (p.enum && Array.isArray(p.enum) && p.enum.length > 0) {
-                zodType = z.enum(p.enum as [string, ...string[]]);
-            } else if (p.type === 'number') {
+            if (p["enum"] && Array.isArray(p["enum"]) && p["enum"].length > 0) {
+                zodType = z.enum(p["enum"] as [string, ...string[]]);
+            } else if (p["type"] === 'number') {
                 zodType = z.number();
-            } else if (p.type === 'boolean') {
+            } else if (p["type"] === 'boolean') {
                 zodType = z.boolean();
-            } else if (p.type === 'array') {
-                if (p.items && p.items.type === 'string') {
+            } else if (p["type"] === 'array') {
+                const items = p["items"] as Record<string, unknown> | undefined;
+                if (items && items["type"] === 'string') {
                     zodType = z.array(z.string());
-                } else if (p.items && p.items.type === 'number') {
+                } else if (items && items["type"] === 'number') {
                     zodType = z.array(z.number());
                 } else {
-                    zodType = z.array(z.any());
+                    zodType = z.array(z.unknown());
                 }
             }
 
-            if (p.description) {
-                zodType = zodType.describe(p.description);
+            if (p["description"]) {
+                zodType = zodType.describe(p["description"] as string);
             }
 
             // By default, if it's not strictly required in the JSON schema, we can make it optional
             // or we keep it required if we want strict output.
-            if (!schemaObj.required || !schemaObj.required.includes(key)) {
+            const requiredFields = schemaObj["required"] as string[] | undefined;
+            if (!requiredFields || !requiredFields.includes(key)) {
                 zodType = zodType.optional();
             }
 
@@ -52,12 +55,12 @@ function createZodSchemaFromJson(jsonSchemaStr: string): z.ZodTypeAny | null {
 /**
  * Executes a dynamic AI skill stored in Firestore.
  */
-export async function executeDynamicSkill(skillDoc: any, payloadObj: Record<string, unknown>) {
+export async function executeDynamicSkill(skillDoc: Record<string, unknown>, payloadObj: Record<string, unknown>) {
     // 1. Construct the Zod schemas from the database payload
-    const outputSchema = createZodSchemaFromJson(skillDoc.outputSchemaJson);
+    const outputSchema = createZodSchemaFromJson(skillDoc.outputSchemaJson as string);
 
     // 2. Build the final prompt
-    let finalPrompt = skillDoc.prompt || "Execute the requested task.";
+    let finalPrompt = (skillDoc["prompt"] as string) || "Execute the requested task.";
 
     // Simple interpolation for {{ field }} matches
     const usedKeys = new Set<string>();
@@ -79,8 +82,8 @@ export async function executeDynamicSkill(skillDoc: any, payloadObj: Record<stri
     const ai = getAi();
 
     // Prepare options, only pass schema if we have a valid one (so we don't force empty JSON objects)
-    const generateOptions: any = {
-        model: skillDoc.modelName || 'googleai/gemini-2.5-flash',
+    const generateOptions: Record<string, unknown> = {
+        model: skillDoc.modelName as string | undefined || 'googleai/gemini-2.5-flash',
         prompt: finalPrompt,
     };
 

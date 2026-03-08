@@ -13,7 +13,8 @@ export async function createAISkillEntity(userId: string, payload: Record<string
         payload.id = db.collection('ai_skills').doc().id;
     }
 
-    const { type, ...dataWithoutType } = payload;
+    const dataWithoutType = { ...payload };
+    delete dataWithoutType.type;
 
     // Add base fields
     const enrichedData = {
@@ -34,7 +35,8 @@ export async function createAISkillEntity(userId: string, payload: Record<string
 export async function updateAISkillEntity(userId: string, id: string, payload: Record<string, unknown>) {
     const db = getDb();
 
-    const { type, ...dataWithoutType } = payload;
+    const dataWithoutType = { ...payload };
+    delete dataWithoutType.type;
 
     const enrichment = {
         ...dataWithoutType,
@@ -78,7 +80,7 @@ export async function testAISkill(userId: string, payload: Record<string, unknow
     const { executeDynamicSkill } = await import("../genkit/dynamicFlow");
 
     try {
-        const result = await executeDynamicSkill(skill, (mockPayload as Record<string, unknown>) || {});
+        const result = await executeDynamicSkill((skill as Record<string, unknown>) || {}, (mockPayload as Record<string, unknown>) || {});
         return { success: true, result };
     } catch (e) {
         console.error("AI Skill Test Error:", e);

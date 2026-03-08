@@ -1,4 +1,4 @@
 declare module 'handlebars/dist/cjs/handlebars.js' {
-    const content: any;
+    const content: unknown;
     export default content;
 }

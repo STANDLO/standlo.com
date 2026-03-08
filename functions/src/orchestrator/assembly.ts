@@ -33,7 +33,7 @@ async function syncSubcollection(
     batch: FirebaseFirestore.WriteBatch,
     parentRef: FirebaseFirestore.DocumentReference,
     collectionName: string,
-    items: Record<string, any>[],
+    items: Record<string, unknown>[],
     uid: string,
     now: string
 ) {
@@ -42,15 +42,15 @@ async function syncSubcollection(
     const existingIds = new Set(existingDocs.docs.map(d => d.id));
 
     for (const item of items) {
-        const itemId = item.id || randomUUID();
+        const itemId = (item["id"] as string) || randomUUID();
         const docRef = parentRef.collection(collectionName).doc(itemId);
 
-        const itemData = { ...item };
+        const itemData = { ...item } as Record<string, unknown>;
         // Clean undefined properties to prevent firestore exceptions
         Object.keys(itemData).forEach(key => itemData[key] === undefined && delete itemData[key]);
 
         if (existingIds.has(itemId)) {
-            batch.update(docRef, { ...itemData, updatedAt: now, updatedBy: uid });
+            batch.update(docRef, { ...itemData, updatedAt: now, updatedBy: uid } as Record<string, unknown>);
             existingIds.delete(itemId);
         } else {
             batch.set(docRef, { ...itemData, id: itemId, createdAt: now, createdBy: uid, updatedAt: now, updatedBy: uid });
@@ -137,9 +137,9 @@ export async function updateAssemblyEntity(uid: string, assemblyId: string, payl
     const parentRef = firestore.collection("assemblies").doc(assemblyId);
 
     // Clean undefined to avoid update issues
-    Object.keys(updateData).forEach(key => (updateData as Record<string, any>)[key] === undefined && delete (updateData as Record<string, any>)[key]);
+    Object.keys(updateData).forEach(key => (updateData as Record<string, unknown>)[key] === undefined && delete (updateData as Record<string, unknown>)[key]);
 
-    batch.update(parentRef, updateData as Record<string, any>);
+    batch.update(parentRef, updateData as Record<string, unknown>);
     batch.update(firestore.collection("canvas").doc(assemblyId), canvasUpdateData);
 
     if (Array.isArray(parts)) {

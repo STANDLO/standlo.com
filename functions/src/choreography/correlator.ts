@@ -45,10 +45,30 @@ export const correlateSub = onDocumentWritten(subOptions, async (event) => {
 const isEmulatorTarget = process.env.FUNCTIONS_EMULATOR === "true" || !!process.env.FIRESTORE_EMULATOR_HOST || process.env.GCLOUD_PROJECT === "demo-standlo";
 
 // Bypass for Eventarc impossible triad bug
-if (isEmulatorTarget && (correlateRoot as any).__endpoint) {
-    (correlateRoot as any).__endpoint.eventTrigger.eventFilters.namespace = "(default)";
+if (isEmulatorTarget && (correlateRoot as unknown as Record<string, unknown>).__endpoint) {
+    const endpoint = (correlateRoot as unknown as Record<string, unknown>).__endpoint as Record<string, unknown>;
+    const eventTrigger = endpoint.eventTrigger as Record<string, unknown>;
+    const eventFilters = (eventTrigger.eventFilters || {}) as Record<string, unknown>;
+
+    endpoint.eventTrigger = {
+        ...eventTrigger,
+        eventFilters: {
+            ...eventFilters,
+            namespace: "(default)"
+        }
+    };
 }
-if (isEmulatorTarget && (correlateSub as any).__endpoint) {
-    (correlateSub as any).__endpoint.eventTrigger.eventFilters.namespace = "(default)";
+if (isEmulatorTarget && (correlateSub as unknown as Record<string, unknown>).__endpoint) {
+    const endpoint = (correlateSub as unknown as Record<string, unknown>).__endpoint as Record<string, unknown>;
+    const eventTrigger = endpoint.eventTrigger as Record<string, unknown>;
+    const eventFilters = (eventTrigger.eventFilters || {}) as Record<string, unknown>;
+
+    endpoint.eventTrigger = {
+        ...eventTrigger,
+        eventFilters: {
+            ...eventFilters,
+            namespace: "(default)"
+        }
+    };
 }
 

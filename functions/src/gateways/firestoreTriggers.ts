@@ -97,7 +97,17 @@ const isLocal = process.env.FUNCTIONS_EMULATOR === "true" || !!process.env.FIRES
 
 // Bypass for Eventarc impossible triad bug: The CLI requires a namespace, but passing {namespaceId} 
 // or custom namespaces crashes the local HTTP emulator. We MUST inject (default) metadata locally.
-if (isLocal && (pipelineTriggers as any).__endpoint) {
-    (pipelineTriggers as any).__endpoint.eventTrigger.eventFilters.namespace = "(default)";
+if (isLocal && (pipelineTriggers as unknown as Record<string, unknown>).__endpoint) {
+    const endpoint = (pipelineTriggers as unknown as Record<string, unknown>).__endpoint as Record<string, unknown>;
+    const eventTrigger = endpoint.eventTrigger as Record<string, unknown>;
+    const eventFilters = (eventTrigger.eventFilters || {}) as Record<string, unknown>;
+
+    endpoint.eventTrigger = {
+        ...eventTrigger,
+        eventFilters: {
+            ...eventFilters,
+            namespace: "(default)"
+        }
+    };
 }
 

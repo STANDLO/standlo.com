@@ -17,11 +17,11 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
 
     try {
         // Recursively remove empty strings and nulls from the payload so Zod treats them as undefined/optional
-        const sanitizePayload = (obj: any): any => {
+        const sanitizePayload = (obj: unknown): unknown => {
             if (obj === null || obj === undefined || obj === "") return undefined;
             if (Array.isArray(obj)) return obj.map(sanitizePayload).filter(x => x !== undefined);
             if (typeof obj === "object") {
-                const cleaned: any = {};
+                const cleaned: Record<string, unknown> = {};
                 for (const [key, val] of Object.entries(obj)) {
                     const cleanedVal = sanitizePayload(val);
                     if (cleanedVal !== undefined) cleaned[key] = cleanedVal;
@@ -31,11 +31,11 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             return obj;
         };
 
-        const cleanedOrgData = sanitizePayload(orgData) || {};
+        const cleanedOrgData = (sanitizePayload(orgData) || {}) as Record<string, unknown>;
 
         let birthdayValue: string | null = null;
-        if (cleanedOrgData.birthday) {
-            birthdayValue = cleanedOrgData.birthday;
+        if (cleanedOrgData["birthday"]) {
+            birthdayValue = cleanedOrgData["birthday"] as string;
 
             // Validate Age (must be 16+)
             const birthDate = new Date(birthdayValue as string);
@@ -52,12 +52,12 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
                 throw new HttpsError("invalid-argument", "Devi avere almeno 16 anni per registrarti.", { internalCode: "age_under_16" });
             }
 
-            delete cleanedOrgData.birthday;
+            delete cleanedOrgData["birthday"];
         }
 
         // If 'type' is a single string (as submitted by the default frontend select field), wrap it in an array to pass Zod schema.
-        if (typeof cleanedOrgData.type === "string") {
-            cleanedOrgData.type = [cleanedOrgData.type];
+        if (typeof cleanedOrgData["type"] === "string") {
+            cleanedOrgData["type"] = [cleanedOrgData["type"]];
         }
 
         const parsedData = OrganizationSchema.partial().parse(cleanedOrgData);
@@ -89,7 +89,7 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
 
         // Update User Document
         const userRef = db.collection("users").doc(uid);
-        const userUpdatePayload: any = {
+        const userUpdatePayload: Record<string, unknown> = {
             active: isActive,
             updatedAt: FieldValue.serverTimestamp(),
         };
@@ -159,7 +159,8 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
 export async function updateOrganizationEntity(uid: string, orgId: string, payload: Record<string, unknown>) {
     const db = getFirestore(admin.app(), "standlo");
     const now = new Date().toISOString();
-    const { id: _id, ...restPayload } = payload;
+    const restPayload = { ...payload };
+    delete restPayload.id;
 
     const updateData = {
         ...restPayload,

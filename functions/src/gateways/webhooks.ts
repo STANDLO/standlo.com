@@ -106,8 +106,9 @@ export const webhooks = onRequest({
         await runPipeline(authorizedUid, pipelineId, executionContext, false);
 
         res.status(200).json({ status: "success", message: "Pipeline workflow triggered successfully." });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(`[Webhook Error] Pipeline ${req.query.id}:`, error);
-        res.status(500).json({ status: "error", message: "Internal Server Error", details: error.message });
+        const details = error instanceof Error ? error.message : String(error);
+        res.status(500).json({ status: "error", message: "Internal Server Error", details });
     }
 });

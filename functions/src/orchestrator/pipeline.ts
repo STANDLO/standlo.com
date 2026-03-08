@@ -74,26 +74,26 @@ export async function deletePipelineEntity(uid: string, pipelineId: string) {
 // DAG Interpreter (Phase 2 - Dry Run)
 // -------------------------------------------------------------
 
-function interpolateString(str: string, context: Record<string, any>): string {
+function interpolateString(str: string, context: Record<string, unknown>): string {
     // Matches {{ variable.path }}
     return str.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (match, path) => {
         const keys = path.split('.');
-        let value: any = context;
+        let value: unknown = context;
         for (const key of keys) {
-            if (value === undefined || value === null) break;
-            value = value[key];
+            if (value === undefined || value === null || typeof value !== 'object') break;
+            value = (value as Record<string, unknown>)[key];
         }
         return value !== undefined ? String(value) : match;
     });
 }
 
-function interpolateObject(obj: any, context: Record<string, any>): any {
+function interpolateObject(obj: unknown, context: Record<string, unknown>): unknown {
     if (typeof obj === 'string') {
         return interpolateString(obj, context);
     } else if (Array.isArray(obj)) {
         return obj.map(item => interpolateObject(item, context));
     } else if (obj !== null && typeof obj === 'object') {
-        const result: Record<string, any> = {};
+        const result: Record<string, unknown> = {};
         for (const [k, v] of Object.entries(obj)) {
             result[k] = interpolateObject(v, context);
         }
@@ -108,18 +108,18 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
         throw new Error(`Pipeline ${pipelineId} not found.`);
     }
 
-    const pipeline = doc.data() as any;
-    const nodes: any[] = pipeline.nodes || [];
-    const edges: any[] = pipeline.edges || [];
+    const pipeline = doc.data() as Record<string, unknown>;
+    const nodes: Record<string, unknown>[] = (pipeline["nodes"] as Record<string, unknown>[]) || [];
+    const edges: Record<string, unknown>[] = (pipeline["edges"] as Record<string, unknown>[]) || [];
 
     // Runtime variables available to nodes via {{ }}
-    const executionContext: Record<string, any> = {
+    const executionContext: Record<string, unknown> = {
         ...inputContext,
         input: inputContext, // Kept for backward compatibility if any legacy pipeline uses {{ input.data }}
         nodes: {} // Results of node executions will be stored here: nodes[nodeId].output
     };
 
-    const executionLog: any[] = [];
+    const executionLog: Record<string, unknown>[] = [];
 
     // 1. Find the Trigger Node(s)
     const triggerNodes = nodes.filter(n => n.type === "trigger");
@@ -135,21 +135,23 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
         const currentNode = queue.shift();
         if (!currentNode) continue;
 
-        if (visited.has(currentNode.id)) continue;
-        visited.add(currentNode.id);
+        if (visited.has(currentNode["id"] as string)) continue;
+        visited.add(currentNode["id"] as string);
 
         try {
             // Interpolate node config before execution
-            const config = interpolateObject(currentNode.data, executionContext);
-            const output: any = { executedAt: new Date().toISOString() };
+            const config = interpolateObject(currentNode["data"], executionContext) as Record<string, unknown>;
+            const output: Record<string, unknown> = { executedAt: new Date().toISOString() };
             let followEdgeId: string | null = null; // Used for logic branching
 
-            console.log(`[Pipeline ${pipelineId}] Executing Node ${currentNode.id} (${currentNode.type}) [DryRun: ${isDryRun}]`);
+            const nodeId = currentNode["id"] as string;
+            const nodeType = currentNode["type"] as string;
+            console.log(`[Pipeline ${pipelineId}] Executing Node ${nodeId} (${nodeType}) [DryRun: ${isDryRun}]`);
 
-            if (currentNode.type === "trigger") {
+            if (nodeType === "trigger") {
                 output.echo = "Trigger activated";
-            } else if (currentNode.type === "logic") {
-                const condition = config.condition;
+            } else if (nodeType === "logic") {
+                const condition = config["condition"] as string;
                 if (!condition) throw new Error("Logic node missing condition.");
 
                 // Safe evaluation using simple Function constructor on sanitized input
@@ -159,17 +161,17 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                     const result = new Function(`return (${condition})`)();
                     output.result = result;
                     followEdgeId = result ? "true" : "false";
-                } catch (e: any) {
-                    throw new Error(`Failed to evaluate condition '${condition}': ${e.message}`);
+                } catch (e: unknown) {
+                    throw new Error(`Failed to evaluate condition '${condition}': ${(e as Error).message}`);
                 }
-            } else if (currentNode.type === "action") {
-                const actionType = config.actionType;
-                const targetPath = config.targetPath; // e.g., 'part', 'stand'
-                let payloadObj: any = {};
+            } else if (nodeType === "action") {
+                const actionType = config["actionType"] as string;
+                const targetPath = config["targetPath"] as string; // e.g., 'part', 'stand'
+                let payloadObj: Record<string, unknown> = {};
 
-                if (config.payload) {
+                if (config["payload"]) {
                     try {
-                        payloadObj = JSON.parse(config.payload);
+                        payloadObj = JSON.parse(config["payload"] as string);
                     } catch {
                         throw new Error("Action payload is not valid JSON.");
                     }
@@ -180,7 +182,7 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                     if (actionType.startsWith("orchestrator_")) {
                         try {
                             getEntityConfig(targetPath); // Will throw if not in registry
-                        } catch (e) {
+                        } catch {
                             throw new Error(`Invalid targetPath '${targetPath}' for orchestrator action.`);
                         }
                     }
@@ -205,33 +207,33 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                             const entityModule = await import(`../orchestrator/${targetPath}`);
                             const updateFnName = `update${targetPath.charAt(0).toUpperCase() + targetPath.slice(1)}Entity`;
                             if (entityModule[updateFnName]) {
-                                output.result = await entityModule[updateFnName](uid, payloadObj.id, payloadObj);
+                                output.result = await entityModule[updateFnName](uid, payloadObj["id"] as string, payloadObj);
                             } else {
                                 throw new Error("Fallback to generic");
                             }
                         } catch {
                             // Fallback to generic update if specific orchestrator doesn't exist
                             const { updateGenericEntity } = await import("../orchestrator/generic");
-                            output.result = await updateGenericEntity(targetPath, uid, payloadObj.id, payloadObj);
+                            output.result = await updateGenericEntity(targetPath, uid, payloadObj["id"] as string, payloadObj);
                         }
                     } else if (actionType === "orchestrator_delete") {
                         try {
                             const entityModule = await import(`../orchestrator/${targetPath}`);
                             const deleteFnName = `delete${targetPath.charAt(0).toUpperCase() + targetPath.slice(1)}Entity`;
                             if (entityModule[deleteFnName]) {
-                                output.result = await entityModule[deleteFnName](uid, payloadObj.id);
+                                output.result = await entityModule[deleteFnName](uid, payloadObj["id"] as string);
                             } else {
                                 throw new Error("Fallback to generic");
                             }
                         } catch {
                             // Fallback to generic delete if specific orchestrator doesn't exist
                             const { deleteGenericEntity } = await import("../orchestrator/generic");
-                            output.result = await deleteGenericEntity(targetPath, uid, payloadObj.id, payloadObj);
+                            output.result = await deleteGenericEntity(targetPath, uid, payloadObj["id"] as string, payloadObj);
                         }
                     } else if (actionType === "firestore_create") {
-                        const newId = payloadObj.id || randomUUID();
+                        const newId = (payloadObj["id"] as string) || randomUUID();
                         const now = new Date().toISOString();
-                        const docData = {
+                        const ObjectWithId = {
                             id: newId,
                             ownId: uid,
                             ...payloadObj,
@@ -243,10 +245,10 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                             isArchived: false
                         };
                         const colRef = firestore.collection(targetPath);
-                        await colRef.doc(newId).set(docData);
+                        await colRef.doc(newId).set(ObjectWithId);
                         output.result = { status: "success", data: { id: newId, path: `${targetPath}/${newId}` } };
                     } else if (actionType === "firestore_update") {
-                        if (!payloadObj.id) throw new Error("firestore_update requires 'id' in payload");
+                        if (!payloadObj["id"]) throw new Error("firestore_update requires 'id' in payload");
                         const now = new Date().toISOString();
                         const { id, ...restPayload } = payloadObj;
                         const updateData = {
@@ -255,7 +257,7 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                             updatedBy: uid
                         };
                         const colRef = firestore.collection(targetPath);
-                        await colRef.doc(id).update(updateData);
+                        await colRef.doc(id as string).update(updateData);
                         output.result = { status: "success", data: { id, path: `${targetPath}/${id}` } };
                     } else if (actionType === "http_request") {
                         // Placeholder for external fetch
@@ -272,11 +274,11 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                         payloadObj
                     };
                 }
-            } else if (currentNode.type === "brain") {
-                const skillId = config.skillId;
+            } else if (nodeType === "brain") {
+                const skillId = config["skillId"] as string;
                 if (!skillId) throw new Error("Brain node missing skillId configuration.");
 
-                console.log(`[Pipeline] Brain Node ${currentNode.id} requesting Skill ${skillId}`);
+                console.log(`[Pipeline] Brain Node ${currentNode["id"] as string} requesting Skill ${skillId}`);
 
                 // Load skill document from Firestore
                 const skillDocRef = await firestore.collection("ai_skills").doc(skillId).get();
@@ -286,10 +288,10 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                 const skillDocData = skillDocRef.data();
 
                 // Compute the AI input payload combining statically configured fields and Handlebars interpolations
-                let payloadObj: any = {};
-                if (config.payload) {
+                let payloadObj: Record<string, unknown> = {};
+                if (config["payload"]) {
                     try {
-                        payloadObj = JSON.parse(config.payload);
+                        payloadObj = JSON.parse(config["payload"] as string);
                     } catch (e) {
                         throw new Error(`Brain payload is not valid JSON: ${(e as Error).message}`);
                     }
@@ -303,12 +305,12 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                     const { executeDynamicSkill } = await import("../genkit/dynamicFlow");
 
                     try {
-                        console.log(`[Pipeline] Brain Node ${currentNode.id} executing AI...`);
-                        const aiOutput = await executeDynamicSkill(skillDocData, evaluatedPayload);
+                        console.log(`[Pipeline] Brain Node ${currentNode["id"] as string} executing AI...`);
+                        const aiOutput = await executeDynamicSkill(skillDocData as Record<string, unknown>, evaluatedPayload as Record<string, unknown>);
                         output.result = aiOutput;
-                        console.log(`[Pipeline] Brain Node ${currentNode.id} AI execution finished.`);
-                    } catch (aiError: any) {
-                        throw new Error(`AI Skill Execution Failed: ${aiError.message}`);
+                        console.log(`[Pipeline] Brain Node ${currentNode["id"] as string} AI execution finished.`);
+                    } catch (aiError: unknown) {
+                        throw new Error(`AI Skill Execution Failed: ${(aiError as Error).message}`);
                     }
                 } else {
                     output.dryRunBrain = {
@@ -319,36 +321,36 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
             }
 
             // Save output to context for downstream nodes
-            executionContext.nodes[currentNode.id] = { output };
+            (executionContext["nodes"] as Record<string, unknown>)[currentNode["id"] as string] = { output };
 
             executionLog.push({
-                nodeId: currentNode.id,
-                type: currentNode.type,
+                nodeId: currentNode["id"] as string,
+                type: nodeType,
                 config,
                 output,
                 status: "success"
             });
 
             // Find next nodes connected from this node's output
-            const outgoingEdges = edges.filter(e => e.source === currentNode.id);
+            const outgoingEdges = edges.filter(e => e["source"] === (currentNode["id"] as string));
             for (const edge of outgoingEdges) {
                 // If the node specified a specific edge to follow (Logic gate), respect it
-                if (currentNode.type === "logic" && followEdgeId !== null) {
-                    if (edge.sourceHandle && edge.sourceHandle !== followEdgeId) {
+                if (nodeType === "logic" && followEdgeId !== null) {
+                    if (edge["sourceHandle"] && edge["sourceHandle"] !== followEdgeId) {
                         continue; // Skip the branch that was evaluated to false
                     }
                 }
-                const targetNode = nodes.find(n => n.id === edge.target);
+                const targetNode = nodes.find(n => n["id"] === edge["target"]);
                 if (targetNode) queue.push(targetNode);
             }
 
-        } catch (e: any) {
-            console.error(`[Pipeline ${pipelineId}] Node ${currentNode.id} failed:`, e);
+        } catch (e: unknown) {
+            console.error(`[Pipeline ${pipelineId}] Node ${currentNode["id"] as string} failed:`, e);
             executionLog.push({
-                nodeId: currentNode.id,
-                type: currentNode.type,
+                nodeId: currentNode["id"] as string,
+                type: currentNode["type"],
                 status: "error",
-                error: e.message
+                error: (e as Error).message
             });
             break; // Stop execution on error
         }
@@ -358,8 +360,8 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
         try {
             await firestore.collection("pipelines_executions").add({
                 pipelineId,
-                status: executionLog.some(l => l.status === "error") ? "error" : "success",
-                startedAt: executionLog.length > 0 ? executionLog[0].output?.executedAt : new Date().toISOString(),
+                status: executionLog.some(l => l["status"] === "error") ? "error" : "success",
+                startedAt: executionLog.length > 0 ? ((executionLog[0] as Record<string, unknown>)["output"] as Record<string, unknown>)?.["executedAt"] || new Date().toISOString() : new Date().toISOString(),
                 completedAt: new Date().toISOString(),
                 triggeredBy: uid,
                 log: executionLog,
