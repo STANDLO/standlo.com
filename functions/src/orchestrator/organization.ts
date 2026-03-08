@@ -1,5 +1,5 @@
 import * as admin from "firebase-admin";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { HttpsError } from "firebase-functions/v2/https";
 import { OrganizationSchema } from "../schemas";
 
@@ -32,6 +32,34 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         };
 
         const cleanedOrgData = sanitizePayload(orgData) || {};
+
+        let birthdayValue: string | null = null;
+        if (cleanedOrgData.birthday) {
+            birthdayValue = cleanedOrgData.birthday;
+
+            // Validate Age (must be 16+)
+            const birthDate = new Date(birthdayValue as string);
+            if (isNaN(birthDate.getTime())) {
+                throw new HttpsError("invalid-argument", "Data di nascita non valida.");
+            }
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            if (age < 16) {
+                throw new HttpsError("invalid-argument", "Devi avere almeno 16 anni per registrarti.", { internalCode: "age_under_16" });
+            }
+
+            delete cleanedOrgData.birthday;
+        }
+
+        // If 'type' is a single string (as submitted by the default frontend select field), wrap it in an array to pass Zod schema.
+        if (typeof cleanedOrgData.type === "string") {
+            cleanedOrgData.type = [cleanedOrgData.type];
+        }
+
         const parsedData = OrganizationSchema.partial().parse(cleanedOrgData);
 
         // Clean up undefined values from parsedData as Firestore rejects them
@@ -53,46 +81,28 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         batch.set(orgRef, {
             ...sanitizedData,
             active: isActive,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
             createdBy: uid,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp(),
             updatedBy: uid,
         }, { merge: true });
 
         // Update User Document
         const userRef = db.collection("users").doc(uid);
-        batch.set(userRef, {
+        const userUpdatePayload: any = {
             active: isActive,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
+            updatedAt: FieldValue.serverTimestamp(),
+        };
+        if (birthdayValue) {
+            userUpdatePayload.birthday = birthdayValue;
+        }
+
+        batch.set(userRef, userUpdatePayload, { merge: true });
 
         // Estrapolazione Country Code dalla P.IVA (es. "IT123456789" -> "IT")
         const countryCode = parsedData.vatNumber && parsedData.vatNumber.length >= 2
             ? parsedData.vatNumber.substring(0, 2).toUpperCase()
             : null;
-
-        if (role === "provider") {
-            const warehouseId = db.collection(`organizations/${orgRootId}/warehouses`).doc().id;
-            const locationPrefix = countryCode && parsedData.place?.zipCode
-                ? `${countryCode}-${parsedData.place.zipCode}`
-                : "UNKNOWN";
-            const vatStr = parsedData.vatNumber || "NO-VAT";
-
-            const warehouseRef = db.collection(`organizations/${orgRootId}/warehouses`).doc(warehouseId);
-            batch.set(warehouseRef, {
-                code: `${locationPrefix}-${vatStr}`,
-                name: parsedData.name || "Default Headquarter",
-                type: "headquarter",
-                place: parsedData.place || null, // Updated to use the new object structure instead of a stringified 'address'
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                createdBy: uid,
-                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                updatedBy: uid,
-            });
-
-            // Set the new warehouse as the headquarter on the organization record
-            batch.update(orgRef, { headquarterId: warehouseId });
-        }
 
         // 5. Upgrade Custom Claims via Admin SDK
         const newClaims: Record<string, unknown> = {
@@ -144,4 +154,24 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         }
         throw new HttpsError("internal", "An unknown error occurred during onboarding.");
     }
+}
+
+export async function updateOrganizationEntity(uid: string, orgId: string, payload: Record<string, unknown>) {
+    const db = getFirestore(admin.app(), "standlo");
+    const now = new Date().toISOString();
+    const { id: _id, ...restPayload } = payload;
+
+    const updateData = {
+        ...restPayload,
+        updatedAt: now,
+        updatedBy: uid
+    };
+
+    await db.collection("organizations").doc(orgId).update(updateData);
+
+    return {
+        status: "success",
+        message: "Organization updated successfully.",
+        data: { id: orgId }
+    };
 }

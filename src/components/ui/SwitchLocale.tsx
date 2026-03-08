@@ -63,7 +63,7 @@ export function SwitchLocale() {
         const currentPath = window.location.pathname
 
         // Sostituisce il locale corrente nell'URL con il locale target. 
-        // E.g. /it/auth/register -> /es/auth/register
+        // E.g. /it/auth/create -> /es/auth/create
         const newPath = currentPath.replace(`/${locale}`, `/${newLocale}`)
         window.location.assign(`${baseUrl}${newPath}${window.location.search}`)
     }

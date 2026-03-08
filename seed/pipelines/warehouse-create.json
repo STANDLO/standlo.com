@@ -1,0 +1,65 @@
+{
+    "id": "warehouse-create",
+    "orgId": "system",
+    "ownId": "system",
+    "name": "Warehouse Create Sub-Pipeline",
+    "isActive": true,
+    "nodes": [
+        {
+            "id": "trigger_internal",
+            "type": "trigger",
+            "position": {
+                "x": 100,
+                "y": 100
+            },
+            "data": {
+                "triggerType": "webhook",
+                "webhookSecret": ""
+            }
+        },
+        {
+            "id": "act_create_warehouse",
+            "type": "action",
+            "position": {
+                "x": 400,
+                "y": 100
+            },
+            "data": {
+                "actionType": "orchestrator_create",
+                "targetPath": "warehouse",
+                "payload": "{\n  \"code\": \"{{ place.country }}-{{ place.zipCode }}-{{ vatNumber }}\",\n  \"name\": \"Sede Operativa\",\n  \"type\": \"materials\",\n  \"placeId\": \"{{ placeId }}\",\n  \"orgId\": \"{{ orgId }}\"\n}"
+            }
+        },
+        {
+            "id": "act_update_org_headquarter",
+            "type": "action",
+            "position": {
+                "x": 700,
+                "y": 100
+            },
+            "data": {
+                "actionType": "orchestrator_update",
+                "targetPath": "organization",
+                "payload": "{\n  \"id\": \"{{ orgId }}\",\n  \"headquarterId\": \"{{ nodes.act_create_warehouse.output.result.data.id }}\"\n}"
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "e1",
+            "source": "trigger_internal",
+            "target": "act_create_warehouse"
+        },
+        {
+            "id": "e2",
+            "source": "act_create_warehouse",
+            "target": "act_update_org_headquarter"
+        }
+    ],
+    "createdAt": "2026-03-01T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedAt": "2026-03-01T00:00:00.000Z",
+    "updatedBy": "system",
+    "deletedAt": null,
+    "isArchived": false
+}

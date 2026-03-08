@@ -20,6 +20,18 @@
             "*.local"
         ]
     },
+    "auth": {
+        "blockingFunctions": {
+            "triggers": {
+                "beforeCreate": {
+                    "function": "beforeCreate"
+                },
+                "beforeSignIn": {
+                    "function": "beforeSignIn"
+                }
+            }
+        }
+    },
     "emulators": {
         "functions": {
             "port": 5001

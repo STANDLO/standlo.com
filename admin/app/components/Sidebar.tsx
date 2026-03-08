@@ -73,6 +73,7 @@ export function Sidebar() {
         {
             title: "Core Services",
             links: [
+                { href: "/database", label: "Database Sync", icon: Database },
                 { href: "/users", label: "Users & Activation", icon: Users },
                 { href: "/alerts", label: "Security Alerts", icon: ShieldAlert },
             ]

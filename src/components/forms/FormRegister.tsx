@@ -69,7 +69,7 @@ export function FormRegister() {
                     "Content-Type": "application/json",
                     ...headers
                 };
-                fetch("/api/gateway", {
+                fetch("/api/gateway?target=orchestrator", {
                     method: "POST",
                     headers: trackHeaders,
                     body: JSON.stringify({

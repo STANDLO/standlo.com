@@ -3,17 +3,14 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 import { LocalizedStringSchema } from "./primitives";
-
 export const BundleSchema = BaseSchema.extend({
     name: LocalizedStringSchema,
     description: LocalizedStringSchema.optional(),
     // Bundles are field-assembled virtual groups, so locationType is generally site.
     locationType: z.enum(['warehouse', 'site']).default('site'),
-
     // Financial properties dynamically derived from parts/processes
     cost: z.number().optional().describe("Internal standard cost"),
     price: z.number().optional().describe("External standard price"),
-
     gltfUrl: z.string().optional().describe("URL to a pre-baked .glb representation of this bundle (optional)"),
     sockets: z.array(z.object({
         id: z.string(),
@@ -23,23 +20,19 @@ export const BundleSchema = BaseSchema.extend({
     })).default([]),
 });
 export type Bundle = z.infer<typeof BundleSchema>;
-
 // --- SUBCOLLECTION SCHEMAS (Identical to Assemblies structurally) ---
 export const BundlePartNodeSchema = BaseNodeSchema.extend({
     partId: z.string()
 });
 export type BundlePartNode = z.infer<typeof BundlePartNodeSchema>;
-
 export const BundleProcessNodeSchema = BaseProcessSchema.extend({});
 export type BundleProcessNode = z.infer<typeof BundleProcessNodeSchema>;
-
 export const BundleCreateSchema = createCreationSchema(BundleSchema);
 export const BundleUpdateSchema = createUpdateSchema(BundleSchema);
 export const BundleSearchSchema = PaginationQuerySchema.extend({
     name: z.string().optional(),
     locationType: z.enum(['warehouse', 'site']).optional(),
 });
-
 export const BundlePolicyMatrix: Record<RoleId, EntityPolicy> = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -48,7 +41,6 @@ export const BundlePolicyMatrix: Record<RoleId, EntityPolicy> = {
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    standlo_design: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
     electrician: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     plumber: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     carpenter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -65,5 +57,9 @@ export const BundlePolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_manager: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_engeneer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

@@ -3,7 +3,6 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 import { LocalizedStringSchema } from "./primitives";
-
 export const PART_CATEGORIES_BY_SECTOR: Record<string, Record<string, string>> = {
     exhibition: {
         wood_panel: "Wood Panel",
@@ -40,7 +39,6 @@ export const PART_CATEGORIES_BY_SECTOR: Record<string, Record<string, string>> =
         other: "Other"
     }
 };
-
 export const PartSchema = BaseSchema.extend({
     name: z.string(),
     description: LocalizedStringSchema.optional(),
@@ -50,15 +48,12 @@ export const PartSchema = BaseSchema.extend({
     isSellable: z.boolean().default(true),
     isConsumable: z.boolean().default(false), // Consumables vs Assets
     baseUnit: z.string().default('pcs'), // 'pcs', 'sqm', 'lm'
-
     // Spatial properties for handling instances
     position: z.tuple([z.number(), z.number(), z.number()]).default([0, 0, 0]),
     rotation: z.tuple([z.number(), z.number(), z.number()]).default([0, 0, 0]),
-
     // Financial properties
     cost: z.number().optional().describe("Internal standard cost"),
     price: z.number().optional().describe("External standard price"),
-
     meshId: z.string().optional().describe("ID della Mesh di base da cui ereditare la geometria e il materiale nativo"),
     gltfUrl: z.string().optional().describe("URL to the Draco-compressed .glb file stored in Firebase Storage"),
     sockets: z.array(z.object({
@@ -69,7 +64,6 @@ export const PartSchema = BaseSchema.extend({
     })).default([]),
 });
 export type Part = z.infer<typeof PartSchema>;
-
 // --- SUBCOLLECTION SCHEMAS ---
 export const PartProcessNodeSchema = z.object({
     id: z.string().uuid(),
@@ -77,14 +71,12 @@ export const PartProcessNodeSchema = z.object({
     quantity: z.number()
 });
 export type PartProcessNode = z.infer<typeof PartProcessNodeSchema>;
-
 export const PartToolNodeSchema = z.object({
     id: z.string().uuid(),
     toolId: z.string(),
     quantity: z.number()
 });
 export type PartToolNode = z.infer<typeof PartToolNodeSchema>;
-
 export const PartCreateSchema = createCreationSchema(PartSchema);
 export const PartUpdateSchema = createUpdateSchema(PartSchema);
 export const PartSearchSchema = PaginationQuerySchema.extend({
@@ -92,7 +84,6 @@ export const PartSearchSchema = PaginationQuerySchema.extend({
     sector: z.string().optional(),
     category: z.string().optional(),
 });
-
 export const PartPolicyMatrix: Record<RoleId, EntityPolicy> = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -101,7 +92,6 @@ export const PartPolicyMatrix: Record<RoleId, EntityPolicy> = {
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    standlo_design: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
     electrician: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     plumber: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     carpenter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -118,5 +108,9 @@ export const PartPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_manager: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_engeneer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

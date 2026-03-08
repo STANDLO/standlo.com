@@ -38,16 +38,36 @@ export function FormOnboarding({ locale }: { locale: string }) {
                 if (data.status === "success" && data.manifest?.organization?.fields) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const translatedFields = data.manifest.organization.fields.map((f: any) => {
-                        const newLabel = f.name === "name" ? t("orgNameLabel") :
-                            f.name === "vat" ? t("vatLabel") :
-                                f.name === "sdi" ? t("sdiLabel") :
-                                    f.name === "iban" ? t("ibanLabel") :
-                                        f.name === "roleId" ? t("roleLabel") :
-                                            f.name === "place" ? t("addressLabel") :
-                                                f.name === "logo" ? t("logoLabel") :
-                                                    f.label || f.name;
-                        return { ...f, label: newLabel };
+                        const newLabel = f.name === "type" ? t("orgTypeLabel") :
+                            f.name === "name" ? t("orgNameLabel") :
+                                f.name === "vat" ? t("vatLabel") :
+                                    f.name === "sdi" ? t("sdiLabel") :
+                                        f.name === "iban" ? t("ibanLabel") :
+                                            f.name === "roleId" ? t("roleLabel") :
+                                                f.name === "place" ? t("addressLabel") :
+                                                    f.name === "logo" ? t("logoLabel") :
+                                                        f.label || f.name;
+
+                        let options = f.options;
+                        if (f.name === "type" && Array.isArray(options)) {
+                            options = options.map((opt: { value: string; label: string }) => ({
+                                ...opt,
+                                label: t(`orgTypeOptions.${opt.value}`) || opt.label
+                            }));
+                        }
+
+                        return { ...f, label: newLabel, ...(options ? { options } : {}) };
                     });
+
+                    // Inject the birthday field into the SDUI form
+                    translatedFields.splice(1, 0, {
+                        name: "birthday",
+                        editable: true,
+                        type: "date",
+                        label: t("birthdayLabel"),
+                        required: true
+                    });
+
                     setFields(translatedFields);
                 } else {
                     throw new Error("Invalid manifest payload");
@@ -103,7 +123,7 @@ export function FormOnboarding({ locale }: { locale: string }) {
                 // Log the final onboarding completion step to the Orchestrator
                 const sessionId = localStorage.getItem("standlo_session");
                 if (sessionId) {
-                    await fetch("/api/gateway", {
+                    await fetch("/api/gateway?target=orchestrator", {
                         method: "POST",
                         headers,
                         body: JSON.stringify({

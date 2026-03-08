@@ -3,11 +3,9 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 import { SystemRoleOptions } from "./primitives";
-
 export const ProcessRoleSchema = z.enum(
     SystemRoleOptions.map(o => o.value) as [string, ...string[]]
 );
-
 export const ProcessSchema = BaseSchema.extend({
     name: z.string(),
     phase: z.enum(['CLIENT IN', 'DESIGN/ENG', 'CLIENT APP.', 'FABRICATION', 'WAREHOUSE', 'LOGISTICS', 'ON-SITE', 'STRIKE', 'RECOVERY', 'CLOSING']).optional(),
@@ -23,20 +21,17 @@ export const ProcessSchema = BaseSchema.extend({
     price: z.number().optional().describe("External standard price (e.g. per hr)"),
 });
 export type Process = z.infer<typeof ProcessSchema>;
-
 export const ProcessCreateSchema = createCreationSchema(ProcessSchema);
 export const ProcessUpdateSchema = createUpdateSchema(ProcessSchema);
 export const ProcessSearchSchema = PaginationQuerySchema.extend({
     name: z.string().optional(),
     requiredRole: ProcessRoleSchema.optional(),
 });
-
 export const ProcessPolicyMatrix: Record<RoleId, EntityPolicy> = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     manager: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
-    standlo_design: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -56,5 +51,9 @@ export const ProcessPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_manager: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_engeneer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

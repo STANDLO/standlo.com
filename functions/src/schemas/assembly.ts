@@ -3,16 +3,13 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 import { LocalizedStringSchema } from "./primitives";
-
 export const AssemblySchema = BaseSchema.extend({
     name: LocalizedStringSchema,
     description: LocalizedStringSchema.optional(),
     locationType: z.enum(['warehouse', 'site']).default('warehouse'),
-
     // Financial properties
     cost: z.number().optional().describe("Internal standard cost"),
     price: z.number().optional().describe("External standard price"),
-
     gltfUrl: z.string().optional().describe("URL to a pre-baked .glb representation of this assembly (optional)"),
     sockets: z.array(z.object({
         id: z.string(),
@@ -22,23 +19,19 @@ export const AssemblySchema = BaseSchema.extend({
     })).default([]),
 });
 export type Assembly = z.infer<typeof AssemblySchema>;
-
 // --- SUBCOLLECTION SCHEMAS ---
 export const AssemblyPartNodeSchema = BaseNodeSchema.extend({
     partId: z.string()
 });
 export type AssemblyPartNode = z.infer<typeof AssemblyPartNodeSchema>;
-
 export const AssemblyProcessNodeSchema = BaseProcessSchema.extend({});
 export type AssemblyProcessNode = z.infer<typeof AssemblyProcessNodeSchema>;
-
 export const AssemblyCreateSchema = createCreationSchema(AssemblySchema);
 export const AssemblyUpdateSchema = createUpdateSchema(AssemblySchema);
 export const AssemblySearchSchema = PaginationQuerySchema.extend({
     name: z.string().optional(),
     locationType: z.enum(['warehouse', 'site']).optional(),
 });
-
 export const AssemblyPolicyMatrix: Record<RoleId, EntityPolicy> = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -47,7 +40,6 @@ export const AssemblyPolicyMatrix: Record<RoleId, EntityPolicy> = {
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    standlo_design: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
     electrician: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     plumber: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     carpenter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -64,5 +56,9 @@ export const AssemblyPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_manager: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_engeneer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

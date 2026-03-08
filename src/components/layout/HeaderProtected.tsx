@@ -70,7 +70,7 @@ export function HeaderProtected({ navItems, roleContext, userName, organizationN
 
                     const sessionId = localStorage.getItem("standlo_session");
                     if (sessionId) {
-                        await fetch("/api/gateway", {
+                        await fetch("/api/gateway?target=orchestrator", {
                             method: "POST",
                             headers: headers,
                             body: JSON.stringify({

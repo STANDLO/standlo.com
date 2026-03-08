@@ -17,12 +17,12 @@ export async function handleAuthEvent(
     }
 
     // Combine payload with server-trust details
-    const enrichedPayload = {
+    const enrichedPayload: Record<string, unknown> = {
         ...payload,
         uid: uid,
-        ipAddress: ipAddress || undefined,
-        userAgent: userAgent || undefined
     };
+    if (ipAddress) enrichedPayload.ipAddress = ipAddress;
+    if (userAgent) enrichedPayload.userAgent = userAgent;
 
     const parsed = AuthEventSchema.safeParse(enrichedPayload);
 

@@ -65,7 +65,7 @@ export function FormLogin() {
                     "Content-Type": "application/json",
                     ...headers
                 };
-                fetch("/api/gateway", {
+                fetch("/api/gateway?target=orchestrator", {
                     method: "POST",
                     headers: trackHeaders,
                     body: JSON.stringify({
@@ -127,7 +127,7 @@ export function FormLogin() {
             title={t("title")}
             description={t("description")}
             footerText={t("noAccountText")}
-            footerHref="/auth/register"
+            footerHref="/auth/create"
             footerActionText={t("registerAction")}
             onGoogleLogin={loginWithGoogle}
             onGithubLogin={loginWithGithub}

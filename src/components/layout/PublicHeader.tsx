@@ -21,7 +21,7 @@ export function PublicHeader() {
                     <Link href="/auth/login" className="layout-header-nav-link">
                         {t("submitButton")}
                     </Link>
-                    <Link href="/auth/register">
+                    <Link href="/auth/create">
                         <Button variant="primary">{t("registerAction")}</Button>
                     </Link>
                     <div className="layout-header-public-actions">

@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { BaseSchema } from "./base";
-
 /**
  * AI Skill Schema (Admin managed Dynamic Genkit Prompts)
  */
@@ -14,5 +13,4 @@ export const AISkillSchema = BaseSchema.extend({
     modelName: z.string().default('googleai/gemini-2.5-flash').describe("The specific LLM to use for this execution"),
     isActive: z.boolean().default(true).describe("Whether this AI skill is available in the pipeline builder"),
 });
-
 export type AISkillEntity = z.infer<typeof AISkillSchema>;

@@ -1,6 +1,7 @@
 import { getFirestore } from "firebase-admin/firestore";
 import { getApp } from "firebase-admin/app";
 import { randomUUID } from "crypto";
+import { getEntityConfig } from "../gateways/entityRegistry";
 
 const firestore = getFirestore(getApp(), "standlo");
 
@@ -113,7 +114,8 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
 
     // Runtime variables available to nodes via {{ }}
     const executionContext: Record<string, any> = {
-        input: inputContext,
+        ...inputContext,
+        input: inputContext, // Kept for backward compatibility if any legacy pipeline uses {{ input.data }}
         nodes: {} // Results of node executions will be stored here: nodes[nodeId].output
     };
 
@@ -126,7 +128,7 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
     }
 
     // 2. Simple BFS or Sequential Runner
-    let queue = [...triggerNodes];
+    const queue = [...triggerNodes];
     const visited = new Set<string>();
 
     while (queue.length > 0) {
@@ -139,7 +141,7 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
         try {
             // Interpolate node config before execution
             const config = interpolateObject(currentNode.data, executionContext);
-            let output: any = { executedAt: new Date().toISOString() };
+            const output: any = { executedAt: new Date().toISOString() };
             let followEdgeId: string | null = null; // Used for logic branching
 
             console.log(`[Pipeline ${pipelineId}] Executing Node ${currentNode.id} (${currentNode.type}) [DryRun: ${isDryRun}]`);
@@ -168,69 +170,93 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                 if (config.payload) {
                     try {
                         payloadObj = JSON.parse(config.payload);
-                    } catch (e) {
+                    } catch {
                         throw new Error("Action payload is not valid JSON.");
                     }
                 }
 
                 if (!isDryRun) {
+                    // Pre-fetch entity config to validate targetPath
+                    if (actionType.startsWith("orchestrator_")) {
+                        try {
+                            getEntityConfig(targetPath); // Will throw if not in registry
+                        } catch (e) {
+                            throw new Error(`Invalid targetPath '${targetPath}' for orchestrator action.`);
+                        }
+                    }
+
                     if (actionType === "orchestrator_create") {
-                        if (targetPath === "mesh") {
-                            const { createMeshEntity } = await import("../orchestrator/mesh");
-                            output.result = await createMeshEntity(uid, payloadObj);
-                        } else if (targetPath === "part") {
-                            const { createPartEntity } = await import("../orchestrator/part");
-                            output.result = await createPartEntity(uid, payloadObj);
-                        } else if (targetPath === "assembly") {
-                            const { createAssemblyEntity } = await import("../orchestrator/assembly");
-                            output.result = await createAssemblyEntity(uid, payloadObj);
-                        } else if (targetPath === "bundle") {
-                            const { createBundleEntity } = await import("../orchestrator/bundle");
-                            output.result = await createBundleEntity(uid, payloadObj);
-                        } else if (targetPath === "stand") {
-                            const { createStandEntity } = await import("../orchestrator/stand");
-                            output.result = await createStandEntity(uid, payloadObj);
-                        } else {
-                            throw new Error(`Unsupported create entity: ${targetPath}`);
+                        try {
+                            // Try to load specific orchestrator first
+                            const entityModule = await import(`../orchestrator/${targetPath}`);
+                            const createFnName = `create${targetPath.charAt(0).toUpperCase() + targetPath.slice(1)}Entity`;
+                            if (entityModule[createFnName]) {
+                                output.result = await entityModule[createFnName](uid, payloadObj);
+                            } else {
+                                throw new Error("Fallback to generic");
+                            }
+                        } catch {
+                            // Fallback to generic creation if specific orchestrator doesn't exist
+                            const { createGenericEntity } = await import("../orchestrator/generic");
+                            output.result = await createGenericEntity(targetPath, uid, payloadObj);
                         }
                     } else if (actionType === "orchestrator_update") {
-                        if (targetPath === "mesh") {
-                            const { updateMeshEntity } = await import("../orchestrator/mesh");
-                            output.result = await updateMeshEntity(uid, payloadObj.id, payloadObj);
-                        } else if (targetPath === "part") {
-                            const { updatePartEntity } = await import("../orchestrator/part");
-                            output.result = await updatePartEntity(uid, payloadObj.id, payloadObj);
-                        } else if (targetPath === "assembly") {
-                            const { updateAssemblyEntity } = await import("../orchestrator/assembly");
-                            output.result = await updateAssemblyEntity(uid, payloadObj.id, payloadObj);
-                        } else if (targetPath === "bundle") {
-                            const { updateBundleEntity } = await import("../orchestrator/bundle");
-                            output.result = await updateBundleEntity(uid, payloadObj.id, payloadObj);
-                        } else if (targetPath === "stand") {
-                            const { updateStandEntity } = await import("../orchestrator/stand");
-                            output.result = await updateStandEntity(uid, payloadObj.id, payloadObj);
-                        } else {
-                            throw new Error(`Unsupported update entity: ${targetPath}`);
+                        try {
+                            const entityModule = await import(`../orchestrator/${targetPath}`);
+                            const updateFnName = `update${targetPath.charAt(0).toUpperCase() + targetPath.slice(1)}Entity`;
+                            if (entityModule[updateFnName]) {
+                                output.result = await entityModule[updateFnName](uid, payloadObj.id, payloadObj);
+                            } else {
+                                throw new Error("Fallback to generic");
+                            }
+                        } catch {
+                            // Fallback to generic update if specific orchestrator doesn't exist
+                            const { updateGenericEntity } = await import("../orchestrator/generic");
+                            output.result = await updateGenericEntity(targetPath, uid, payloadObj.id, payloadObj);
                         }
                     } else if (actionType === "orchestrator_delete") {
-                        if (targetPath === "mesh") {
-                            const { deleteMeshEntity } = await import("../orchestrator/mesh");
-                            output.result = await deleteMeshEntity(uid, payloadObj.id);
-                        } else if (targetPath === "part") {
-                            const { deletePartEntity } = await import("../orchestrator/part");
-                            output.result = await deletePartEntity(uid, payloadObj.id);
-                        } else if (targetPath === "assembly") {
-                            const { deleteAssemblyEntity } = await import("../orchestrator/assembly");
-                            output.result = await deleteAssemblyEntity(uid, payloadObj.id);
-                        } else if (targetPath === "bundle") {
-                            const { deleteBundleEntity } = await import("../orchestrator/bundle");
-                            output.result = await deleteBundleEntity(uid, payloadObj.id);
-                        } else if (targetPath === "stand") {
-                            const { deleteStandEntity } = await import("../orchestrator/stand");
-                            output.result = await deleteStandEntity(uid, payloadObj.id);
-                        } else {
-                            throw new Error(`Unsupported delete entity: ${targetPath}`);
+                        try {
+                            const entityModule = await import(`../orchestrator/${targetPath}`);
+                            const deleteFnName = `delete${targetPath.charAt(0).toUpperCase() + targetPath.slice(1)}Entity`;
+                            if (entityModule[deleteFnName]) {
+                                output.result = await entityModule[deleteFnName](uid, payloadObj.id);
+                            } else {
+                                throw new Error("Fallback to generic");
+                            }
+                        } catch {
+                            // Fallback to generic delete if specific orchestrator doesn't exist
+                            const { deleteGenericEntity } = await import("../orchestrator/generic");
+                            output.result = await deleteGenericEntity(targetPath, uid, payloadObj.id, payloadObj);
                         }
+                    } else if (actionType === "firestore_create") {
+                        const newId = payloadObj.id || randomUUID();
+                        const now = new Date().toISOString();
+                        const docData = {
+                            id: newId,
+                            ownId: uid,
+                            ...payloadObj,
+                            createdAt: now,
+                            createdBy: uid,
+                            updatedAt: now,
+                            updatedBy: uid,
+                            deletedAt: null,
+                            isArchived: false
+                        };
+                        const colRef = firestore.collection(targetPath);
+                        await colRef.doc(newId).set(docData);
+                        output.result = { status: "success", data: { id: newId, path: `${targetPath}/${newId}` } };
+                    } else if (actionType === "firestore_update") {
+                        if (!payloadObj.id) throw new Error("firestore_update requires 'id' in payload");
+                        const now = new Date().toISOString();
+                        const { id, ...restPayload } = payloadObj;
+                        const updateData = {
+                            ...restPayload,
+                            updatedAt: now,
+                            updatedBy: uid
+                        };
+                        const colRef = firestore.collection(targetPath);
+                        await colRef.doc(id).update(updateData);
+                        output.result = { status: "success", data: { id, path: `${targetPath}/${id}` } };
                     } else if (actionType === "http_request") {
                         // Placeholder for external fetch
                         output.result = `Simulated HTTP request to ${targetPath}`;

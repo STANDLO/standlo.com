@@ -1,5 +1,3 @@
-
-
 /**
  * Defines which fields are readable and editable for a specific role
  * on a specific entity (e.g. Organization)

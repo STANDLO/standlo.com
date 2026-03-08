@@ -3,7 +3,6 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 import { LocalizedStringSchema } from "./primitives";
-
 const PricingTierSchema = z.object({
     isActive: z.boolean().default(false),
     setupCost: z.number().default(0), // Costo fisso iniziale
@@ -12,27 +11,20 @@ const PricingTierSchema = z.object({
         pricePerUnit: z.number() // Prezzo unitario per questo scaglione
     })).default([])
 });
-
 export const ProductSchema = BaseSchema.extend({
     partId: z.string(), // Reference to global master Part
     sku: z.string().optional(),
-
     name: LocalizedStringSchema.optional(), // Can override Part name if needed
     description: LocalizedStringSchema.optional(),
-
     // Pricing configurations (Vendita/Noleggio a scaglioni)
     forRent: PricingTierSchema.optional(),
     forSale: PricingTierSchema.optional(),
-
     // Chosen specific variant options from the Part's variantsDefinition
     variantOptions: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).default({}),
-
     leadTimeDays: z.number().default(0), // Preparation time before it's ready
     orphaned: z.boolean().default(false) // Data integrity: true if master Part is archived
 });
-
 export type Product = z.infer<typeof ProductSchema>;
-
 export const ProductCreateSchema = createCreationSchema(ProductSchema);
 export const ProductUpdateSchema = createUpdateSchema(ProductSchema);
 export const ProductSearchSchema = PaginationQuerySchema.extend({
@@ -40,13 +32,11 @@ export const ProductSearchSchema = PaginationQuerySchema.extend({
     sku: z.string().optional(),
     name: z.string().optional(),
 });
-
 export const ProductPolicyMatrix: Record<RoleId, EntityPolicy> = {
     pending: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
     manager: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
-    standlo_design: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -66,5 +56,9 @@ export const ProductPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    dryliner: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} }
+    dryliner: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_manager: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_engeneer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

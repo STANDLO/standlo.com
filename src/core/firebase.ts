@@ -55,11 +55,24 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 const functions = getFunctions(app, "europe-west4"); // Default region for KalexAI functions
 
+import { connectAuthEmulator } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import { connectStorageEmulator } from "firebase/storage";
+
 if (typeof window !== "undefined") {
-    // Check for emulator cookie AND verify we are in the Admin app via ENV flag
-    if (process.env.NEXT_PUBLIC_IS_ADMIN_APP === "true" && document.cookie.includes("firebase_env=emulator")) {
-        console.warn("⚠️ Firebase Emulators: Connecting to local function emulator");
+    // Check if we are running the local emulator (usually via project id or an explicit env var)
+    const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID === "demo-standlo";
+
+    // Check for emulator cookie AND verify we are in the Admin app via ENV flag (Legacy behavior)
+    const legacyAdminEmulator = process.env.NEXT_PUBLIC_IS_ADMIN_APP === "true" && document.cookie.includes("firebase_env=emulator");
+
+    if (useEmulator || legacyAdminEmulator) {
+        console.warn("⚠️ Firebase Emulators: Connecting to local emulators");
         connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectAuthEmulator(auth, "http://127.0.0.1:9099");
+        // Connettiamo Firestore esplicitamente al database "standlo"
+        connectFirestoreEmulator(getFirestore(app, "standlo"), "127.0.0.1", 8080);
+        connectStorageEmulator(storage, "127.0.0.1", 9199);
     }
 }
 

@@ -2,25 +2,14 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-
-export const WarehouseTypes = ['headquarter', 'fair', 'site', 'showroom'] as const;
-
+export const WarehouseTypes = ['materials', 'customer'] as const;
 export const WarehouseSchema = BaseSchema.extend({
-    name: z.string(), // Override BaseSchema to make it required
-    type: z.enum(WarehouseTypes).default('headquarter'),
-    place: z.object({
-        fullAddress: z.string().optional(),
-        address: z.string().optional(),
-        city: z.string().optional(),
-        province: z.string().optional(),
-        zipCode: z.string().optional(),
-        country: z.string().optional(),
-        googlePlaceId: z.string().optional(),
-        coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
-    }).optional().describe(JSON.stringify({ type: "place", required: true, label: "Luogo" })),
+    type: z.enum(WarehouseTypes).default('materials'),
+    placeId: z.string().optional().describe(JSON.stringify({ type: "relation", relation: "place", label: "Place ID" })),
+    // The 'code' field (e.g. "IT-20017-IT03133760128") will be generated via pipeline.
+    // BaseSchema's 'name' property is now the optional fallback, no longer strictly required.
 });
 export type Warehouse = z.infer<typeof WarehouseSchema>;
-
 export const WarehouseCreateSchema = createCreationSchema(WarehouseSchema);
 export const WarehouseUpdateSchema = createUpdateSchema(WarehouseSchema);
 export const WarehouseSearchSchema = PaginationQuerySchema.extend({
@@ -28,13 +17,11 @@ export const WarehouseSearchSchema = PaginationQuerySchema.extend({
     code: z.string().optional(),
     type: z.enum(WarehouseTypes).optional(),
 });
-
 export const WarehousePolicyMatrix: Record<RoleId, EntityPolicy> = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
     manager: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
-    standlo_design: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -54,5 +41,9 @@ export const WarehousePolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_manager: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_engeneer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

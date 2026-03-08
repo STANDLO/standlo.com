@@ -1,9 +1,9 @@
 export * from "./auth";
 export * from "./base";
 export * from "./ui";
-
 export * from "./user";
 export * from "./organization";
+export * from "./place";
 export * from "./fair";
 export * from "./exhibition";
 export * from "./exhibitor";

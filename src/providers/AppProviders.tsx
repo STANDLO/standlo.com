@@ -71,7 +71,7 @@ function SessionTrackerSync() {
                             }
 
                             // Emit session refresh telemetry without awaiting
-                            fetch("/api/gateway", {
+                            fetch("/api/gateway?target=orchestrator", {
                                 method: "POST",
                                 headers,
                                 body: JSON.stringify({

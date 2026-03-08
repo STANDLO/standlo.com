@@ -1,0 +1,84 @@
+{
+    "id": "auth-onboarding-warehouse",
+    "orgId": "system",
+    "ownId": "system",
+    "name": "Auth Onboarding (Place & Trigger Warehouse)",
+    "isActive": true,
+    "nodes": [
+        {
+            "id": "trigger_org_create",
+            "type": "trigger",
+            "position": {
+                "x": 100,
+                "y": 200
+            },
+            "data": {
+                "triggerType": "firestore_event",
+                "collection": "organizations",
+                "triggerEvent": "create"
+            }
+        },
+        {
+            "id": "act_create_place",
+            "type": "action",
+            "position": {
+                "x": 400,
+                "y": 200
+            },
+            "data": {
+                "actionType": "orchestrator_create",
+                "targetPath": "place",
+                "payload": "{\n  \"address\": \"{{ data.place.address }}\",\n  \"city\": \"{{ data.place.city }}\",\n  \"province\": \"{{ data.place.province }}\",\n  \"zipCode\": \"{{ data.place.zipCode }}\",\n  \"country\": \"{{ data.place.country }}\",\n  \"googlePlaceId\": \"{{ data.place.googlePlaceId }}\"\n}"
+            }
+        },
+        {
+            "id": "act_update_org_place",
+            "type": "action",
+            "position": {
+                "x": 700,
+                "y": 100
+            },
+            "data": {
+                "actionType": "orchestrator_update",
+                "targetPath": "organization",
+                "payload": "{\n  \"id\": \"{{ docId }}\",\n  \"placeId\": \"{{ nodes.act_create_place.output.result.data.id }}\"\n}"
+            }
+        },
+        {
+            "id": "act_run_pipeline_warehouse_create",
+            "type": "action",
+            "position": {
+                "x": 700,
+                "y": 300
+            },
+            "data": {
+                "actionType": "run_pipeline",
+                "targetPath": "warehouse-create",
+                "payload": "{\n  \"orgId\": \"{{ docId }}\",\n  \"vatNumber\": \"{{ data.vatNumber }}\",\n  \"placeId\": \"{{ nodes.act_create_place.output.result.data.id }}\",\n  \"place\": {\n    \"country\": \"{{ data.place.country }}\",\n    \"zipCode\": \"{{ data.place.zipCode }}\"\n  }\n}"
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "e1",
+            "source": "trigger_org_create",
+            "target": "act_create_place"
+        },
+        {
+            "id": "e2",
+            "source": "act_create_place",
+            "target": "act_update_org_place"
+        },
+        {
+            "id": "e3",
+            "source": "act_create_place",
+            "target": "act_run_pipeline_warehouse_create"
+        }
+    ],
+    "createdAt": "2026-03-01T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedAt": "2026-03-01T00:00:00.000Z",
+    "updatedBy": "system",
+    "deletedAt": null,
+    "isArchived": false
+}

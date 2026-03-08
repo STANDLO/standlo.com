@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { RoleId } from "../schemas/auth";
 import { EntityPolicy } from "./core";
-
 import { OrganizationPolicyMatrix } from "../schemas/organization";
 import { UserPolicyMatrix } from "../schemas/user";
 import { FairPolicyMatrix } from "../schemas/fair";
@@ -27,7 +26,6 @@ import { TaxPolicyMatrix } from "../schemas/tax";
 import { ApiKeyPolicyMatrix } from "../schemas/apikey";
 import { CallPolicyMatrix } from "../schemas/call";
 import { PipelinePolicyMatrix } from "../schemas/pipeline";
-
 const PolicyMatrices: Record<string, Record<RoleId, EntityPolicy>> = {
     organization: OrganizationPolicyMatrix,
     user: UserPolicyMatrix,
@@ -55,7 +53,6 @@ const PolicyMatrices: Record<string, Record<RoleId, EntityPolicy>> = {
     call: CallPolicyMatrix,
     pipeline: PipelinePolicyMatrix
 };
-
 /**
  * Utility to generate a dynamic UI Manifest based on a Zod Schema and the Role Policy
  */
@@ -64,28 +61,21 @@ export function generateManifestForEntity(entityName: string, roleId: RoleId, zo
     if (!matrix) {
         throw new Error(`Policy matrix not defined for entity: ${entityName}`);
     }
-
     const policy = matrix[roleId] || matrix["other"];
-
     if (!policy.canRead) {
         return { error: "Permission Denied" };
     }
-
     // Extract UI Metadatas statically injected into Zod shape descriptions
     const shape = zodSchema.shape;
     const fields = [];
-
     // L'ordine di dichiarazione in fieldPermissions detta l'ordine della UI SDUI
     for (const key of Object.keys(policy.fieldPermissions)) {
         const fieldPolicy = policy.fieldPermissions[key];
-
         // If field policy is not defined or read is false, DO NOT send it to the client
         if (!fieldPolicy || !fieldPolicy.read) continue;
-
         const zodType = shape[key] as unknown as Record<string, unknown>;
         // Se il campo è nei permessi ma manca nello Zod Schema, lo scartiamo per sicurezza
         if (!zodType) continue;
-
         // Try to parse the UI Field Meta from the custom stringified description
         let meta = {};
         if (typeof zodType.description === "string") {
@@ -95,14 +85,12 @@ export function generateManifestForEntity(entityName: string, roleId: RoleId, zo
                 // Not JSON, ignore
             }
         }
-
         fields.push({
             name: key,
             editable: policy.canUpdate && fieldPolicy.write, // Must have entity update permission AND field write permission
             ...meta, // Inject { type: 'gallery', label: '...', etc }
         });
     }
-
     return {
         entity: entityName,
         permissions: {
@@ -114,14 +102,12 @@ export function generateManifestForEntity(entityName: string, roleId: RoleId, zo
         fields,
     };
 }
-
 export interface NavItemManifest {
     labelKey: string; // Translation key (e.g., 'dashboard')
     path: string; // Relative URL path without locale (e.g., '/manager/projects')
     icon: string; // Lucide Icon name (e.g., 'LayoutDashboard')
     matchPattern?: string; // Optional exact match pattern for active state
 }
-
 /**
  * Utility to generate the Navigation Sidebar config based on User Role
  */
@@ -149,7 +135,6 @@ export function generateNavigationManifest(roleId: RoleId): NavItemManifest[] {
         case "designer":
         case "architect":
         case "engineer":
-        case "standlo_design":
             return [
                 {
                     labelKey: "dashboard",

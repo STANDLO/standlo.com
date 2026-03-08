@@ -2,7 +2,6 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-
 export const CalendarSlotSchema = BaseSchema.extend({
     resourceType: z.enum(['user', 'product', 'tool']),
     resourceId: z.string(),
@@ -14,7 +13,6 @@ export const CalendarSlotSchema = BaseSchema.extend({
     quantity: z.number().default(1)
 });
 export type CalendarSlot = z.infer<typeof CalendarSlotSchema>;
-
 export const CalendarSlotCreateSchema = createCreationSchema(CalendarSlotSchema);
 export const CalendarSlotUpdateSchema = createUpdateSchema(CalendarSlotSchema);
 export const CalendarSlotSearchSchema = PaginationQuerySchema.extend({
@@ -23,13 +21,11 @@ export const CalendarSlotSearchSchema = PaginationQuerySchema.extend({
     warehouseId: z.string().optional(),
     referenceType: z.enum(['task', 'rent', 'availability']).optional()
 });
-
 export const CalendarSlotPolicyMatrix: Record<RoleId, EntityPolicy> = {
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     manager: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
-    standlo_design: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -49,5 +45,9 @@ export const CalendarSlotPolicyMatrix: Record<RoleId, EntityPolicy> = {
     forkliftdriver: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
+    dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_manager: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_engeneer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
 };

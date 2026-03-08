@@ -2,16 +2,20 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleIdSchema, RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-
 import { SystemRoleOptions } from "./primitives";
-
+export const OrganizationTypes = ["EDUCATIONAL", "PROFESSIONAL", "BUSINESS"] as const;
+export type OrganizationType = typeof OrganizationTypes[number];
+export const OrganizationTypeOptions = [
+    { value: "EDUCATIONAL", label: "Educational" },
+    { value: "PROFESSIONAL", label: "Professional" },
+    { value: "BUSINESS", label: "Business" },
+];
 export const OrganizationSchema = BaseSchema.extend({
-
+    type: z.array(z.enum(OrganizationTypes)).optional().describe(JSON.stringify({ type: "select", required: true, label: "Tipo Organizzazione", options: OrganizationTypeOptions, multiple: true })),
     roleId: RoleIdSchema.describe(JSON.stringify({ type: "select", required: true, label: "Ruolo in STANDLO", options: SystemRoleOptions })),
     vatNumber: z.string().optional().describe(JSON.stringify({ type: "vat", required: true, label: "Partita IVA / Codice Fiscale" })),
     pec: z.string().email("PEC non valida.").optional(),
     sdiCode: z.string().length(7, "Il Codice SDI deve essere di 7 caratteri.").optional(),
-
     place: z.object({
         fullAddress: z.string().optional(),
         address: z.string().optional(),
@@ -22,17 +26,15 @@ export const OrganizationSchema = BaseSchema.extend({
         googlePlaceId: z.string().optional(),
         coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
     }).optional().describe(JSON.stringify({ type: "place", required: true, label: "Sede Operativa" })),
-
     phone: z.string().optional(),
     email: z.string().email("Formato email non valido.").optional(),
     website: z.string().url("URL sito web non valido.").optional(),
     logoUrl: z.string().optional().describe(JSON.stringify({ type: "gallery", label: "Logo Aziendale" })),
     logoUrls: z.array(z.string()).optional(),
     headquarterId: z.string().optional(),
+    placeId: z.string().optional(),
 });
-
 export type Organization = z.infer<typeof OrganizationSchema>;
-
 export const OrganizationCreateSchema = createCreationSchema(OrganizationSchema);
 export const OrganizationUpdateSchema = createUpdateSchema(OrganizationSchema);
 export const OrganizationSearchSchema = PaginationQuerySchema.extend({
@@ -40,7 +42,6 @@ export const OrganizationSearchSchema = PaginationQuerySchema.extend({
     roleId: z.string().optional(),
     vatNumber: z.string().optional(),
 });
-
 // -- RBAC Policy Matrix per Organization --
 export const OrganizationPolicyMatrix: Record<RoleId, EntityPolicy> = {
     // MANAGER has full control over their own organization
@@ -113,6 +114,7 @@ export const OrganizationPolicyMatrix: Record<RoleId, EntityPolicy> = {
         canDelete: false,
         fieldPermissions: {
             // L'ordine qui definisce l'ordine di rendering nella UI!
+            type: { read: true, write: true },
             roleId: { read: true, write: true },
             vatNumber: { read: true, write: true },
             name: { read: true, write: true },
@@ -121,7 +123,10 @@ export const OrganizationPolicyMatrix: Record<RoleId, EntityPolicy> = {
         }
     },
     // Same default strict read-only for others...
-    standlo_design: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_manager: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_engeneer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     electrician: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },

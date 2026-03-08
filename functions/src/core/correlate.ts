@@ -1,5 +1,6 @@
 import * as admin from "firebase-admin";
 import { HttpsError } from "firebase-functions/v2/https";
+import { FieldValue } from "firebase-admin/firestore";
 
 /**
  * Standard Dictionary for Foreign Keys to Collection Names
@@ -60,7 +61,7 @@ export async function applyCorrelations(
     const newCorrelations = extractCorrelations(newData);
 
     const batch = db.batch();
-    const now = admin.firestore.FieldValue.serverTimestamp();
+    const now = FieldValue.serverTimestamp();
 
     const collectionsToProcess = new Set([
         ...Object.keys(oldCorrelations),
@@ -80,7 +81,7 @@ export async function applyCorrelations(
         if (oldTargetId) {
             const reverseDocRef = db.collection(targetCol).doc(oldTargetId).collection(rootCol).doc(rootId);
             batch.set(reverseDocRef, {
-                usages: admin.firestore.FieldValue.arrayRemove(usageId),
+                usages: FieldValue.arrayRemove(usageId),
                 updatedAt: now
             }, { merge: true });
         }
@@ -89,7 +90,7 @@ export async function applyCorrelations(
         if (newTargetId) {
             const reverseDocRef = db.collection(targetCol).doc(newTargetId).collection(rootCol).doc(rootId);
             batch.set(reverseDocRef, {
-                usages: admin.firestore.FieldValue.arrayUnion(usageId),
+                usages: FieldValue.arrayUnion(usageId),
                 updatedAt: now,
                 correlatedAt: now // Track when the correlation was first made
             }, { merge: true });

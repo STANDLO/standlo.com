@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/Select";
 import { Gallery } from "@/components/ui/Gallery";
 import { InputPlace } from "@/components/ui/InputPlace";
 import { InputVat } from "@/components/ui/InputVat";
+import { InputDate } from "@/components/ui/InputDate";
 import { auth } from "@/core/firebase";
 import { useTranslations } from "next-intl";
 
@@ -111,7 +112,7 @@ export function DynamicSDUIForm({ fields, onSubmit, submitLabel = "Salva", loadi
                 // --- SELECT ---
                 if (field.type === "select" && field.options) {
                     // Translate options if it's the roleId field (or gracefully fallback for other selects in future)
-                    const translatedOptions = field.options.map(opt => {
+                    let translatedOptions = field.options.map(opt => {
                         let newLabel = opt.label;
                         if (field.name === 'roleId') {
                             try {
@@ -129,6 +130,11 @@ export function DynamicSDUIForm({ fields, onSubmit, submitLabel = "Salva", loadi
                         return { value: opt.value, label: newLabel };
                     });
 
+                    // Role Filtering: Hide customer and provider if type is EDUCATIONAL
+                    if (field.name === 'roleId' && formData.type === "EDUCATIONAL") {
+                        translatedOptions = translatedOptions.filter(opt => opt.value !== "customer" && opt.value !== "provider");
+                    }
+
                     return (
                         <div key={field.name} className="layout-auth-field">
                             <Select
@@ -138,6 +144,22 @@ export function DynamicSDUIForm({ fields, onSubmit, submitLabel = "Salva", loadi
                                 onChange={(e) => handleFieldChange(field.name, e.target.value)}
                                 disabled={loading}
                                 options={translatedOptions}
+                            />
+                        </div>
+                    );
+                }
+
+                // --- DATE INPUT ---
+                if (field.type === "date") {
+                    return (
+                        <div key={field.name} className="layout-auth-field">
+                            <InputDate
+                                id={field.name}
+                                label={(field.label || field.name) + (field.required ? " *" : "")}
+                                value={(formData[field.name] as string) || ""}
+                                onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                                required={field.required}
+                                disabled={loading}
                             />
                         </div>
                     );

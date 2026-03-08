@@ -7,7 +7,7 @@ process.on('unhandledRejection', (reason) => {
 });
 import { beforeUserCreated, beforeUserSignedIn } from "firebase-functions/v2/identity";
 import * as admin from "firebase-admin";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 const app = admin.initializeApp();
 const db = getFirestore(app, "standlo"); // Enterprise Named Database
@@ -63,8 +63,8 @@ export const beforeCreate = beforeUserCreated({ region: REGION }, async (event) 
             phoneNumber: user.phoneNumber || null,
             active: false,
             claims: safeClaims,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp(),
         });
 
         console.log(`Successfully provisioned initial User document for ${user.uid} with role: pending`);

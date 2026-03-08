@@ -1,4 +1,4 @@
-import { onDocumentWritten } from "firebase-functions/v2/firestore";
+import { onDocumentWritten, DocumentOptions } from "firebase-functions/v2/firestore";
 import { getFirestore } from "firebase-admin/firestore";
 import { getApp } from "firebase-admin/app";
 import { runPipeline } from "../orchestrator/pipeline";
@@ -34,17 +34,13 @@ async function getActiveDatabasePipelines(): Promise<PipelineEntity[]> {
     }
 }
 
+const triggerOptions: DocumentOptions = { document: "{collectionId}/{docId}", database: "standlo", namespace: "{namespaceId}", region: "europe-west4", secrets: [geminiApiKey] };
+
 /**
  * Global Firestore Observer for Database Triggers.
  * Listens to all root-level collections. 
  */
-export const pipelineTriggers = onDocumentWritten({
-    document: "{collectionId}/{docId}",
-    database: "standlo",
-    namespace: "{namespaceId}", // Workaround for Firestore Enterprise "namespace filter" bug
-    region: "europe-west4",
-    secrets: [geminiApiKey]
-}, async (event) => {
+export const pipelineTriggers = onDocumentWritten(triggerOptions, async (event) => {
     const collectionId = event.params.collectionId;
     const docId = event.params.docId;
 
@@ -96,3 +92,12 @@ export const pipelineTriggers = onDocumentWritten({
         }
     }
 });
+
+const isLocal = process.env.FUNCTIONS_EMULATOR === "true" || !!process.env.FIRESTORE_EMULATOR_HOST || process.env.GCLOUD_PROJECT === "demo-standlo";
+
+// Bypass for Eventarc impossible triad bug: The CLI requires a namespace, but passing {namespaceId} 
+// or custom namespaces crashes the local HTTP emulator. We MUST inject (default) metadata locally.
+if (isLocal && (pipelineTriggers as any).__endpoint) {
+    (pipelineTriggers as any).__endpoint.eventTrigger.eventFilters.namespace = "(default)";
+}
+

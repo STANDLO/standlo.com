@@ -7,7 +7,7 @@ import { authConfig } from "./core/auth-edge";
 const intlMiddleware = createMiddleware(routing);
 
 // I file public che non richiedono login (es. /auth/login, landing, etc.)
-const PUBLIC_PATHS = ['/auth/login', '/auth/register', '/auth/action'];
+const PUBLIC_PATHS = ['/auth/login', '/auth/create', '/auth/action'];
 
 export async function proxy(request: NextRequest) {
     // 1. JWT Parsing & Role Redirection
@@ -54,7 +54,7 @@ export async function proxy(request: NextRequest) {
 
             // 2. GESTIONE UTENTI COMPLETATI (Ruoli Definitivi)
             // Se un utente completato prova ad accedere a rotte pubbliche o root o all'onboarding o verify-email
-            if (pathname === '/' || pathname.includes('/auth/login') || pathname.includes('/auth/register') || pathname.includes('/onboarding') || pathname.includes('/auth/verify-email')) {
+            if (pathname === '/' || pathname.includes('/auth/login') || pathname.includes('/auth/create') || pathname.includes('/onboarding') || pathname.includes('/auth/verify-email')) {
                 url.pathname = `/${locale}/partner/${role}`;
                 return NextResponse.redirect(url);
             }

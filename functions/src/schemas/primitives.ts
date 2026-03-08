@@ -1,15 +1,21 @@
 import { z } from "zod";
-
 /**
  * 0. System Roles
  * Ruoli di sistema centralizzati per strongly typing
  */
 export const SystemRoles = [
+    // SYSTEM
     'pending',
+    'other',
+    // STANDLO
+    'standlo_manager',
+    'standlo_architect',
+    'standlo_engeneer',
+    'standlo_designer',
+    // USERS
     'customer',
     'provider',
     'manager',
-    'standlo_design',
     'architect',
     'engineer',
     'designer',
@@ -28,19 +34,23 @@ export const SystemRoles = [
     'tiler',
     'driver',
     'forkliftdriver',
-    'promoter',
-    'other'
+    'promoter'
 ] as const;
-
 export const RoleIdSchema = z.enum(SystemRoles);
 export type RoleId = z.infer<typeof RoleIdSchema>;
-
 export const SystemRoleLabels: Record<RoleId, string> = {
+    // STANDLO
+    standlo_manager: 'Manager @ STANDLO',
+    standlo_architect: 'Architect @ STANDLO',
+    standlo_engeneer: 'Engeneer @ STANDLO',
+    standlo_designer: 'Designer @ STANDLO',
+    // SYSTEM
     pending: 'Pending',
+    other: 'Other',
+    // USERS
     customer: 'Customer',
     provider: 'Material Provider',
     manager: 'Project Manager',
-    standlo_design: 'Standlo Design',
     architect: 'Architect',
     engineer: 'Engineer',
     designer: 'Designer',
@@ -59,17 +69,18 @@ export const SystemRoleLabels: Record<RoleId, string> = {
     tiler: 'Tiler',
     driver: 'Driver',
     forkliftdriver: 'Forklift Driver',
-    promoter: 'Promoter',
-    other: 'Other'
+    promoter: 'Promoter'
 };
-
 export const SystemRoleOptions = SystemRoles
-    .filter(role => role !== 'pending' && role !== 'other') // Escludiamo ruoli interni
+    .filter(role =>
+        role !== 'pending' &&
+        role !== 'other' &&
+        !role.startsWith('standlo_')
+    ) // Escludiamo ruoli interni e di standlo
     .map(role => ({
         value: role,
         label: SystemRoleLabels[role]
     }));
-
 /**
  * 1. Localized String Schema
  * Schema per i campi testuali multi-lingua.

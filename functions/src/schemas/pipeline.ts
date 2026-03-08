@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { BaseSchema } from "./base";
-
 /**
  * Node Schema (Represents a single block in the React Flow canvas)
  */
@@ -21,7 +20,6 @@ export const PipelineNodeSchema = z.object({
     width: z.number().optional(),
     height: z.number().optional()
 });
-
 /**
  * Edge Schema (Represents a connection between two nodes)
  */
@@ -35,7 +33,6 @@ export const PipelineEdgeSchema = z.object({
     animated: z.boolean().optional(),
     label: z.string().optional()
 });
-
 /**
  * The Master Pipeline Schema
  */
@@ -46,7 +43,6 @@ export const PipelineSchema = BaseSchema.extend({
     edges: z.array(PipelineEdgeSchema).default([]),
     isActive: z.boolean().default(false)
 });
-
 // Roles schemas (using the Master Schema layout strategy)
 export const PipelineAdminSchema = PipelineSchema;
 export const PipelineManagerSchema = PipelineSchema.omit({});
@@ -55,11 +51,9 @@ export const PipelineCustomerSchema = PipelineSchema.pick({
     name: true,
     description: true
 });
-
 export type PipelineEntity = z.infer<typeof PipelineSchema>;
 export type PipelineNodeEntity = z.infer<typeof PipelineNodeSchema>;
 export type PipelineEdgeEntity = z.infer<typeof PipelineEdgeSchema>;
-
 export const PipelineExecutionSchema = BaseSchema.extend({
     pipelineId: z.string().min(1),
     status: z.union([z.literal("success"), z.literal("error"), z.literal("running")]),
@@ -69,18 +63,14 @@ export const PipelineExecutionSchema = BaseSchema.extend({
     log: z.array(z.any()).optional(),
     finalContext: z.record(z.string(), z.any()).optional()
 });
-
 export type PipelineExecutionEntity = z.infer<typeof PipelineExecutionSchema>;
-
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-
 export const PipelinePolicyMatrix: Record<RoleId, EntityPolicy> = {
     pending: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     manager: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
-    standlo_design: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },
     architect: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     engineer: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     designer: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -89,6 +79,10 @@ export const PipelinePolicyMatrix: Record<RoleId, EntityPolicy> = {
     carpenter: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     cabinetmaker: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     dryliner: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_manager: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_engeneer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     ironworker: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     windowfitter: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     glazier: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },

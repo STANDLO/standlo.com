@@ -138,6 +138,13 @@
     "Onboarding": {
         "title": "Completa tu Perfil B2B",
         "subtitle": "Para continuar usando Standlo, necesitamos cierta información obligatoria para facturación.",
+        "orgTypeLabel": "Tipo de Organización",
+        "orgTypeOptions": {
+            "EDUCATIONAL": "Educativo (Gratis)",
+            "PROFESSIONAL": "Profesional",
+            "BUSINESS": "Empresarial"
+        },
+        "birthdayLabel": "Fecha de Nacimiento",
         "orgNameLabel": "Razón Social / Denominación",
         "logoLabel": "Logotipo de la Empresa",
         "roleLabel": "Selecciona tu rol",

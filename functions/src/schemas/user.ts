@@ -2,23 +2,20 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-
 export const UserSchema = BaseSchema.extend({
     email: z.string().email(),
     displayName: z.string().nullable(),
     phoneNumber: z.string().nullable(),
+    birthday: z.string().optional(),
     claims: z.record(z.string(), z.any()).optional(),
 });
-
 export type User = z.infer<typeof UserSchema>;
-
 export const UserCreateSchema = createCreationSchema(UserSchema);
 export const UserUpdateSchema = createUpdateSchema(UserSchema);
 export const UserSearchSchema = PaginationQuerySchema.extend({
     email: z.string().optional(),
     roleId: z.string().optional(),
 });
-
 // Default minimal policy for system-managed entities (To be expanded as needed)
 const defaultPolicy: EntityPolicy = {
     canCreate: false,
@@ -27,7 +24,6 @@ const defaultPolicy: EntityPolicy = {
     canDelete: false,
     fieldPermissions: {}
 };
-
 export const UserPolicyMatrix: Record<RoleId, EntityPolicy> = {
     manager: {
         canCreate: true,
@@ -40,9 +36,20 @@ export const UserPolicyMatrix: Record<RoleId, EntityPolicy> = {
             phoneNumber: { read: true, write: true },
         }
     },
+    standlo_manager: defaultPolicy,
+    standlo_architect: defaultPolicy,
+    standlo_engeneer: defaultPolicy,
+    standlo_designer: defaultPolicy,
     designer: defaultPolicy,
-    standlo_design: defaultPolicy,
-    pending: defaultPolicy,
+    pending: {
+        canCreate: false,
+        canRead: false,
+        canUpdate: false,
+        canDelete: false,
+        fieldPermissions: {
+            birthday: { read: true, write: true }
+        }
+    },
     customer: defaultPolicy,
     provider: defaultPolicy,
     architect: defaultPolicy,
