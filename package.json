@@ -1,6 +1,6 @@
 {
   "name": "standlo.com",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "private": true,
   "scripts": {
     "dev": "rm -rf .next && rm -rf node_modules/.cache && next dev",
@@ -72,7 +72,6 @@
     "typescript": "^5"
   },
   "overrides": {
-    "minimatch": "^10.2.1",
     "@eslint/config-array": "^0.19.0",
     "next-firebase-auth-edge": {
       "next": "$next"
