@@ -4,7 +4,7 @@ import { saveCanvasEntity } from "../choreography/canvas";
 
 export const choreography = onCall({
     region: "europe-west4",
-    enforceAppCheck: true,
+    enforceAppCheck: process.env.FUNCTIONS_EMULATOR === "true" ? false : true,
     cors: process.env.FUNCTIONS_EMULATOR === "true" ? true : ["https://standlo.com", "https://www.standlo.com"],
     consumeAppCheckToken: false, // Don't consume for async shoots just enforce
 }, async (request) => {

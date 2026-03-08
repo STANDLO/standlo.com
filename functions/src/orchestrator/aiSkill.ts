@@ -78,12 +78,42 @@ export async function testAISkill(userId: string, payload: Record<string, unknow
     if (!skill) throw new Error("Missing skill definition for testing.");
 
     const { executeDynamicSkill } = await import("../genkit/dynamicFlow");
+    const { randomUUID } = await import("crypto");
+
+    const execId = randomUUID();
+    const startTime = new Date().toISOString();
 
     try {
         const result = await executeDynamicSkill((skill as Record<string, unknown>) || {}, (mockPayload as Record<string, unknown>) || {});
+
+        await getDb().collection("ai_skills_executions").doc(execId).set({
+            skillId: (skill as Record<string, unknown>)?.id || (skill as Record<string, unknown>)?.skillId || 'unknown',
+            status: "success",
+            startedAt: startTime,
+            completedAt: new Date().toISOString(),
+            triggeredBy: userId,
+            payload: mockPayload,
+            result: result,
+            isArchived: false,
+            deletedAt: null
+        });
+
         return { success: true, result };
     } catch (e) {
         console.error("AI Skill Test Error:", e);
+
+        await getDb().collection("ai_skills_executions").doc(execId).set({
+            skillId: (skill as Record<string, unknown>)?.id || (skill as Record<string, unknown>)?.skillId || 'unknown',
+            status: "error",
+            error: (e as Error).message,
+            startedAt: startTime,
+            completedAt: new Date().toISOString(),
+            triggeredBy: userId,
+            payload: mockPayload,
+            isArchived: false,
+            deletedAt: null
+        });
+
         return { success: false, error: (e as Error).message || "Unknown error occurred" };
     }
 }

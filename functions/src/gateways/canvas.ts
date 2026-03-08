@@ -98,7 +98,7 @@ async function generateInstructions(request: CanvasRequest) {
  */
 export const canvas = onCall({
     region: REGION,
-    enforceAppCheck: true,
+    enforceAppCheck: process.env.FUNCTIONS_EMULATOR === "true" ? false : true,
     cors: process.env.FUNCTIONS_EMULATOR === "true" ? true : ["https://standlo.com", "https://www.standlo.com"],
     consumeAppCheckToken: false
 }, async (request) => {

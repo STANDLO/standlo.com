@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, Activity, Play, X } from "lucide-react";
+import { Plus, Edit2, Trash2, Activity, Play, X, CloudUpload, Loader2 } from "lucide-react";
 import { OrchestratorClient } from "../lib/orchestratorClient";
 import PipelineCanvasEditor from "./components/PipelineCanvasEditor";
 import { PipelineEntity } from "@standlo/functions/src/schemas/pipeline";
@@ -54,6 +54,32 @@ export default function PipelinesAdminPage() {
         } catch (e) {
             console.error(e);
             alert("Error deleting pipeline");
+        }
+    };
+
+    const [isSyncing, setIsSyncing] = useState<string | null>(null);
+
+    const handleSyncToCloud = async (id: string) => {
+        if (!confirm("Overwrite this pipeline in the Production Cloud? This is irreversible.")) return;
+        setIsSyncing(id);
+        try {
+            const res = await fetch('/api/sync-doc', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ collectionName: 'pipelines', documentId: id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("Successfully synced to Production Cloud!");
+            } else {
+                console.error(data.log);
+                alert("Sync failed. Check console.");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Sync request failed.");
+        } finally {
+            setIsSyncing(null);
         }
     };
 
@@ -138,6 +164,9 @@ export default function PipelinesAdminPage() {
                                                 </div>
                                             </div>
                                             <div className="ui-canvas-list-item-actions">
+                                                <button onClick={() => handleSyncToCloud(item.id as string)} disabled={isSyncing === item.id} className="ui-canvas-btn-secondary border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/50" title="Sync to Production Cloud">
+                                                    {isSyncing === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CloudUpload className="w-4 h-4" />}
+                                                </button>
                                                 <button onClick={() => window.location.href = `/pipelines/${item.id}/logs`} className="ui-canvas-btn-secondary" title="View Execution Logs"><Activity className="w-4 h-4" /></button>
                                                 <button onClick={() => handleDryRun(item)} className="ui-canvas-btn-secondary" title="Simulate Dry Run"><Play className="w-4 h-4" /></button>
                                                 <button onClick={() => openEditor(item)} className="ui-canvas-btn-edit"><Edit2 className="w-4 h-4" /></button>

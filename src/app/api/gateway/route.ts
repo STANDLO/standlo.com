@@ -55,15 +55,20 @@ export async function POST(req: NextRequest) {
         const functionName = targetQuery;
 
         const targetUrl = `${baseUrl}/${functionName}`;
+        const appCheckHeader = req.headers.get("X-Firebase-AppCheck") || req.headers.get("x-firebase-appcheck");
+
+        const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+            "Authorization": authHeader
+        };
+        if (appCheckHeader) {
+            headers["X-Firebase-AppCheck"] = appCheckHeader;
+        }
 
         // Firebase Cloud Functions (onCall) expect a specific JSON payload format: { data: { ... } }
         const fetchOptions: RequestInit = {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                // Pass the bearer token forward exactly as the client sent it
-                "Authorization": authHeader
-            },
+            headers,
             body: JSON.stringify({ data: body })
         };
 

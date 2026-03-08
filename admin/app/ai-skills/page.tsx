@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
-import { Plus, Brain, Trash2, Edit, Play, Loader2, Save, Settings, Code2, Container } from "lucide-react";
+import { Plus, Brain, Trash2, Edit, Play, Loader2, Save, Settings, Code2, Container, CloudUpload } from "lucide-react";
 import { OrchestratorClient } from "../lib/orchestratorClient";
 
 interface AISkillDocument {
@@ -27,6 +27,33 @@ export default function AISkillsPage() {
     const [testPayload, setTestPayload] = useState('{\n  "input": "test"\n}');
     const [testResult, setTestResult] = useState('');
     const [isTesting, setIsTesting] = useState(false);
+    const [isSyncing, setIsSyncing] = useState<string | null>(null);
+
+    const handleSyncToCloud = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (!confirm("Overwrite this AI Skill in the Production Cloud? This is irreversible.")) return;
+        setIsSyncing(id);
+        try {
+            const res = await fetch('/api/sync-doc', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ collectionName: 'ai_skills', documentId: id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("Successfully synced to Production Cloud!");
+            } else {
+                console.error(data.log);
+                alert("Sync failed. Check console.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Sync request failed.");
+        } finally {
+            setIsSyncing(null);
+        }
+    };
+
     const fetchSkills = async () => {
         setLoading(true);
         try {
@@ -405,6 +432,9 @@ export default function AISkillsPage() {
                                 <div className="flex justify-between items-start mb-3">
                                     <h3 className="font-bold text-lg text-foreground">{skill.displayName}</h3>
                                     <div className="flex gap-2 text-muted-foreground">
+                                        <button onClick={(e) => handleSyncToCloud(e, skill.id)} disabled={isSyncing === skill.id} className="hover:text-blue-600 transition-colors" title="Sync to Production Cloud">
+                                            {isSyncing === skill.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CloudUpload className="w-4 h-4" />}
+                                        </button>
                                         <button onClick={() => { setActiveSkill(skill); setIsEditing(true); }} className="hover:text-purple-600 transition-colors">
                                             <Edit className="w-4 h-4" />
                                         </button>

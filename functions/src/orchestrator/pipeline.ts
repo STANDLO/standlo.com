@@ -358,7 +358,7 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
 
     if (!isDryRun) {
         try {
-            await firestore.collection("pipelines_executions").add({
+            await firestore.collection("pipelines_executions").doc(randomUUID()).set({
                 pipelineId,
                 status: executionLog.some(l => l["status"] === "error") ? "error" : "success",
                 startedAt: executionLog.length > 0 ? ((executionLog[0] as Record<string, unknown>)["output"] as Record<string, unknown>)?.["executedAt"] || new Date().toISOString() : new Date().toISOString(),

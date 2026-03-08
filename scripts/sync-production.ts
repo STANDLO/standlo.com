@@ -7,10 +7,13 @@ delete process.env.FIRESTORE_EMULATOR_HOST;
 
 const prodDb = new Firestore({
     projectId: PROJECT_ID,
+    databaseId: "standlo",
+    keyFilename: "keys/standlo-firebase-adminsdk-fbsvc-5a2af63973.json"
 });
 
 const localDb = new Firestore({
     projectId: PROJECT_ID,
+    databaseId: "standlo",
     host: "127.0.0.1:8080",
     ssl: false,
 });
@@ -37,16 +40,26 @@ async function sync() {
             continue;
         }
 
+        console.log(`🔍 Checking existing documents in production for ${coll}...`);
+        const prodDocs = await prodDb.collection(coll).select().get();
+        const existingProdIds = new Set(prodDocs.docs.map(d => d.id));
+
         const batch = prodDb.batch();
-        let total = 0;
+        let added = 0;
 
         snapshot.forEach(doc => {
-            batch.set(prodDb.collection(coll).doc(doc.id), doc.data());
-            total++;
+            if (!existingProdIds.has(doc.id)) {
+                batch.set(prodDb.collection(coll).doc(doc.id), doc.data());
+                added++;
+            }
         });
 
-        await batch.commit();
-        console.log(`✅ Push complete! Synced ${total} documents to Production [${coll}].`);
+        if (added > 0) {
+            await batch.commit();
+            console.log(`✅ Push complete! Added ${added} NEW documents to Production [${coll}].`);
+        } else {
+            console.log(`⏭️ No new documents to add for [${coll}]. All ${snapshot.size} local docs already exist in prod.`);
+        }
     }
     console.log("\n🎉 Sync Complete! The cloud database is now up to date with your local changes.");
 }
