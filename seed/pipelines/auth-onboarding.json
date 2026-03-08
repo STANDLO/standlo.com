@@ -1,8 +1,8 @@
 {
-    "id": "auth-onboarding-warehouse",
+    "id": "auth-onboarding",
     "orgId": "system",
     "ownId": "system",
-    "name": "Auth Onboarding (Place & Trigger Warehouse)",
+    "name": "Auth Onboarding",
     "isActive": true,
     "nodes": [
         {
@@ -56,6 +56,19 @@
                 "targetPath": "warehouse-create",
                 "payload": "{\n  \"orgId\": \"{{ docId }}\",\n  \"vatNumber\": \"{{ data.vatNumber }}\",\n  \"placeId\": \"{{ nodes.act_create_place.output.result.data.id }}\",\n  \"place\": {\n    \"country\": \"{{ data.place.country }}\",\n    \"zipCode\": \"{{ data.place.zipCode }}\"\n  }\n}"
             }
+        },
+        {
+            "id": "act_run_pipeline_org_user_create",
+            "type": "action",
+            "position": {
+                "x": 700,
+                "y": 500
+            },
+            "data": {
+                "actionType": "run_pipeline",
+                "targetPath": "organization-user-create",
+                "payload": "{\n  \"orgId\": \"{{ docId }}\",\n  \"userId\": \"{{ data.createdBy }}\",\n  \"type\": \"ADMIN\",\n  \"skipAuthCreation\": true\n}"
+            }
         }
     ],
     "edges": [
@@ -73,6 +86,11 @@
             "id": "e3",
             "source": "act_create_place",
             "target": "act_run_pipeline_warehouse_create"
+        },
+        {
+            "id": "e4",
+            "source": "act_create_place",
+            "target": "act_run_pipeline_org_user_create"
         }
     ],
     "createdAt": "2026-03-01T00:00:00.000Z",

@@ -57,6 +57,18 @@ export default async function ProtectedRootLayout({ children, params }: { childr
         navItems = []; // No navigation during onboarding
     }
 
+    // Dynamic Navigation injection based on internal Organization Role (ADMIN)
+    const userType = claims.type as string; // 'ADMIN', 'DESIGNER', etc.
+    if (userType === "ADMIN" && role !== "pending") {
+        // Group the staff management icon
+        navItems.push({
+            label: "Staff & Permessi",
+            href: `/${locale}/users`,
+            icon: "ShieldAlert",
+            matchPattern: `/${locale}/users`
+        });
+    }
+
     return (
         <LayoutProtected
             navItems={navItems}

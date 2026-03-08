@@ -22,6 +22,21 @@ rm -rf seed/firestore_export
 echo "⬇️ Downloading export to local machine..."
 gsutil -m cp -r "$BUCKET_NAME/$EXPORT_PREFIX" ./seed/
 
+echo "📝 Creating firebase-export-metadata.json for named database routing..."
+cat << EOF > ./seed/firebase-export-metadata.json
+{
+  "version": "13.6.0",
+  "firestore": [
+    {
+      "version": "1.19.1",
+      "path": "firestore_export",
+      "metadata_file": "firestore_export/firestore_export.overall_export_metadata",
+      "database": "standlo"
+    }
+  ]
+}
+EOF
+
 # 5. Cleanup Cloud Storage
 echo "🗑️ Cleaning up temporary Cloud Storage bucket..."
 gsutil -m rm -r "$BUCKET_NAME/$EXPORT_PREFIX"

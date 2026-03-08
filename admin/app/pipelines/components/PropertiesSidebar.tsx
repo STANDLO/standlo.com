@@ -11,17 +11,29 @@ interface Props {
     pipelineId: string;
     nodes: RFNode[];
     edges: Edge[];
-}export default function PropertiesSidebar({ selectedNode, setNodes, pipelineId, nodes, edges }: Props) {
-    const data = (selectedNode?.data || {}) as any;
+}interface NodeData {
+    actionType?: string;
+    targetPath?: string;
+    condition?: string;
+    queryField?: string;
+    queryOperator?: string;
+    queryValue?: string;
+    payload?: string;
+    skillId?: string;
+    [key: string]: string | undefined;
+}
+
+export default function PropertiesSidebar({ selectedNode, setNodes, pipelineId, nodes, edges }: Props) {
+    const data = useMemo(() => (selectedNode?.data || {}) as NodeData, [selectedNode?.data]);
     const type = selectedNode?.type;
 
     const [payloadMode, setPayloadMode] = useState<'visual' | 'raw'>('visual');
-    const [aiSkills, setAiSkills] = useState<any[]>([]);
+    const [aiSkills, setAiSkills] = useState<{ skillId?: string; displayName?: string; description?: string; inputSchemaJson?: string }[]>([]);
     const [pipelines, setPipelines] = useState<PipelineEntity[]>([]);
 
     React.useEffect(() => {
         if (selectedNode?.type === 'brain' && aiSkills.length === 0) {
-            OrchestratorClient.list("ai_skill").then(data => setAiSkills(data || [])).catch(console.error);
+            OrchestratorClient.list("ai_skill").then(data => setAiSkills((data as { skillId?: string; displayName?: string; description?: string; inputSchemaJson?: string }[]) || [])).catch(console.error);
         }
     }, [selectedNode?.type, aiSkills.length]);
 
@@ -31,7 +43,7 @@ interface Props {
         }
     }, [selectedNode?.type, data.actionType, pipelines.length]);
 
-    const updateNodeData = useCallback((key: string, value: any) => {
+    const updateNodeData = useCallback((key: string, value: unknown) => {
         if (!selectedNode) return;
 
         setNodes((nds) =>
@@ -87,10 +99,11 @@ interface Props {
     // Phase 8: Infer Action Target schema
     const actionSchemaFields = useMemo(() => {
         if (selectedNode?.type !== 'action' || !data.targetPath) return null;
-        if (!data.actionType?.startsWith('orchestrator_')) return null;
+        if (typeof data.actionType !== 'string' || !data.actionType.startsWith('orchestrator_')) return null;
 
         // TargetPath might be "mesh" or "projects/{{id}}/stands/{{id}}/mesh"
-        const segments = data.targetPath.split('/');
+        const targetPath = typeof data.targetPath === 'string' ? data.targetPath : '';
+        const segments = targetPath.split('/');
         const lastSegment = segments.pop()?.toLowerCase() || '';
 
         const schema = CollectionSchemaRegistry[lastSegment];
@@ -110,13 +123,16 @@ interface Props {
         if (!skill) return null;
 
         try {
-            const parsedJsonSchema = JSON.parse(skill.inputSchemaJson);
-            const fields = Object.entries(parsedJsonSchema.properties || {}).map(([key, prop]: [string, any]) => ({
-                name: key,
-                type: prop.type || 'string',
-                options: prop.enum,
-                _def: {}
-            }));
+            const parsedJsonSchema = JSON.parse(String(skill.inputSchemaJson));
+            const fields = Object.entries(parsedJsonSchema.properties || {}).map(([key, prop]) => {
+                const p = prop as { type?: string; enum?: string[] };
+                return {
+                    name: key,
+                    type: p.type || 'string',
+                    options: p.enum,
+                    _def: {}
+                };
+            });
             return {
                 entityName: skill.displayName,
                 fields
@@ -128,11 +144,11 @@ interface Props {
     }, [selectedNode, data.skillId, aiSkills]);
 
     // Used for visual action logic editing
-    const handleVisualPayloadChange = (fieldName: string, value: any) => {
-        let currentPayloadObj: Record<string, any> = {};
+    const handleVisualPayloadChange = (fieldName: string, value: string) => {
+        let currentPayloadObj: Record<string, unknown> = {};
         try {
-            if (data.payload) currentPayloadObj = JSON.parse(data.payload);
-        } catch (e) {
+            if (data.payload) currentPayloadObj = JSON.parse(String(data.payload));
+        } catch {
             // Ignore parse errors, start fresh if invalid
         }
 
@@ -328,11 +344,11 @@ interface Props {
                                         {upstreamSchemaFields && payloadMode === 'visual' && (
                                             <button
                                                 onClick={() => {
-                                                    const newPayload: Record<string, any> = {};
+                                                    const newPayload: Record<string, unknown> = {};
                                                     // Parse existing to safely merge
                                                     try {
-                                                        if (data.payload) Object.assign(newPayload, JSON.parse(data.payload));
-                                                    } catch (e) { }
+                                                        if (data.payload) Object.assign(newPayload, JSON.parse(String(data.payload)));
+                                                    } catch { }
 
                                                     actionSchemaFields?.fields.forEach(f => {
                                                         if (upstreamSchemaFields.fields.some(uf => uf.name === f.name)) {
@@ -372,7 +388,7 @@ interface Props {
                                             let currentVal = '';
                                             try {
                                                 if (data.payload) currentVal = JSON.parse(data.payload)[f.name] || '';
-                                            } catch (e) { }
+                                            } catch { }
 
                                             return (
                                                 <div key={f.name}>
@@ -557,10 +573,10 @@ interface Props {
                                         {upstreamSchemaFields && payloadMode === 'visual' && (
                                             <button
                                                 onClick={() => {
-                                                    const newPayload: Record<string, any> = {};
+                                                    const newPayload: Record<string, unknown> = {};
                                                     try {
-                                                        if (data.payload) Object.assign(newPayload, JSON.parse(data.payload));
-                                                    } catch (e) { }
+                                                        if (data.payload) Object.assign(newPayload, JSON.parse(String(data.payload)));
+                                                    } catch { }
 
                                                     aiSchemaFields?.fields.forEach(f => {
                                                         if (upstreamSchemaFields.fields.some(uf => uf.name === f.name)) {
@@ -598,7 +614,7 @@ interface Props {
                                             let currentVal = '';
                                             try {
                                                 if (data.payload) currentVal = JSON.parse(data.payload)[f.name] || '';
-                                            } catch (e) { }
+                                            } catch { }
 
                                             return (
                                                 <div key={f.name}>

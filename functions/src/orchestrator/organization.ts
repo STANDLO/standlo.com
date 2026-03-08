@@ -91,6 +91,7 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         const userRef = db.collection("users").doc(uid);
         const userUpdatePayload: Record<string, unknown> = {
             active: isActive,
+            type: "ADMIN",
             updatedAt: FieldValue.serverTimestamp(),
         };
         if (birthdayValue) {
@@ -104,10 +105,14 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             ? parsedData.vatNumber.substring(0, 2).toUpperCase()
             : null;
 
+        const organizationType = parsedData.type && parsedData.type.length > 0 ? parsedData.type[0] : null;
+
         // 5. Upgrade Custom Claims via Admin SDK
         const newClaims: Record<string, unknown> = {
             ...currentCustomClaims,
             role: role || "pending",
+            type: "ADMIN",
+            organizationType: organizationType,
             onboarding: true,
             orgId: orgRootId,
             orgName: parsedData.name || null,

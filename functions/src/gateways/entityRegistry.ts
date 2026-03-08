@@ -13,6 +13,7 @@ export interface EntityConfig {
 export const Registry: Record<string, EntityConfig> = {
     // Global Elements
     organization: { scope: "global", name: "organizations", schema: schemas.OrganizationSchema },
+    organizationUser: { scope: "tenant", name: "users", schema: schemas.UserSchema },
     user: { scope: "global", name: "users", schema: schemas.UserSchema },
     auth: { scope: "global", name: "auths", schema: schemas.AuthEventSchema },
     place: { scope: "global", name: "places", schema: schemas.PlaceSchema },
