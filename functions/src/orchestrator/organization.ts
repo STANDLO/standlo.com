@@ -98,8 +98,6 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             userUpdatePayload.birthday = birthdayValue;
         }
 
-        batch.set(userRef, userUpdatePayload, { merge: true });
-
         // Estrapolazione Country Code dalla P.IVA (es. "IT123456789" -> "IT")
         const countryCode = parsedData.vatNumber && parsedData.vatNumber.length >= 2
             ? parsedData.vatNumber.substring(0, 2).toUpperCase()
@@ -112,6 +110,7 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             ...currentCustomClaims,
             role: role || "pending",
             type: "ADMIN",
+            userType: "ADMIN",
             organizationType: organizationType,
             onboarding: true,
             orgId: orgRootId,
@@ -134,7 +133,10 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             Object.entries(newClaims).filter(([, v]) => v !== undefined)
         );
 
-        batch.update(userRef, { claims: sanitizedClaims });
+        userUpdatePayload.userType = "ADMIN";
+        userUpdatePayload.claims = sanitizedClaims;
+        batch.set(userRef, userUpdatePayload, { merge: true });
+
         await batch.commit();
 
         await admin.auth().setCustomUserClaims(uid, sanitizedClaims);

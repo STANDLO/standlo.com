@@ -66,6 +66,24 @@ export async function createOrganizationUserEntity(uid: string, payload: Record<
     const orgRole = orgData.roleId || "pending";
     const organizationType = orgData.type && Array.isArray(orgData.type) && orgData.type.length > 0 ? orgData.type[0] : null;
 
+    // 3. Update Custom Claims
+    const userRec = await admin.auth().getUser(targetUserId);
+    const currentCustomClaims = userRec.customClaims || {};
+
+    const newClaims: Record<string, unknown> = {
+        ...currentCustomClaims,
+        orgId: orgId,
+        type: type,
+        userType: type,
+        role: orgRole,
+        organizationType: organizationType,
+    };
+
+    // Clean undefined
+    const sanitizedClaims = Object.fromEntries(
+        Object.entries(newClaims).filter(([, v]) => v !== undefined && v !== null)
+    );
+
     // Database Writes
     const batch = db.batch();
     const now = new Date().toISOString();
@@ -75,6 +93,8 @@ export async function createOrganizationUserEntity(uid: string, payload: Record<
     batch.set(userRef, {
         isActive: true,
         type: type,
+        userType: type,
+        claims: sanitizedClaims,
         updatedAt: FieldValue.serverTimestamp()
     }, { merge: true });
 
@@ -84,6 +104,7 @@ export async function createOrganizationUserEntity(uid: string, payload: Record<
         id: targetUserId,
         orgId: orgId,
         type: type,
+        userType: type,
         isActive: true,
         roleId: orgRole,
         organizationType: organizationType,
@@ -94,23 +115,6 @@ export async function createOrganizationUserEntity(uid: string, payload: Record<
     }, { merge: true });
 
     await batch.commit();
-
-    // 3. Update Custom Claims
-    const userRec = await admin.auth().getUser(targetUserId);
-    const currentCustomClaims = userRec.customClaims || {};
-
-    const newClaims: Record<string, unknown> = {
-        ...currentCustomClaims,
-        orgId: orgId,
-        type: type,
-        role: orgRole,
-        organizationType: organizationType,
-    };
-
-    // Clean undefined
-    const sanitizedClaims = Object.fromEntries(
-        Object.entries(newClaims).filter(([, v]) => v !== undefined && v !== null)
-    );
 
     await admin.auth().setCustomUserClaims(targetUserId, sanitizedClaims);
 
@@ -138,6 +142,29 @@ export async function updateOrganizationUserEntity(uid: string, id: string, payl
         isActive = payload.isActive === true || payload.isActive === "true";
     }
 
+    let newClaims: Record<string, unknown> | undefined = undefined;
+
+    // 3. Optional Claim Cleanup for Suspension or Role Upgrade
+    if (isActive === false) {
+        const userRec = await admin.auth().getUser(id);
+        const currentCustomClaims = userRec.customClaims || {};
+        newClaims = { ...currentCustomClaims };
+        // We revoke the operational orgId mapping, keeping the base account alive
+        delete newClaims.orgId;
+        delete newClaims.type;
+        delete newClaims.userType;
+        delete newClaims.organizationType;
+    } else if (payload.type) {
+        // Upgrade role if changed
+        const userRec = await admin.auth().getUser(id);
+        const currentCustomClaims = userRec.customClaims || {};
+        newClaims = {
+            ...currentCustomClaims,
+            type: payload.type,
+            userType: payload.type
+        };
+    }
+
     // 1. Update Subcollection
     const orgUserRef = db.collection("organizations").doc(orgId).collection("users").doc(id);
     const subUpdateParams: Record<string, unknown> = {
@@ -145,7 +172,10 @@ export async function updateOrganizationUserEntity(uid: string, id: string, payl
         updatedBy: uid
     };
     if (isActive !== undefined) subUpdateParams.isActive = isActive;
-    if (payload.type) subUpdateParams.type = payload.type;
+    if (payload.type) {
+        subUpdateParams.type = payload.type;
+        subUpdateParams.userType = payload.type;
+    }
     batch.update(orgUserRef, subUpdateParams);
 
     // 2. Update Global User Document
@@ -154,29 +184,19 @@ export async function updateOrganizationUserEntity(uid: string, id: string, payl
         updatedAt: FieldValue.serverTimestamp()
     };
     if (isActive !== undefined) userUpdateParams.isActive = isActive;
-    if (payload.type) userUpdateParams.type = payload.type;
+    if (payload.type) {
+        userUpdateParams.type = payload.type;
+        userUpdateParams.userType = payload.type;
+    }
+    if (newClaims) {
+        userUpdateParams.claims = newClaims;
+    }
     batch.set(userRef, userUpdateParams, { merge: true });
 
     await batch.commit();
 
-    // 3. Optional Claim Cleanup for Suspension
-    if (isActive === false) {
-        const userRec = await admin.auth().getUser(id);
-        const currentCustomClaims = userRec.customClaims || {};
-        const newClaims = { ...currentCustomClaims };
-        // We revoke the operational orgId mapping, keeping the base account alive
-        delete newClaims.orgId;
-        delete newClaims.type;
-        delete newClaims.organizationType;
+    if (newClaims) {
         await admin.auth().setCustomUserClaims(id, newClaims);
-    } else if (payload.type) {
-        // Upgrade role if changed
-        const userRec = await admin.auth().getUser(id);
-        const currentCustomClaims = userRec.customClaims || {};
-        await admin.auth().setCustomUserClaims(id, {
-            ...currentCustomClaims,
-            type: payload.type
-        });
     }
 
     return {
