@@ -142,7 +142,7 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         await admin.auth().setCustomUserClaims(uid, sanitizedClaims);
 
         // Generate Custom Token to synchronize client Edge cookies instantly
-        const customToken = await admin.auth().createCustomToken(uid);
+        const customToken = await admin.auth().createCustomToken(uid, sanitizedClaims);
 
         return {
             status: "success",
