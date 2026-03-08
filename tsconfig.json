@@ -45,6 +45,8 @@
     "scripts",
     "scripts/**/*",
     "seed",
-    "seed/**/*"
+    "seed/**/*",
+    "exports",
+    "exports/**/*"
   ]
 }

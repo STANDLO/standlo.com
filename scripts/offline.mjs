@@ -28,6 +28,12 @@ console.log('\n🚀 Starting Offline Environment...');
 console.log('📂 Logs will be written to the ./logs/ directory.');
 
 console.log('\n🔧 Starting Firebase Emulators...');
+
+console.log('🔧 Patching Firebase emulator manual export destination to ./exports...');
+try {
+    execSync('node scripts/patchFirebaseEmulator.mjs', { cwd: process.cwd(), stdio: 'inherit' });
+} catch (e) { }
+
 const emu = spawn('npm', ['run', 'emulator'], { cwd: process.cwd() });
 emu.stdout.pipe(emuOut);
 emu.stderr.pipe(emuOut);

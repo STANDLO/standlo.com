@@ -51,3 +51,4 @@ admin/scripts/
 /functions/lib/
 *.log
 /logs/
+/exports/
