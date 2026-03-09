@@ -89,13 +89,72 @@
   --ring: 220 100% 45%;
 }
 
+/* Color Themes */
+.theme-green {
+  --primary: 110 100% 50%;
+  --primary-foreground: 220 10% 4%;
+  --secondary: 311 100% 50%;
+  --secondary-foreground: 0 0% 100%;
+  --ring: 110 100% 50%;
+}
+
+.theme-blue {
+  --primary: 240 100% 56%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 60 100% 50%;
+  --secondary-foreground: 220 10% 4%;
+  --ring: 240 100% 56%;
+}
+
+.theme-yellow {
+  --primary: 60 100% 50%;
+  --primary-foreground: 220 10% 4%;
+  --secondary: 240 100% 56%;
+  --secondary-foreground: 0 0% 100%;
+  --ring: 60 100% 50%;
+}
+
+.theme-fucsia {
+  --primary: 311 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 110 100% 50%;
+  --secondary-foreground: 220 10% 4%;
+  --ring: 311 100% 50%;
+}
+
+.theme-violet {
+  --primary: 283 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 60 100% 50%;
+  --secondary-foreground: 220 10% 4%;
+  --ring: 283 100% 50%;
+}
+
+.theme-red {
+  --primary: 3 84% 56%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 60 100% 50%;
+  --secondary-foreground: 220 10% 4%;
+  --ring: 3 84% 56%;
+}
+
+.theme-orange {
+  --primary: 29 100% 50%;
+  --primary-foreground: 220 10% 4%;
+  --secondary: 240 100% 56%;
+  --secondary-foreground: 0 0% 100%;
+  --ring: 29 100% 50%;
+}
+
 @layer base {
   * {
     @apply border-border;
+    transition: border-color 0.3s ease;
   }
 
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
@@ -206,9 +265,15 @@
     @apply hidden dark:block object-contain;
   }
 
+  .card-post-it>.ui-card-header {
+    background-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
   /* Layout Specific Semantic Classes */
   .layout-header-main {
-    @apply sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60;
+    @apply sticky top-0 z-50 w-full bg-transparent border-transparent;
   }
 
   .layout-header-brand-group {
@@ -261,6 +326,8 @@
 
   .layout-public-root {
     @apply relative flex min-h-screen flex-col;
+    background-image: radial-gradient(hsl(var(--muted-foreground)/0.2) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
   .layout-auth-wrapper {

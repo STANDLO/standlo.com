@@ -1,16 +1,31 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-const Card = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-    <div
-        ref={ref}
-        className={cn("ui-card", className)}
-        {...props}
-    />
-))
+export type CardColor = "default" | "green" | "blue" | "yellow" | "fucsia" | "violet" | "red" | "orange";
+
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+    color?: CardColor;
+}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+    ({ className, color = "default", ...props }, ref) => {
+        const isPostIt = color !== "default";
+
+        return (
+            <div
+                ref={ref}
+                className={cn(
+                    "ui-card",
+                    isPostIt
+                        ? `card-post-it theme-${color} bg-primary text-primary-foreground rounded-br-[10%_30%] rounded-bl-[2px] shadow-md border-none relative overflow-hidden transition-transform hover:-translate-y-0.5`
+                        : "",
+                    className
+                )}
+                {...props}
+            />
+        )
+    }
+)
 Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<

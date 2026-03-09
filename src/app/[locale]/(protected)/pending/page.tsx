@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Clock, LogOut, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { auth } from "@/core/firebase";
 
 export default function PendingPage() {
     const t = useTranslations("Common");
@@ -14,8 +15,25 @@ export default function PendingPage() {
         console.log("👉 [DEBUG] Generazione nuovo Session Token in corso...");
 
         try {
-            const res = await fetch('/api/auth/refresh', {
-                method: 'POST',
+            if (typeof auth.authStateReady === "function") {
+                await auth.authStateReady();
+            }
+
+            if (!auth.currentUser) {
+                console.warn("Nessun utente autenticato sul client.");
+                setIsRefreshing(false);
+                return;
+            }
+
+            // 1. Forza Firebase a recuperare un NUOVO idToken dai server di Google (conterrà i nuovi Claims)
+            const idToken = await auth.currentUser.getIdToken(true);
+
+            // 2. Passiamo il nuovo token immacolato al nostro endpoint di /api/auth/login che creerà la sessione
+            const res = await fetch('/api/auth/login', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${idToken}`
+                }
             });
 
             if (res.ok) {

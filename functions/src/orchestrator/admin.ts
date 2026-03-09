@@ -16,7 +16,7 @@ export async function activateUser(callerUid: string, payload: Record<string, un
     try {
         // 1. Verify caller has the "admin" role
         const callerRecord = await admin.auth().getUser(callerUid);
-        if (callerRecord.customClaims?.roleId !== "admin") {
+        if (callerRecord.customClaims?.role !== "admin" && callerRecord.customClaims?.roleId !== "admin") {
             console.warn(`[Security] Unauthorized user ${callerUid} attempted to activate ${targetUserId}`);
             throw new HttpsError("permission-denied", "Only administrators can activate users.");
         }
@@ -35,6 +35,7 @@ export async function activateUser(callerUid: string, payload: Record<string, un
         const userRef = db.collection("users").doc(targetUserId);
         await userRef.update({
             active: true,
+            "claims.active": true,
             updatedAt: FieldValue.serverTimestamp(),
             updatedBy: callerUid
         });
@@ -73,7 +74,7 @@ export async function activateUser(callerUid: string, payload: Record<string, un
 export async function getAdminKpis(callerUid: string) {
     try {
         const callerRecord = await admin.auth().getUser(callerUid);
-        if (callerRecord.customClaims?.roleId !== "admin") {
+        if (callerRecord.customClaims?.role !== "admin" && callerRecord.customClaims?.roleId !== "admin") {
             throw new HttpsError("permission-denied", "Only administrators can view KPIs.");
         }
 

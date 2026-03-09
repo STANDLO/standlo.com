@@ -32,14 +32,28 @@ async function createAdmin() {
             }
         }
 
-        await admin.auth().setCustomUserClaims(user.uid, {
-            roleId: "admin",
+        const claims = {
+            role: "admin", // use role instead of roleId for the v2 schema
             orgId: "system",
-            onboarding: "completed"
-        });
+            onboarding: true,
+            active: true
+        };
+
+        await admin.auth().setCustomUserClaims(user.uid, claims);
+
+        const db = admin.firestore();
+        await db.collection('users').doc(user.uid).set({
+            email: user.email,
+            displayName: user.displayName || "Admin",
+            active: true,
+            claims: claims,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
 
         console.log(`Successfully configured admin account: ${email}`);
         console.log(`Default Password: ${password}`);
+        console.log(`Firestore document users/${user.uid} generated.`);
 
     } catch (error) {
         console.error("Error creating admin account:", error);

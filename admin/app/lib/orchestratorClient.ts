@@ -1,11 +1,15 @@
 import { auth } from "@/core/firebase";
 
 export interface OrchestratorRequest {
-    entityId: string;
+    entityId?: string;
     actionId: "list" | "read" | "get_assembly_details" | "get_bundle_details" | "get_stand_details" | "create_entity" | "update_entity" | "delete_entity" | "onboard_organization" | "activate_user" | "get_admin_kpis" | string;
     payload?: Record<string, unknown>;
     roleId?: string;
     orgId?: string;
+    limit?: number;
+    cursor?: string | null;
+    filters?: Record<string, unknown>[];
+    [key: string]: unknown;
 }
 
 export interface OrchestratorResponse<T = unknown> {
@@ -19,7 +23,7 @@ export class OrchestratorClient {
     /**
      * Executes a call to the Orchestrator gateway.
      */
-    static async call<T = unknown>(request: OrchestratorRequest): Promise<OrchestratorResponse<T>> {
+    static async call<T = unknown>(request: OrchestratorRequest, targetQuery: string = "orchestrator"): Promise<OrchestratorResponse<T>> {
         if (typeof auth.authStateReady === "function") {
             await auth.authStateReady();
         }
@@ -41,6 +45,15 @@ export class OrchestratorClient {
 
         if (idToken) {
             headers["Authorization"] = `Bearer ${idToken}`;
+            try {
+                const parts = idToken.split(".");
+                if (parts.length > 1) {
+                    const headerStr = typeof window !== 'undefined' ? atob(parts[0]) : Buffer.from(parts[0], 'base64').toString();
+                    console.log(`[DEBUG OrchestratorClient -> ${targetQuery}] Raw JWT Header going out:`, headerStr);
+                }
+            } catch (e) {
+                console.warn("[DEBUG OrchestratorClient] Could not decode JWT header:", e);
+            }
         }
 
         // Apply default superadmin role if not provided for PDM operations
@@ -50,7 +63,7 @@ export class OrchestratorClient {
             orgId: request.orgId || "standlo", // Hardcoded standard org for now
         };
 
-        const response = await fetch("/admin/api/gateway?target=orchestrator", {
+        const response = await fetch(`/admin/api/gateway?target=${targetQuery}`, {
             method: "POST",
             headers,
             body: JSON.stringify(bodyPayload)

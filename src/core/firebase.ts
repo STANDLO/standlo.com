@@ -59,21 +59,35 @@ import { connectAuthEmulator } from "firebase/auth";
 import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 import { connectStorageEmulator } from "firebase/storage";
 
+const db = getFirestore(app, "standlo");
+
 if (typeof window !== "undefined") {
-    // Check if we are running the local emulator (usually via project id or an explicit env var)
-    const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID === "demo-standlo";
+    // Check if we are running the local emulator (usually via project id or an explicit env var) for PUBLIC apps
+    const useEmulatorEnv = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID === "demo-standlo";
 
-    // Check for emulator cookie AND verify we are in the Admin app via ENV flag (Legacy behavior)
-    const legacyAdminEmulator = process.env.NEXT_PUBLIC_IS_ADMIN_APP === "true" && document.cookie.includes("firebase_env=emulator");
+    // Check for emulator cookie robustly avoiding cross-path duplicate conflicts
+    let isEmulatorCookie = false;
+    if (typeof document !== "undefined") {
+        const match = document.cookie.match(/(^|;\s*)firebase_env=([^;]+)/);
+        if (match && match[2] === "emulator") isEmulatorCookie = true;
+    }
 
-    if (useEmulator || legacyAdminEmulator) {
+    const isAdminApp = process.env.NEXT_PUBLIC_IS_ADMIN_APP === "true";
+
+    // DECISION LOGIC: 
+    // If it's the Admin app, the COOKIE is the absolute source of truth. Ignore env vars.
+    // If it's a public app (no cookie logic), fallback to the ENV var.
+    const shouldConnectEmulator = isAdminApp ? isEmulatorCookie : useEmulatorEnv;
+
+    if (shouldConnectEmulator) {
         console.warn("⚠️ Firebase Emulators: Connecting to local emulators");
         connectFunctionsEmulator(functions, "127.0.0.1", 5001);
         connectAuthEmulator(auth, "http://127.0.0.1:9099");
         // Connettiamo Firestore esplicitamente al database "standlo"
-        connectFirestoreEmulator(getFirestore(app, "standlo"), "127.0.0.1", 8080);
+        connectFirestoreEmulator(db, "127.0.0.1", 8080);
         connectStorageEmulator(storage, "127.0.0.1", 9199);
     }
 }
 
-export { app, auth, appCheck, storage, functions, analytics };
+export { app, auth, appCheck, storage, functions, analytics, db };
+

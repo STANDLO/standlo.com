@@ -5,8 +5,7 @@ import { Plus, FileCode, AlertTriangle, Database } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { httpsCallable } from "firebase/functions";
-import { functions } from "@/core/firebase";
+import { OrchestratorClient } from "./lib/orchestratorClient";
 
 interface RegistryEntity {
   id: string;
@@ -36,12 +35,13 @@ export default function Home() {
       });
 
     // 2. Load KPIs
-    const orchestrator = httpsCallable(functions, "orchestrator");
-    orchestrator({ actionId: "get_admin_kpis" })
+    OrchestratorClient.call<{ totalUsers: number; pendingUsers: number; recentAlerts: number; }>({
+      actionId: "get_admin_kpis",
+      entityId: "system"
+    })
       .then(result => {
-        const payload = result.data as { status?: string; data?: { totalUsers: number; pendingUsers: number; recentAlerts: number; } };
-        if (payload?.status === "success" && payload.data) {
-          setKpis(payload.data);
+        if (result.status === "success" && result.data) {
+          setKpis(result.data);
         }
       })
       .catch(err => console.error("Failed to load admin KPIs:", err))

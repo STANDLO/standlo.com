@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { LayoutProtected } from "@/components/layout/LayoutProtected";
+import { ToolsOverlay } from "@/components/layout/ToolsOverlay";
 import { getTranslations } from "next-intl/server";
 import { getTokens } from "next-firebase-auth-edge";
 import { cookies } from "next/headers";
@@ -25,7 +25,7 @@ export default async function ProtectedRootLayout({ children, params }: { childr
     const organizationName = (claims.orgName as string) || "Ospite";
 
     // Dynamic Navigation based on Role
-    let navItems: React.ComponentProps<typeof LayoutProtected>['navItems'] = [];
+    let navItems: Array<{ label: string; href: string; icon: string; matchPattern?: string }> = [];
     let roleContextLabel = "Ospite";
 
     if (role === "customer") {
@@ -78,13 +78,15 @@ export default async function ProtectedRootLayout({ children, params }: { childr
     }
 
     return (
-        <LayoutProtected
-            navItems={navItems}
-            roleContext={roleContextLabel}
-            userName={userName}
-            organizationName={organizationName}
-        >
+        <>
+            <ToolsOverlay
+                variant="protected"
+                navItems={navItems}
+                roleContext={roleContextLabel}
+                userName={userName}
+                organizationName={organizationName}
+            />
             {children}
-        </LayoutProtected>
+        </>
     );
 }

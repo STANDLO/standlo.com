@@ -4,8 +4,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { extractZodKeys } from "@/core/extractZodKeys";
-import { functions } from "@/core/firebase";
-import { httpsCallable } from "firebase/functions";
+import { OrchestratorClient } from "../../lib/orchestratorClient";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ErrorGuard } from "@/components/ui/ErrorGuard";
@@ -51,8 +50,7 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
         setIsLoading(true);
         setError(null);
         try {
-            const firestoreGateway = httpsCallable(functions, "firestoreGateway");
-            const response = await firestoreGateway({
+            const response = await OrchestratorClient.call({
                 orgId,
                 roleId,
                 entityId,
@@ -60,7 +58,7 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
                 filters,
                 limit: 20,
                 cursor: reset ? null : cursor
-            });
+            }, "firestoreGateway");
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const resultData = (response.data as any).data as Record<string, unknown>[];

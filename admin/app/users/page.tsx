@@ -1,28 +1,45 @@
-import { db } from "@/lib/firebaseAdmin";
-import { UserCheck } from "lucide-react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { UserCheck, Loader2 } from "lucide-react";
 import { UsersTable } from "./UsersTable";
+import { OrchestratorClient } from "../lib/orchestratorClient";
 
-export const dynamic = "force-dynamic";
+export default function UsersActivationPage() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [pendingUsers, setPendingUsers] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-export default async function UsersActivationPage() {
-    // Fetch users directly via Firebase Admin on the server
-    const snapshot = await db.collection("users")
-        .where("active", "==", false)
-        .orderBy("createdAt", "desc")
-        .limit(100)
-        .get();
+    useEffect(() => {
+        async function fetchUsers() {
+            try {
+                // Read from Orchestrator Gateway (Backend Admin SDK) to bypass Firestore Rules
+                // but use our Client's environment context (Emulator vs Prod cookie)
+                const rawUsers = await OrchestratorClient.list("user", {
+                    filters: [{ field: "active", op: "==", value: false }],
+                    orderBy: [{ field: "createdAt", direction: "desc" }],
+                    limit: 100,
+                    ignoreSystemFilters: true
+                });
 
-    const pendingUsers = snapshot.docs.map(doc => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data = doc.data() as any;
-        return {
-            id: doc.id,
-            ...data,
-            // Serialize timestamps for Client Component
-            createdAt: data.createdAt?.toDate()?.toISOString() || null,
-            updatedAt: data.updatedAt?.toDate()?.toISOString() || null,
-        };
-    });
+                // Orchestrator already handles id injection
+                // Normalize Dates returned via REST (Admin SDK Firestore Timestamps -> ISO String)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const users = rawUsers.map((u: any) => ({
+                    ...u,
+                    createdAt: u.createdAt?._seconds ? new Date(u.createdAt._seconds * 1000).toISOString() : u.createdAt,
+                    updatedAt: u.updatedAt?._seconds ? new Date(u.updatedAt._seconds * 1000).toISOString() : u.updatedAt,
+                }));
+
+                setPendingUsers(users);
+            } catch (error) {
+                console.error("Failed to fetch pending users", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchUsers();
+    }, []);
 
     return (
         <div className="p-8 h-full flex flex-col space-y-6">
@@ -36,7 +53,13 @@ export default async function UsersActivationPage() {
                 </p>
             </header>
 
-            <UsersTable initialUsers={pendingUsers} />
+            {loading ? (
+                <div className="flex-1 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+            ) : (
+                <UsersTable initialUsers={pendingUsers} />
+            )}
         </div>
     );
 }

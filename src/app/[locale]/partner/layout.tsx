@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { LayoutProtected } from "@/components/layout/LayoutProtected";
+import { ToolsOverlay } from "@/components/layout/ToolsOverlay";
+import { NavItem } from "@/components/layout/tools/ToolsNavigator";
 import { getTranslations } from "next-intl/server";
 import { getTokens } from "next-firebase-auth-edge";
 import { cookies } from "next/headers";
@@ -46,7 +47,7 @@ export default async function ProtectedRootLayout({ children, params }: { childr
     }
 
     // Map Backend SDUI Navigation payload to Frontend NavItems, applying Translations
-    const navItems: React.ComponentProps<typeof LayoutProtected>['navItems'] = rawNavigation.map(item => ({
+    const navItems: NavItem[] = rawNavigation.map(item => ({
         label: t(item.labelKey) || item.labelKey, // Translate or fallback
         href: item.path,
         icon: item.icon as string,
@@ -68,13 +69,15 @@ export default async function ProtectedRootLayout({ children, params }: { childr
     }
 
     return (
-        <LayoutProtected
-            navItems={navItems}
-            roleContext={roleContextLabel}
-            userName={userName}
-            organizationName={organizationName}
-        >
+        <>
+            <ToolsOverlay
+                variant="protected"
+                navItems={navItems}
+                roleContext={roleContextLabel}
+                userName={userName}
+                organizationName={organizationName}
+            />
             {children}
-        </LayoutProtected>
+        </>
     );
 }

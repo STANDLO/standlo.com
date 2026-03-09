@@ -4,7 +4,7 @@ import { authConfig } from "@/core/auth-edge";
 import { cookies } from "next/headers";
 import "@/core/db"; // Assicura che l'app firebase-admin [DEFAULT] sia inizializzata con le credenziali del Service Account
 import { getAuth } from "firebase-admin/auth";
-import { refreshNextResponseCookiesWithToken } from "next-firebase-auth-edge/lib/next/cookies";
+import { appendAuthCookies } from "next-firebase-auth-edge/lib/next/cookies";
 
 export async function POST(request: NextRequest) {
     try {
@@ -57,16 +57,19 @@ export async function POST(request: NextRequest) {
 
         const newIdToken = data.idToken;
 
-        const newRequest = new NextRequest(request.url, {
-            headers: new Headers(request.headers)
-        });
+        // 3. Salviamo direttamente i nuovi token freschi nei Cookie tramite appendAuthCookies
+        // Questo evita che `next-firebase-auth-edge` tenti un ulteriore fetch interno non autorizzato 
+        // in quanto mancante del contesto AppCheck.
+        const newResponse = NextResponse.json({ success: true });
 
-        // 3. Forziamo next-firebase-auth-edge ad aggiornare i cookies della risposta (sia session che refresh)
-        // usando refreshNextResponseCookiesWithToken e passando i token freschi appena generati.
-        const mergedResponse = await refreshNextResponseCookiesWithToken(newIdToken, newRequest, NextResponse.json({ success: true }), authConfig);
+        await appendAuthCookies(request.headers, newResponse, {
+            idToken: newIdToken,
+            refreshToken: data.refreshToken,
+            metadata: tokens.metadata,
+        }, authConfig);
 
         console.log("👉 [DEBUG API] Claims rinfrescate e Cookie aggiornati con successo per", uid);
-        return mergedResponse as NextResponse;
+        return newResponse;
 
     } catch (e: unknown) {
         console.error("Refresh API Error:", e);

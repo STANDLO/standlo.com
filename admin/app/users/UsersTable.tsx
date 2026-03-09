@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Loader2 } from "lucide-react";
-import { httpsCallable } from "firebase/functions";
-import { functions } from "@/core/firebase";
+import { OrchestratorClient } from "../lib/orchestratorClient";
 import { useRouter } from "next/navigation";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,8 +15,8 @@ export function UsersTable({ initialUsers }: { initialUsers: any[] }) {
         if (!confirm("Sei sicuro di voler attivare questo utente?")) return;
         setActivating(userId);
         try {
-            const orchestrator = httpsCallable(functions, "orchestrator");
-            await orchestrator({
+            await OrchestratorClient.call({
+                entityId: "user",
                 actionId: "activate_user",
                 payload: { userId }
             });

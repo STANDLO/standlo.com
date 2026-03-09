@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
     Database,
     Table,
@@ -21,25 +21,6 @@ import clsx from "clsx";
 
 export function Sidebar() {
     const pathname = usePathname();
-    const [env, setEnv] = useState<"production" | "emulator">("production");
-
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            if (document.cookie.includes("firebase_env=emulator")) {
-                setEnv("emulator");
-            } else {
-                setEnv("production");
-            }
-        }, 0);
-        return () => clearTimeout(timeoutId);
-    }, []);
-
-    const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newEnv = e.target.value as "production" | "emulator";
-        document.cookie = `firebase_env=${newEnv}; path=/; max-age=31536000`; // 1 year expiry
-        setEnv(newEnv);
-        window.location.reload();
-    };
 
     const navGroups = [
         {
@@ -120,18 +101,6 @@ export function Sidebar() {
                     <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-bold dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800">
                         GOD
                     </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <label className="text-[11px] font-semibold text-[#8792a2] dark:text-zinc-500 uppercase tracking-widest w-12">ENV</label>
-                    <select
-                        value={env}
-                        onChange={handleEnvChange}
-                        className="flex-1 bg-white dark:bg-zinc-900 border border-[#e3e8ee] dark:border-zinc-700 rounded text-xs px-2 py-1 text-[#1a1f36] dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#635BFF]"
-                    >
-                        <option value="production">Production</option>
-                        <option value="emulator">Local Emulator</option>
-                    </select>
                 </div>
             </div>
 

@@ -10,7 +10,49 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [env, setEnv] = useState<"production" | "emulator">("production");
 
+    // Initialize environment from cookie
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (document.cookie.includes("firebase_env=emulator")) {
+                setEnv("emulator");
+            } else {
+                setEnv("production");
+            }
+        }, 0);
+        return () => clearTimeout(timeoutId);
+    }, []);
+
+    const handleEnvChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newEnv = e.target.value as "production" | "emulator";
+
+        // AGGRESSIVE CLEARING of potential stray duplicate cookies from previous logic
+        document.cookie = 'firebase_env=; Max-Age=0;';
+        document.cookie = 'firebase_env=; Max-Age=0; path=/;';
+        document.cookie = `firebase_env=; Max-Age=0; path=/; domain=${window.location.hostname};`;
+
+        // Save new choice cleanly
+        document.cookie = `firebase_env=${newEnv}; path=/; max-age=31536000`; // 1 year expiry
+
+        try {
+            // FORCE sign out when switching environments so that cached emulator tokens
+            // in IndexedDB aren't mistakenly used in Production, and vice-versa.
+            await signOut(auth);
+
+            // Also explicitly delete the server-side next-firebase-auth-edge cookies
+            document.cookie = 'AuthToken=; Max-Age=0; path=/;';
+            document.cookie = 'AuthToken.sig=; Max-Age=0; path=/;';
+        } catch (error) {
+            console.error("Error signing out during Env switch:", error);
+        }
+
+        // Force an immediate reload so `src/core/firebase.ts` runs again 
+        // with the new cookie before the user logs in.
+        window.location.reload();
+    };
+
+    // Firebase Auth State Listener
     useEffect(() => {
         let isMounted = true;
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -83,6 +125,21 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
 
                     <form onSubmit={handleLogin} className="space-y-5">
                         <div className="space-y-3">
+                            {/* Environment Selector before Login */}
+                            <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-border">
+                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest min-w-[60px]">
+                                    ENV
+                                </label>
+                                <select
+                                    value={env}
+                                    onChange={handleEnvChange}
+                                    className="flex-1 bg-white dark:bg-zinc-950 border border-border rounded text-sm px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/50 cursor-pointer"
+                                >
+                                    <option value="production">Production Cloud</option>
+                                    <option value="emulator">Local Emulator (127.0.0.1)</option>
+                                </select>
+                            </div>
+
                             <input
                                 type="email"
                                 className="w-full px-4 py-3 rounded-lg border bg-background focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"

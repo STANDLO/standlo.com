@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import { useTranslations } from "next-intl"
 import { Link } from "@/i18n/routing"
@@ -9,8 +11,11 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
+    CardColor,
 } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
+import { useBrandColor } from "@/hooks/useBrandColor"
+
 
 interface CardAuthProps {
     title: string
@@ -37,9 +42,11 @@ export function CardAuth({
 }: CardAuthProps) {
     const tAuth = useTranslations("Auth")
     const tBrand = useTranslations("Brand")
+    const { color } = useBrandColor()
+    const activeColor = color === "default" ? "green" : color
 
     return (
-        <Card className="layout-auth-card">
+        <Card className="layout-auth-card" color={activeColor as CardColor}>
             <CardHeader className="layout-auth-card-header">
                 <Logo size="m" className="layout-auth-logo" />
                 <CardTitle>{title}</CardTitle>

@@ -1,6 +1,5 @@
 import * as React from "react"
-import { PublicHeader } from "@/components/layout/PublicHeader"
-import { PublicFooter } from "@/components/layout/PublicFooter"
+import { ToolsOverlay } from "@/components/layout/ToolsOverlay"
 
 export default function PublicLayout({
     children,
@@ -8,12 +7,12 @@ export default function PublicLayout({
     children: React.ReactNode
 }) {
     return (
-        <div className="layout-public-root">
-            <PublicHeader />
-            <main className="layout-main-body">
+        <>
+            <ToolsOverlay variant="public" />
+            <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto h-full items-center justify-center">
                 {children}
             </main>
-            <PublicFooter />
-        </div>
+        </>
     )
 }
+

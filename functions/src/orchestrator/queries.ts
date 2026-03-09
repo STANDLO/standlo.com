@@ -22,13 +22,17 @@ export async function listEntities(uid: string, entityId: string, orgId?: string
         });
     }
 
-    const hasDeletedFilter = filters?.find(f => f.field === 'deletedAt');
-    if (!hasDeletedFilter) {
-        query = query.where('deletedAt', '==', null);
-    }
-    const hasArchivedFilter = filters?.find(f => f.field === 'isArchived');
-    if (!hasArchivedFilter) {
-        query = query.where('isArchived', '==', false);
+    const ignoreSystemFilters = payload?.ignoreSystemFilters === true;
+
+    if (!ignoreSystemFilters) {
+        const hasDeletedFilter = filters?.find(f => f.field === 'deletedAt');
+        if (!hasDeletedFilter) {
+            query = query.where('deletedAt', '==', null);
+        }
+        const hasArchivedFilter = filters?.find(f => f.field === 'isArchived');
+        if (!hasArchivedFilter) {
+            query = query.where('isArchived', '==', false);
+        }
     }
 
     const orderBy = payload?.orderBy as Array<{ field: string, direction: 'asc' | 'desc' }>;
