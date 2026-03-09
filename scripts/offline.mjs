@@ -58,7 +58,7 @@ emu.stdout.on('data', (data) => {
 
         console.log('🌱 Executing Main Seeding Script...');
         try {
-            execSync('node seed/index.mjs', { env, stdio: 'inherit' });
+            execSync('node scripts/seedLocalAdmin.mjs', { env, stdio: 'inherit' });
         } catch (seedErr) {
             console.error('⚠️ Failed to complete seeding, check emulator state.', seedErr.message);
         }
@@ -81,8 +81,13 @@ emu.stdout.on('data', (data) => {
     }
 });
 
+let isShuttingDown = false;
 process.on('SIGINT', () => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
     console.log('\n🛑 Shutting down offline environment... Saving emulator state (export-on-exit)...');
     emu.kill('SIGINT');
-    process.exit();
+    emu.on('close', () => {
+        process.exit();
+    });
 });

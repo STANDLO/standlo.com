@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
         // 3. Construct callable URL
         // If NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL is set (e.g. dev), use it. Else default to production URL.
         const url = new URL(req.url);
-        const targetQuery = url.searchParams.get("target") || "firestoreGateway";
+        const targetQuery = url.searchParams.get("target") || "orchestrator";
         const baseUrl = process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://europe-west4-standlo.cloudfunctions.net";
         const functionName = targetQuery;
 

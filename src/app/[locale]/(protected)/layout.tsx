@@ -36,6 +36,13 @@ export default async function ProtectedRootLayout({ children, params }: { childr
             { label: "Team", href: `/${locale}/customer/team`, icon: "UserPlus" },
             { label: "Impostazioni", href: `/${locale}/customer/settings`, icon: "Settings" }
         ];
+    } else if (role === "provider") {
+        roleContextLabel = t("roles.provider");
+        navItems = [
+            { label: "Dashboard", href: `/${locale}/partner/provider`, icon: "LayoutDashboard", matchPattern: `/${locale}/partner/provider` },
+            { label: "Progetti Assegnati", href: `/${locale}/partner/provider/projects`, icon: "Briefcase" },
+            { label: "Impostazioni", href: `/${locale}/partner/provider/settings`, icon: "Settings" }
+        ];
     } else if (role === "manager") {
         roleContextLabel = t("roles.manager");
         navItems = [
@@ -59,13 +66,14 @@ export default async function ProtectedRootLayout({ children, params }: { childr
 
     // Dynamic Navigation injection based on internal Organization Role (ADMIN)
     const userType = claims.type as string; // 'ADMIN', 'DESIGNER', etc.
+
     if (userType === "ADMIN" && role !== "pending") {
         // Group the staff management icon
         navItems.push({
-            label: "Staff & Permessi",
-            href: `/${locale}/users`,
-            icon: "ShieldAlert",
-            matchPattern: `/${locale}/users`
+            label: "Team",
+            href: `/users`,
+            icon: "Users",
+            matchPattern: `/users`
         });
     }
 

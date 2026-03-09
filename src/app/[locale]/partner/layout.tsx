@@ -53,6 +53,20 @@ export default async function ProtectedRootLayout({ children, params }: { childr
         matchPattern: item.matchPattern
     }));
 
+    // Dynamic Navigation injection based on internal Organization Role (ADMIN)
+    const userType = claims.type as string; // 'ADMIN', 'DESIGNER', etc.
+    const organizationType = claims.organizationType as string; // 'BUSINESS', 'EDUCATIONAL', 'PROFESSIONAL'
+
+    if (userType === "ADMIN" && role !== "pending" && organizationType === "BUSINESS") {
+        // Group the staff management icon
+        navItems.push({
+            label: "Team",
+            href: `/users`,
+            icon: "Users",
+            matchPattern: `/users`
+        });
+    }
+
     return (
         <LayoutProtected
             navItems={navItems}

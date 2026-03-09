@@ -52,7 +52,8 @@
     "Common": {
         "noResults": "No se encontraron resultados.",
         "loadMore": "Cargar Más",
-        "genericError": "Se produjo un problema al procesar su solicitud."
+        "genericError": "Se produjo un problema al procesar su solicitud.",
+        "logout": "Cerrar sesión"
     },
     "Auth": {
         "Register": {

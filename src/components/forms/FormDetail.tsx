@@ -8,8 +8,9 @@ import { useTranslations } from "next-intl";
 
 import { UIFieldMeta } from "@/core/schemas";
 import { extractZodKeys } from "@/core/extractZodKeys";
-import { functions } from "@/core/firebase";
+import { functions, auth } from "@/core/firebase";
 import { httpsCallable } from "firebase/functions";
+import { onAuthStateChanged } from "firebase/auth";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -49,6 +50,7 @@ export function FormDetail<T extends z.ZodSchema<any>>({
     const t = useTranslations("Common");
 
     const [isLoading, setIsLoading] = React.useState(true);
+    const [isAuthReady, setIsAuthReady] = React.useState(false);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [fetchError, setFetchError] = React.useState<any>(null);
 
@@ -67,12 +69,20 @@ export function FormDetail<T extends z.ZodSchema<any>>({
     });
 
     React.useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) setIsAuthReady(true);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    React.useEffect(() => {
         const loadEntity = async () => {
+            if (!isAuthReady) return;
             setIsLoading(true);
             setFetchError(null);
             try {
-                const firestoreGateway = httpsCallable(functions, "firestoreGateway");
-                const response = await firestoreGateway({
+                const gatewayFn = httpsCallable(functions, "orchestrator");
+                const response = await gatewayFn({
                     orgId,
                     roleId,
                     entityId,
@@ -92,7 +102,7 @@ export function FormDetail<T extends z.ZodSchema<any>>({
         };
 
         loadEntity();
-    }, [orgId, roleId, entityId, uid, reset]);
+    }, [orgId, roleId, entityId, uid, reset, isAuthReady]);
 
     useWarnIfUnsavedChanges(isDirty && !isSubmitting && !readOnlyMode && !isLoading);
 
@@ -100,9 +110,9 @@ export function FormDetail<T extends z.ZodSchema<any>>({
         setIsSubmitting(true);
         setGlobalError(null);
         try {
-            const firestoreGateway = httpsCallable(functions, "firestoreGateway");
+            const gatewayFn = httpsCallable(functions, "orchestrator");
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const response = await firestoreGateway({
+            const response = await gatewayFn({
                 orgId,
                 roleId,
                 entityId,

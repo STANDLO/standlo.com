@@ -40,7 +40,7 @@ export const beforeCreate = beforeUserCreated({ region: REGION }, async (event) 
         ...existingClaims,
         role: role,
         onboarding: false,
-        active: true,
+        active: false,
         privacy: true,
         terms: true,
         orgId: null,

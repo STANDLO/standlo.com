@@ -74,46 +74,50 @@ export const orchestrator = onCall({
         return runPipeline(request.auth.uid, payload.id as string, (payload.context as Record<string, unknown>) || {});
     }
     if (actionId === "create_entity") {
-        if (!payload || !payload.type) {
-            throw new HttpsError("invalid-argument", "Payload and payload.type are required to create entity.");
+        if (!payload) {
+            throw new HttpsError("invalid-argument", "Payload is required to create entity.");
         }
-        if (payload.type === "part") {
+        if (entityId === "part") {
             const { createPartEntity } = await import("../orchestrator/part");
             return createPartEntity(request.auth.uid, payload as Record<string, unknown>);
         }
-        if (payload.type === "assembly") {
+        if (entityId === "assembly") {
             const { createAssemblyEntity } = await import("../orchestrator/assembly");
             return createAssemblyEntity(request.auth.uid, payload as Record<string, unknown>);
         }
-        if (payload.type === "stand") {
+        if (entityId === "stand") {
             const { createStandEntity } = await import("../orchestrator/stand");
             return createStandEntity(request.auth.uid, payload as Record<string, unknown>);
         }
-        if (payload.type === "process") {
+        if (entityId === "process") {
             const { createProcessEntity } = await import("../orchestrator/process");
             return createProcessEntity(request.auth.uid, payload as Record<string, unknown>);
         }
-        if (payload.type === "tool") {
+        if (entityId === "tool") {
             const { createToolEntity } = await import("../orchestrator/tool");
             return createToolEntity(request.auth.uid, payload as Record<string, unknown>);
         }
-        if (payload.type === "mesh") {
+        if (entityId === "mesh") {
             const { createMeshEntity } = await import("../orchestrator/mesh");
             return createMeshEntity(request.auth.uid, payload as Record<string, unknown>);
         }
-        if (payload.type === "bundle") {
+        if (entityId === "bundle") {
             const { createBundleEntity } = await import("../orchestrator/bundle");
             return createBundleEntity(request.auth.uid, payload as Record<string, unknown>);
         }
-        if (payload.type === "pipeline") {
+        if (entityId === "pipeline") {
             const { createPipelineEntity } = await import("../orchestrator/pipeline");
             return createPipelineEntity(request.auth.uid, payload as Record<string, unknown>);
         }
-        if (payload.type === "ai_skill") {
+        if (entityId === "ai_skill") {
             const { createAISkillEntity } = await import("../orchestrator/aiSkill");
             return createAISkillEntity(request.auth.uid, payload as Record<string, unknown>);
         }
-        throw new HttpsError("invalid-argument", `Unsupported entity type: ${payload.type}`);
+        if (entityId === "organizationUser") {
+            const { createOrganizationUserEntity } = await import("../orchestrator/organizationUser");
+            return createOrganizationUserEntity(request.auth.uid, payload as Record<string, unknown>);
+        }
+        throw new HttpsError("invalid-argument", `Unsupported entity type: ${entityId}`);
     }
 
     if (actionId === "update_entity") {
@@ -160,6 +164,10 @@ export const orchestrator = onCall({
         if (entityId === "ai_skill") {
             const { updateAISkillEntity } = await import("../orchestrator/aiSkill");
             return updateAISkillEntity(request.auth.uid, docId, payload as Record<string, unknown>);
+        }
+        if (entityId === "organizationUser") {
+            const { updateOrganizationUserEntity } = await import("../orchestrator/organizationUser");
+            return updateOrganizationUserEntity(request.auth.uid, docId, payload as Record<string, unknown>);
         }
         throw new HttpsError("invalid-argument", `Unsupported entity for update: ${entityId}`);
     }
@@ -229,12 +237,16 @@ export const orchestrator = onCall({
             const { deleteAISkillEntity } = await import("../orchestrator/aiSkill");
             return deleteAISkillEntity(request.auth.uid, docId);
         }
+        if (entityId === "organizationUser") {
+            const { deleteOrganizationUserEntity } = await import("../orchestrator/organizationUser");
+            return deleteOrganizationUserEntity(request.auth.uid, docId, payloadRec);
+        }
         throw new HttpsError("invalid-argument", `Unsupported entity for delete: ${entityId}`);
     }
 
     if (actionId === "list") {
         const { listEntities } = await import("../orchestrator/queries");
-        return listEntities(request.auth.uid, entityId as string, payload as Record<string, unknown>);
+        return listEntities(request.auth.uid, entityId as string, orgId as string | undefined, payload as Record<string, unknown>);
     }
 
     if (actionId === "read") {
@@ -266,6 +278,19 @@ export const orchestrator = onCall({
         if (!payloadRec?.id) throw new HttpsError("invalid-argument", "Payload must contain document 'id'.");
         const { getStandDetailsEntity } = await import("../orchestrator/stand");
         return getStandDetailsEntity(request.auth.uid, payloadRec.id as string);
+    }
+
+    if (actionId === "execute_pipeline") {
+        const payloadRec = payload as Record<string, unknown> | undefined;
+        if (!payloadRec?.pipelineId) throw new HttpsError("invalid-argument", "Payload must contain 'pipelineId'.");
+
+        const { runPipeline } = await import("../orchestrator/pipeline");
+        return runPipeline(
+            request.auth.uid,
+            payloadRec.pipelineId as string,
+            (payloadRec.inputContext as Record<string, unknown>) || {},
+            payloadRec.isDryRun === true
+        );
     }
 
     if (actionId === "test_ai_skill") {

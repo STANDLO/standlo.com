@@ -5,7 +5,7 @@ import { randomBytes } from "crypto";
 
 export async function createOrganizationUserEntity(uid: string, payload: Record<string, unknown>) {
     const db = getFirestore(admin.app(), "standlo");
-    const { orgId, type, email, name, skipAuthCreation } = payload;
+    const { orgId, type, email, name, password, skipAuthCreation } = payload;
     let targetUserId = payload.userId as string;
 
     if (!orgId || typeof orgId !== "string") {
@@ -34,10 +34,10 @@ export async function createOrganizationUserEntity(uid: string, payload: Record<
                 }
 
                 // Safe Invitation Flow: Create new user with random password
-                const randomPassword = randomBytes(12).toString('base64');
+                const initPassword = (password as string) || randomBytes(12).toString('base64');
                 const newUser = await admin.auth().createUser({
                     email: email,
-                    password: randomPassword,
+                    password: initPassword,
                     displayName: (name as string) || email.split('@')[0],
                 });
                 targetUserId = newUser.uid;
@@ -65,6 +65,26 @@ export async function createOrganizationUserEntity(uid: string, payload: Record<
     const orgData = orgDoc.data() || {};
     const orgRole = orgData.roleId || "pending";
     const organizationType = orgData.type && Array.isArray(orgData.type) && orgData.type.length > 0 ? orgData.type[0] : null;
+    const orgName = orgData.name || null;
+    const logoUrl = orgData.logoUrl || null;
+    const countryCode = orgData.vatNumber && orgData.vatNumber.length >= 2
+        ? orgData.vatNumber.substring(0, 2).toUpperCase()
+        : null;
+
+    // Server-Side Team Limitations
+    if (organizationType === "EDUCATIONAL" || organizationType === "PROFESSIONAL") {
+        throw new HttpsError("failed-precondition", "Non è possibile aggiungere membri al team in questo piano.");
+    }
+
+    if (organizationType === "BUSINESS") {
+        const usersSnapshot = await db.collection("organizations").doc(orgId).collection("users")
+            .where("isArchived", "==", false)
+            .count().get();
+        const currentCount = usersSnapshot.data().count;
+        if (currentCount >= 10) {
+            throw new HttpsError("failed-precondition", "Limite massimo di 10 utenti raggiunto per questa organizzazione.");
+        }
+    }
 
     // 3. Update Custom Claims
     const userRec = await admin.auth().getUser(targetUserId);
@@ -77,7 +97,24 @@ export async function createOrganizationUserEntity(uid: string, payload: Record<
         userType: type,
         role: orgRole,
         organizationType: organizationType,
+        active: true, // Inject active claim
+        onboarding: true, // Prevent the onboarding loop for invited users
+        orgName: orgName,
+        logoUrl: logoUrl,
+        privacy: true,
+        terms: true,
+        locale: currentCustomClaims.locale || "en",
+        theme: currentCustomClaims.theme || "light",
     };
+
+    if (countryCode && orgData.place?.zipCode) {
+        newClaims.location = `${countryCode}-${orgData.place.zipCode}`;
+    }
+
+    if (orgRole) {
+        newClaims[`${orgRole}Id`] = orgId;
+        newClaims[`${orgRole}Name`] = orgName;
+    }
 
     // Clean undefined
     const sanitizedClaims = Object.fromEntries(
@@ -91,32 +128,57 @@ export async function createOrganizationUserEntity(uid: string, payload: Record<
     // 1. Update Global User Document
     const userRef = db.collection("users").doc(targetUserId);
     batch.set(userRef, {
-        isActive: true,
+        displayName: name,
+        email: email,
+        active: true, // Changed from isActive
         type: type,
         userType: type,
         claims: sanitizedClaims,
-        updatedAt: FieldValue.serverTimestamp()
+        updatedAt: FieldValue.serverTimestamp(),
+        deletedAt: null,
+        isArchived: false,
     }, { merge: true });
 
     // 2. Write Organization Subcollection User
     const orgUserRef = db.collection("organizations").doc(orgId).collection("users").doc(targetUserId);
     batch.set(orgUserRef, {
         id: targetUserId,
+        displayName: name,
+        email: email,
         orgId: orgId,
         type: type,
         userType: type,
-        isActive: true,
+        active: true, // Changed from isActive
         roleId: orgRole,
         organizationType: organizationType,
         createdAt: now,
         createdBy: uid,
         updatedAt: now,
-        updatedBy: uid
+        updatedBy: uid,
+        deletedAt: null,
+        isArchived: false,
     }, { merge: true });
 
     await batch.commit();
 
     await admin.auth().setCustomUserClaims(targetUserId, sanitizedClaims);
+
+    // Programmatically trigger the organization-user-create pipeline
+    try {
+        const { runPipeline } = await import("../orchestrator/pipeline");
+        await runPipeline(uid, "organization-user-create", {
+            userId: targetUserId,
+            orgId: orgId,
+            email: email,
+            name: name,
+            type: type,
+            roleId: orgRole
+        });
+        console.log(`[organizationUser] Successfully triggered pipeline 'organization-user-create' for ${email}`);
+    } catch (pipelineError) {
+        console.error(`[organizationUser] Failed to trigger 'organization-user-create' pipeline:`, pipelineError);
+        // We don't throw here to avoid failing the user creation if the pipeline fails
+    }
 
     return {
         status: "success",
@@ -137,15 +199,15 @@ export async function updateOrganizationUserEntity(uid: string, id: string, payl
     const batch = db.batch();
     const now = new Date().toISOString();
 
-    let isActive = undefined;
-    if (payload.isActive !== undefined) {
-        isActive = payload.isActive === true || payload.isActive === "true";
+    let active = undefined;
+    if (payload.active !== undefined) {
+        active = payload.active === true || payload.active === "true";
     }
 
     let newClaims: Record<string, unknown> | undefined = undefined;
 
     // 3. Optional Claim Cleanup for Suspension or Role Upgrade
-    if (isActive === false) {
+    if (active === false) {
         const userRec = await admin.auth().getUser(id);
         const currentCustomClaims = userRec.customClaims || {};
         newClaims = { ...currentCustomClaims };
@@ -171,7 +233,7 @@ export async function updateOrganizationUserEntity(uid: string, id: string, payl
         updatedAt: now,
         updatedBy: uid
     };
-    if (isActive !== undefined) subUpdateParams.isActive = isActive;
+    if (active !== undefined) subUpdateParams.active = active;
     if (payload.type) {
         subUpdateParams.type = payload.type;
         subUpdateParams.userType = payload.type;
@@ -183,7 +245,7 @@ export async function updateOrganizationUserEntity(uid: string, id: string, payl
     const userUpdateParams: Record<string, unknown> = {
         updatedAt: FieldValue.serverTimestamp()
     };
-    if (isActive !== undefined) userUpdateParams.isActive = isActive;
+    if (active !== undefined) userUpdateParams.active = active;
     if (payload.type) {
         userUpdateParams.type = payload.type;
         userUpdateParams.userType = payload.type;
@@ -202,6 +264,60 @@ export async function updateOrganizationUserEntity(uid: string, id: string, payl
     return {
         status: "success",
         message: "Organization user updated successfully.",
+        data: { id, orgId }
+    };
+}
+
+export async function deleteOrganizationUserEntity(uid: string, id: string, payload?: Record<string, unknown>) {
+    const db = getFirestore(admin.app(), "standlo");
+    const orgId = payload?.orgId as string;
+
+    if (!orgId) {
+        throw new HttpsError("invalid-argument", "orgId is required to delete an organization user.");
+    }
+
+    const batch = db.batch();
+    const now = new Date().toISOString();
+
+    // 1. Soft Delete in Subcollection
+    const orgUserRef = db.collection("organizations").doc(orgId).collection("users").doc(id);
+    batch.update(orgUserRef, {
+        isArchived: true,
+        deletedAt: now,
+        deletedBy: uid,
+        active: false,
+    });
+
+    // 2. Revoke custom claims for this org
+    const userRec = await admin.auth().getUser(id);
+    const currentCustomClaims = userRec.customClaims || {};
+    const newClaims = { ...currentCustomClaims };
+
+    if (newClaims.orgId === orgId) {
+        delete newClaims.orgId;
+        delete newClaims.type;
+        delete newClaims.userType;
+        delete newClaims.organizationType;
+    }
+
+    // 3. Update global user document
+    const userRef = db.collection("users").doc(id);
+    batch.set(userRef, {
+        updatedAt: FieldValue.serverTimestamp(),
+        claims: newClaims
+    }, { merge: true });
+
+    await batch.commit();
+
+    if (Object.keys(newClaims).length > 0) {
+        await admin.auth().setCustomUserClaims(id, newClaims);
+    } else {
+        await admin.auth().setCustomUserClaims(id, null);
+    }
+
+    return {
+        status: "success",
+        message: "Organization user deleted successfully.",
         data: { id, orgId }
     };
 }

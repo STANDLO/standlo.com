@@ -76,6 +76,16 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         const batch = db.batch();
         const orgRootId = uid;
 
+        // Estrapolazione Country Code dalla P.IVA (es. "IT123456789" -> "IT")
+        const countryCode = parsedData.vatNumber && parsedData.vatNumber.length >= 2
+            ? parsedData.vatNumber.substring(0, 2).toUpperCase()
+            : null;
+
+        let locationString: string | null = null;
+        if (countryCode && parsedData.place?.zipCode) {
+            locationString = `${countryCode}-${parsedData.place.zipCode}`;
+        }
+
         // Organization Document
         const orgRef = db.collection("organizations").doc(orgRootId);
         batch.set(orgRef, {
@@ -85,6 +95,7 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             createdBy: uid,
             updatedAt: FieldValue.serverTimestamp(),
             updatedBy: uid,
+            location: locationString,
         }, { merge: true });
 
         // Update User Document
@@ -98,11 +109,6 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             userUpdatePayload.birthday = birthdayValue;
         }
 
-        // Estrapolazione Country Code dalla P.IVA (es. "IT123456789" -> "IT")
-        const countryCode = parsedData.vatNumber && parsedData.vatNumber.length >= 2
-            ? parsedData.vatNumber.substring(0, 2).toUpperCase()
-            : null;
-
         const organizationType = parsedData.type && parsedData.type.length > 0 ? parsedData.type[0] : null;
 
         // 5. Upgrade Custom Claims via Admin SDK
@@ -113,15 +119,15 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             userType: "ADMIN",
             organizationType: organizationType,
             onboarding: true,
+            active: isActive,
             orgId: orgRootId,
             orgName: parsedData.name || null,
             logoUrl: parsedData.logoUrl || null,
         };
 
         // Note: countryCode is evaluated earlier in this method
-
-        if (countryCode && parsedData.place?.zipCode) {
-            newClaims.location = `${countryCode}-${parsedData.place.zipCode}`;
+        if (locationString) {
+            newClaims.location = locationString;
         }
 
         if (role) {

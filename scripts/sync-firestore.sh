@@ -22,18 +22,23 @@ rm -rf seed/firestore_export
 echo "⬇️ Downloading export to local machine..."
 gsutil -m cp -r "$BUCKET_NAME/$EXPORT_PREFIX" ./seed/
 
+echo "👤 Exporting Production Authentication users..."
+mkdir -p ./seed/auth_export
+firebase auth:export ./seed/auth_export/accounts.json --project=$PROJECT_ID --format=json
+
 echo "📝 Creating firebase-export-metadata.json for named database routing..."
 cat << EOF > ./seed/firebase-export-metadata.json
 {
   "version": "13.6.0",
-  "firestore": [
-    {
-      "version": "1.19.1",
-      "path": "firestore_export",
-      "metadata_file": "firestore_export/firestore_export.overall_export_metadata",
-      "database": "standlo"
-    }
-  ]
+  "firestore": {
+    "version": "1.19.1",
+    "path": "firestore_export",
+    "metadata_file": "firestore_export/firestore_export.overall_export_metadata",
+    "database": "standlo"
+  },
+  "auth": {
+    "path": "auth_export"
+  }
 }
 EOF
 
@@ -42,4 +47,4 @@ echo "🗑️ Cleaning up temporary Cloud Storage bucket..."
 gsutil -m rm -r "$BUCKET_NAME/$EXPORT_PREFIX"
 
 echo "✅ Sync Complete! You can now start the emulator with:"
-echo "👉 npm run emulators"
+echo "👉 npm run emulator"

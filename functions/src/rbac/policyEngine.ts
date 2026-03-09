@@ -156,7 +156,8 @@ export function generateNavigationManifest(roleId: RoleId): NavItemManifest[] {
                     icon: "LayoutDashboard",
                     matchPattern: `/partner/${roleId}/dashboard`,
                 },
-                { labelKey: "organization", path: `/partner/${roleId}/organization`, icon: "Building2" },
+                { labelKey: "projects", path: `/partner/${roleId}/projects`, icon: "Briefcase" },
+                { labelKey: "settings", path: `/partner/${roleId}/settings`, icon: "Settings" }
             ];
         // Placeholder for other technicians/builders
         case "electrician":

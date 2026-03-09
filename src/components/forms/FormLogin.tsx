@@ -34,7 +34,9 @@ export function FormLogin() {
     };
 
     const handleLoginSuccess = async (user: User) => {
-        const token = await user.getIdToken();
+        // Force refresh the token to ensure any custom claims assigned 
+        // immediately upon creation (e.g. orgId, role) are included in the session cookie.
+        const token = await user.getIdToken(true);
         const headers: Record<string, string> = {
             Authorization: `Bearer ${token}`
         };

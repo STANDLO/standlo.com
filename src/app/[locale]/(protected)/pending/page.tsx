@@ -1,0 +1,63 @@
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { Clock, LogOut, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+
+export default function PendingPage() {
+    const t = useTranslations("Common");
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        console.log("👉 [DEBUG] Generazione nuovo Session Token in corso...");
+
+        try {
+            const res = await fetch('/api/auth/refresh', {
+                method: 'POST',
+            });
+
+            if (res.ok) {
+                console.log("✅ Sessione Server rinfrescata con successo! Ricarico la pagina.");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 400); // 400ms delay to let console catch up
+            } else {
+                console.error("❌ Errore durante il refresh del Server. Status:", res.status);
+                setIsRefreshing(false);
+            }
+        } catch (error) {
+            console.error("Errore critico durante l'aggiornamento dello stato:", error);
+            setIsRefreshing(false);
+        }
+    };
+
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] p-6 text-center space-y-6">
+            <div className="rounded-full bg-primary/10 p-6 ring-8 ring-primary/5 animate-pulse-slow">
+                <Clock className="w-16 h-16 text-primary" strokeWidth={1.5} />
+            </div>
+
+            <div className="space-y-2 max-w-lg">
+                <h2 className="text-2xl font-semibold tracking-tight">Account in Attesa di Attivazione</h2>
+                <p className="text-muted-foreground">
+                    Il tuo profilo è in fase di revisione da parte del team di un amministratore.
+                    Una volta approvato, avrai accesso a tutte le funzionalità previste dal tuo ruolo.
+                    Puoi ricaricare la pagina di tanto in tanto per controllare se sei stato attivato.
+                </p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
+                <Button variant="outline" onClick={() => window.location.href = '/api/auth/logout'} className="space-x-2" disabled={isRefreshing}>
+                    <LogOut className="w-4 h-4" />
+                    <span>{t("logout", { fallback: "Crea Nuovo Account / Esci" })}</span>
+                </Button>
+                <Button variant="primary" onClick={handleRefresh} className="space-x-2" disabled={isRefreshing}>
+                    <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    <span>{isRefreshing ? 'Aggiornamento...' : 'Aggiorna Stato'}</span>
+                </Button>
+            </div>
+        </div>
+    );
+}

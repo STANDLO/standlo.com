@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin";
 import { HttpsError } from "firebase-functions/v2/https";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 /**
  * Activates a pending user.
@@ -35,7 +35,7 @@ export async function activateUser(callerUid: string, payload: Record<string, un
         const userRef = db.collection("users").doc(targetUserId);
         await userRef.update({
             active: true,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp(),
             updatedBy: callerUid
         });
 
@@ -48,7 +48,7 @@ export async function activateUser(callerUid: string, payload: Record<string, un
                 const orgRef = db.collection("organizations").doc(userData.orgId);
                 await orgRef.update({
                     active: true,
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: FieldValue.serverTimestamp(),
                     updatedBy: callerUid
                 });
             }

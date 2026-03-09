@@ -27,7 +27,8 @@
     "Common": {
         "noResults": "Nessun risultato trovato.",
         "loadMore": "Carica Altri",
-        "genericError": "C'è stato un problema nel processare la tua richiesta."
+        "genericError": "C'è stato un problema nel processare la tua richiesta.",
+        "logout": "Esci"
     },
     "Auth": {
         "Register": {

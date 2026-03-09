@@ -66,8 +66,8 @@ export function FormCreate<T extends z.ZodSchema<any>>({
         setIsSubmitting(true);
         setGlobalError(null);
         try {
-            const firestoreGateway = httpsCallable(functions, "firestoreGateway");
-            const response = await firestoreGateway({
+            const gatewayFn = httpsCallable(functions, "orchestrator");
+            const response = await gatewayFn({
                 orgId,
                 roleId,
                 entityId,

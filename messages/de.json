@@ -145,7 +145,8 @@
     "Common": {
         "noResults": "Keine Ergebnisse gefunden.",
         "loadMore": "Mehr laden",
-        "genericError": "Bei der Verarbeitung Ihrer Anfrage ist ein Problem aufgetreten."
+        "genericError": "Bei der Verarbeitung Ihrer Anfrage ist ein Problem aufgetreten.",
+        "logout": "Abmelden"
     },
     "Components": {
         "InputPlace": {

@@ -23,7 +23,7 @@ if (fs.existsSync(keyPath)) {
     firebaseConfig.credential = credential.cert({
         projectId: "standlo",
         clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY.replace(/^"|"$/g, '').replace(/\\n/g, '\n'),
     })
 } else {
     firebaseConfig.credential = credential.applicationDefault();

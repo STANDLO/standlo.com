@@ -30,6 +30,12 @@
         "description": "STANDLO introduces TIM (Temporary Information Modeling): the operating system that transforms data into physical structures. Manage trade show booths and emergency modules with millimetric synchrony, instant payments, and predictive logistics. Welcome to the Temporary Flow.",
         "copyright": "© {year} STANDLO SÜ All rights reserved."
     },
+    "Common": {
+        "noResults": "No results found.",
+        "loadMore": "Load More",
+        "genericError": "There was a problem processing your request.",
+        "logout": "Log out"
+    },
     "Dashboard": {
         "Designer": {
             "title": "Design Studio",

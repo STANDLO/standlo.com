@@ -52,7 +52,8 @@
     "Common": {
         "noResults": "No results found.",
         "loadMore": "Load More",
-        "genericError": "There was a problem processing your request."
+        "genericError": "There was a problem processing your request.",
+        "logout": "Log out"
     },
     "Auth": {
         "Register": {

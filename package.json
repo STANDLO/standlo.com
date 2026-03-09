@@ -1,6 +1,6 @@
 {
   "name": "standlo.com",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "private": true,
   "scripts": {
     "dev": "rm -rf .next && rm -rf node_modules/.cache && next dev",
@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "validate": "rm -rf node_modules && npm i && npm run lint && npm run build && npm audit",
-    "emulator": "npm run build --prefix functions && firebase emulators:start --config=firebase.emulator.json --import=./seed/firestore_export --export-on-exit",
+    "emulator": "npm run build --prefix functions && firebase emulators:start --config=firebase.emulator.json --import=./seed --export-on-exit",
     "cloud": "npx tsx scripts/deploy.ts",
     "cloud:firebase": "node scripts/DeployFirebase.mjs",
     "cloud:validate": "npm run pentest:local && npx tsx scripts/deploy.ts --validate-only",

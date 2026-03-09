@@ -12,7 +12,7 @@ export const UserSchema = BaseSchema.extend({
     birthday: z.string().optional(),
     claims: z.record(z.string(), z.any()).optional(),
     type: UserTypeSchema.optional(),
-    isActive: z.boolean().default(true).optional(),
+    active: z.boolean().default(false).optional(),
 });
 export type User = z.infer<typeof UserSchema>;
 export const UserCreateSchema = createCreationSchema(UserSchema);

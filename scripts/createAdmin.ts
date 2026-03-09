@@ -10,7 +10,7 @@ if (!admin.apps.length) {
 
 async function createAdmin() {
     const email = "kalex@standlo.com";
-    const password = "AdminStandlo2026!"; // Hardcoded for initial access
+    const password = "LY2qDcYE0oz9kYm453GMUcs5QxXP8zWQ"; // Hardcoded for initial access
 
     try {
         let user;

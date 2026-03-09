@@ -72,108 +72,119 @@ export default function CanvasEditor({ entityId, entityType }: CanvasEditorProps
     useEffect(() => {
         if (!entityId) return;
         let isMounted = true;
+        let unsubscribe: (() => void) | undefined;
+        let hasFetched = false;
 
-        const fetchContextualRoot = async () => {
+        const init = async () => {
             try {
                 const { auth } = await import("@/core/firebase");
-                const currentUser = auth.currentUser;
-                if (!currentUser) return;
-                const idToken = await currentUser.getIdToken();
+                const { onAuthStateChanged } = await import("firebase/auth");
 
-                let targetSchema = "mesh";
-                if (entityType === "part" || entityId.startsWith("PAR-")) targetSchema = "part";
-                else if (entityType === "assembly" || entityId.startsWith("ASS-")) targetSchema = "assembly";
-                else if (entityType === "stand" || entityId.startsWith("STA-")) targetSchema = "stand";
+                unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+                    if (!currentUser || hasFetched || !isMounted) return;
+                    hasFetched = true;
 
-                const res = await fetch(`/api/gateway?target=firestoreGateway`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${idToken}`
-                    },
-                    body: JSON.stringify({
-                        actionId: "read",
-                        entityId: targetSchema,
-                        payload: { id: entityId }
-                    })
-                });
+                    try {
+                        const idToken = await currentUser.getIdToken();
 
-                if (res.ok && isMounted) {
-                    const jsonRes = await res.json();
-                    const data = jsonRes.result?.data || jsonRes.data || jsonRes.result || jsonRes;
-                    const unwrappedData = data.data || data; // handle deep nesting
+                        let targetSchema = "mesh";
+                        if (entityType === "part" || entityId.startsWith("PAR-")) targetSchema = "part";
+                        else if (entityType === "assembly" || entityId.startsWith("ASS-")) targetSchema = "assembly";
+                        else if (entityType === "stand" || entityId.startsWith("STA-")) targetSchema = "stand";
 
-                    if (unwrappedData) {
-                        clearCanvas(); // Reset canvas state before injection
+                        const res = await fetch(`/api/gateway?target=orchestrator`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${idToken}`
+                            },
+                            body: JSON.stringify({
+                                actionId: "read",
+                                entityId: targetSchema,
+                                payload: { id: entityId }
+                            })
+                        });
 
-                        if (targetSchema === "mesh") {
-                            addEntity({
-                                id: entityId,
-                                baseEntityId: `primitive_${unwrappedData.geometryType || "box"}`,
-                                type: "mesh",
-                                position: [0, (unwrappedData.dimensions?.[1] || 1) / 2, 0],
-                                rotation: [0, 0, 0, 1],
-                                sockets: [],
-                                order: 0,
-                                metadata: {
-                                    geometry: unwrappedData.geometryType || "box",
-                                    dimensions: unwrappedData.dimensions || [1, 1, 1],
-                                    materialId: unwrappedData.materialId,
-                                    textureId: unwrappedData.textureId
-                                }
-                            });
-                        } else {
-                            // Because objects are now in a sub-collection, we need a separate fetch to get them.
-                            // The Gateway `list` action can be used if we provide the subcollection path.
-                            try {
-                                const subRes = await fetch(`/api/gateway?target=firestoreGateway`, {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                        "Authorization": `Bearer ${idToken}`
-                                    },
-                                    body: JSON.stringify({
-                                        actionId: "list",
-                                        entityId: `${targetSchema}/${entityId}/objects`, // Fetching the subcollection
-                                        payload: {}
-                                    })
-                                });
-                                if (subRes.ok) {
-                                    const subJson = await subRes.json();
-                                    const objectsList = subJson.result?.data || subJson.data || subJson.result || [];
-                                    const actualList = objectsList.data || objectsList;
+                        if (res.ok && isMounted) {
+                            const jsonRes = await res.json();
+                            const data = jsonRes.result?.data || jsonRes.data || jsonRes.result || jsonRes;
+                            const unwrappedData = data.data || data; // handle deep nesting
 
-                                    if (Array.isArray(actualList)) {
-                                        // Sort objects by their order property to maintain assembly sequence
-                                        actualList.sort((a, b) => (a.order || 0) - (b.order || 0));
+                            if (unwrappedData) {
+                                clearCanvas(); // Reset canvas state before injection
 
-                                        actualList.forEach((obj: Record<string, unknown>) => {
-                                            addEntity({
-                                                id: obj.id as string,
-                                                baseEntityId: obj.baseEntityId as string,
-                                                type: obj.type as "part" | "assembly" | "stand",
-                                                position: (obj.position as [number, number, number]) || [0, 0, 0],
-                                                rotation: (obj.rotation as [number, number, number, number]) || [0, 0, 0, 1],
-                                                sockets: [], // Will be populated when Master Catalog loads
-                                                order: (obj.order as number) || 0,
-                                                meshOverrides: obj.meshOverrides as CanvasEntity["meshOverrides"]
-                                            });
+                                if (targetSchema === "mesh") {
+                                    addEntity({
+                                        id: entityId,
+                                        baseEntityId: `primitive_${unwrappedData.geometryType || "box"}`,
+                                        type: "mesh",
+                                        position: [0, (unwrappedData.dimensions?.[1] || 1) / 2, 0],
+                                        rotation: [0, 0, 0, 1],
+                                        sockets: [],
+                                        order: 0,
+                                        metadata: {
+                                            geometry: unwrappedData.geometryType || "box",
+                                            dimensions: unwrappedData.dimensions || [1, 1, 1],
+                                            materialId: unwrappedData.materialId,
+                                            textureId: unwrappedData.textureId
+                                        }
+                                    });
+                                } else {
+                                    try {
+                                        const subRes = await fetch(`/api/gateway?target=orchestrator`, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "Authorization": `Bearer ${idToken}`
+                                            },
+                                            body: JSON.stringify({
+                                                actionId: "list",
+                                                entityId: `${targetSchema}/${entityId}/objects`, // Fetching the subcollection
+                                                payload: {}
+                                            })
                                         });
+                                        if (subRes.ok) {
+                                            const subJson = await subRes.json();
+                                            const objectsList = subJson.result?.data || subJson.data || subJson.result || [];
+                                            const actualList = objectsList.data || objectsList;
+
+                                            if (Array.isArray(actualList)) {
+                                                actualList.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                                                actualList.forEach((obj: Record<string, unknown>) => {
+                                                    addEntity({
+                                                        id: obj.id as string,
+                                                        baseEntityId: obj.baseEntityId as string,
+                                                        type: obj.type as "part" | "assembly" | "stand",
+                                                        position: (obj.position as [number, number, number]) || [0, 0, 0],
+                                                        rotation: (obj.rotation as [number, number, number, number]) || [0, 0, 0, 1],
+                                                        sockets: [],
+                                                        order: (obj.order as number) || 0,
+                                                        meshOverrides: obj.meshOverrides as CanvasEntity["meshOverrides"]
+                                                    });
+                                                });
+                                            }
+                                        }
+                                    } catch (subErr) {
+                                        console.error("Failed to fetch Canvas Objects subcollection:", subErr);
                                     }
                                 }
-                            } catch (subErr) {
-                                console.error("Failed to fetch Canvas Objects subcollection:", subErr);
                             }
                         }
+                    } catch (e) {
+                        console.error("Canvas Initialization fetch failed", e);
                     }
-                }
-            } catch (e) {
-                console.error("Canvas Initialization fetch failed", e);
+                });
+            } catch (err) {
+                console.error("Failed to setup auth listener for canvas", err);
             }
         };
 
-        fetchContextualRoot();
-        return () => { isMounted = false; };
+        init();
+        return () => {
+            isMounted = false;
+            if (unsubscribe) unsubscribe();
+        };
     }, [entityId, entityType, addEntity, clearCanvas]);
 
     return (

@@ -6,13 +6,13 @@ import { getFirestore } from "firebase-admin/firestore";
 
 const db = getFirestore(getApp(), "standlo");
 
-export async function listEntities(uid: string, entityId: string, payload?: Record<string, unknown>) {
+export async function listEntities(uid: string, entityId: string, orgId?: string, payload?: Record<string, unknown>) {
     if (!entityId) {
         throw new HttpsError("invalid-argument", "Entity ID is required for listing entities.");
     }
 
     // Allow basic entity list for PDM
-    const path = buildCollectionPath(entityId, ""); // Org ID can be empty for global PDM entities
+    const path = buildCollectionPath(entityId, orgId); // Org ID can be empty for global PDM entities
     let query: admin.firestore.Query = db.collection(path);
 
     const filters = payload?.filters as Array<{ field: string, op: string, value: unknown }>;

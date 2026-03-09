@@ -52,7 +52,8 @@
     "Common": {
         "noResults": "Aucun résultat trouvé.",
         "loadMore": "Charger Plus",
-        "genericError": "Un problème est survenu lors du traitement de votre demande."
+        "genericError": "Un problème est survenu lors du traitement de votre demande.",
+        "logout": "Déconnexion"
     },
     "Auth": {
         "Register": {

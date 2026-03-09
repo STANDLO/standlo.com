@@ -254,18 +254,32 @@ export default function PropertiesSidebar({ selectedNode, setNodes, pipelineId, 
                             </div>
                         )}
                         {data.triggerType === 'firestore_event' && (
-                            <div>
-                                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Collection Name</label>
-                                <select
-                                    value={data.collection || ''}
-                                    onChange={(e) => updateNodeData('collection', e.target.value)}
-                                    className="w-full bg-white dark:bg-zinc-900 border border-[#e3e8ee] dark:border-zinc-700 rounded text-sm px-3 py-2 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                                >
-                                    <option value="">Select Collection...</option>
-                                    {AvailableCollections.map(col => (
-                                        <option key={col.id} value={col.id}>{col.name}</option>
-                                    ))}
-                                </select>
+                            <div className="space-y-2">
+                                <div>
+                                    <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Collection / Document Pattern</label>
+                                    <input
+                                        type="text"
+                                        value={data.collection || ''}
+                                        onChange={(e) => updateNodeData('collection', e.target.value)}
+                                        className="w-full bg-white dark:bg-zinc-900 border border-[#e3e8ee] dark:border-zinc-700 rounded text-sm px-3 py-2 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono text-xs mb-2"
+                                        placeholder="e.g. organizations/{orgId}/users/{userId}"
+                                    />
+                                    <select
+                                        value={AvailableCollections.some(c => c.id === data.collection) ? data.collection : ""}
+                                        onChange={(e) => {
+                                            if (e.target.value) {
+                                                updateNodeData('collection', e.target.value);
+                                            }
+                                        }}
+                                        className="w-full bg-white dark:bg-zinc-900 border border-[#e3e8ee] dark:border-zinc-700 rounded text-sm px-3 py-2 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                                    >
+                                        <option value="">Quick Select Root Collection...</option>
+                                        {AvailableCollections.map(col => (
+                                            <option key={col.id} value={col.id}>{col.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <p className="text-[10px] text-zinc-500">Define the exact document path pattern. Use {'{wildcard}'} for dynamic segments. For Subcollections, include parents like organizations/{'{orgId}'}/users/{'{userId}'}.</p>
                             </div>
                         )}
                         {data.triggerType === 'schedule' && (

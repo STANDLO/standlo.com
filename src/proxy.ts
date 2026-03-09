@@ -52,9 +52,20 @@ export async function proxy(request: NextRequest) {
                 return intlMiddleware(request);
             }
 
-            // 2. GESTIONE UTENTI COMPLETATI (Ruoli Definitivi)
-            // Se un utente completato prova ad accedere a rotte pubbliche o root o all'onboarding o verify-email
-            if (pathname === '/' || pathname.includes('/auth/login') || pathname.includes('/auth/create') || pathname.includes('/onboarding') || pathname.includes('/auth/verify-email')) {
+            // 2. GESTIONE STATO ATTIVO (Utenti In Revisione)
+            const isInactive = decodedToken.active === false;
+            if (isInactive) {
+                if (!pathname.includes('/pending') && !pathname.includes('/auth/logout')) {
+                    url.pathname = `/${locale}/pending`;
+                    return NextResponse.redirect(url);
+                }
+                headers.set('X-Tenant-Role', role);
+                return intlMiddleware(request);
+            }
+
+            // 3. GESTIONE UTENTI COMPLETATI (Ruoli Definitivi)
+            // Se un utente completato prova ad accedere a rotte pubbliche o root o all'onboarding o verify-email o pending
+            if (pathname === '/' || pathname.includes('/auth/login') || pathname.includes('/auth/create') || pathname.includes('/onboarding') || pathname.includes('/auth/verify-email') || pathname.includes('/pending')) {
                 url.pathname = `/${locale}/partner/${role}`;
                 return NextResponse.redirect(url);
             }
@@ -65,8 +76,8 @@ export async function proxy(request: NextRequest) {
                 const requestedArea = areaMatch[1];
                 const roleArea = areaMatch[2]; // ex: 'customer' inside /it/partner/customer
 
-                // If they are accessing a generic area outside partner, only auth, debug, and profile are allowed
-                if (requestedArea !== 'partner' && requestedArea !== 'auth' && requestedArea !== 'debug' && requestedArea !== 'onboarding' && requestedArea !== 'profile') {
+                // If they are accessing a generic area outside partner, only auth, debug, profile, onboarding, pending, users are allowed
+                if (requestedArea !== 'partner' && requestedArea !== 'auth' && requestedArea !== 'debug' && requestedArea !== 'onboarding' && requestedArea !== 'profile' && requestedArea !== 'pending' && requestedArea !== 'users') {
                     url.pathname = `/${locale}/partner/${role}`;
                     return NextResponse.redirect(url);
                 }

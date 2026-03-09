@@ -4,8 +4,9 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { extractZodKeys } from "@/core/extractZodKeys";
-import { functions } from "@/core/firebase";
+import { functions, auth } from "@/core/firebase";
 import { httpsCallable } from "firebase/functions";
+import { onAuthStateChanged } from "firebase/auth";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ErrorGuard } from "@/components/ui/ErrorGuard";
@@ -25,6 +26,7 @@ export interface FormListProps<S extends z.ZodSchema<any> = z.ZodSchema<any>> {
     schema?: S;
     onRowClick?: (item: Record<string, unknown>) => void;
     filters?: Record<string, unknown>[];
+    gatewayName?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,11 +37,13 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
     columns,
     schema,
     onRowClick,
-    filters = []
+    filters = [],
+    gatewayName = "orchestrator"
 }: FormListProps<S>) {
     const t = useTranslations("Common");
     const [data, setData] = React.useState<Record<string, unknown>[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
+    const [isAuthReady, setIsAuthReady] = React.useState(false);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [error, setError] = React.useState<any>(null);
 
@@ -51,16 +55,29 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
         setIsLoading(true);
         setError(null);
         try {
-            const firestoreGateway = httpsCallable(functions, "firestoreGateway");
-            const response = await firestoreGateway({
+            const gatewayFn = httpsCallable(functions, gatewayName);
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const requestData: any = {
                 orgId,
                 roleId,
                 entityId,
                 actionId: "list",
-                filters,
-                limit: 20,
-                cursor: reset ? null : cursor
-            });
+            };
+
+            if (gatewayName === "orchestrator") {
+                requestData.payload = {
+                    filters,
+                    limit: 20,
+                    cursor: reset ? null : cursor
+                };
+            } else {
+                requestData.filters = filters;
+                requestData.limit = 20;
+                requestData.cursor = reset ? null : cursor;
+            }
+
+            const response = await gatewayFn(requestData);
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const resultData = (response.data as any).data as Record<string, unknown>[];
@@ -84,12 +101,20 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
         } finally {
             setIsLoading(false);
         }
-    }, [orgId, roleId, entityId, cursor, filters]);
+    }, [orgId, roleId, entityId, cursor, filters, gatewayName]); // added gatewayName
 
     React.useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) setIsAuthReady(true);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    React.useEffect(() => {
+        if (!isAuthReady) return;
         loadData(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orgId, roleId, entityId, JSON.stringify(filters)]);
+    }, [orgId, roleId, entityId, JSON.stringify(filters), gatewayName, isAuthReady]);
 
     const allowedKeys = schema ? extractZodKeys(schema) : null;
     const visibleColumns = columns.filter((col) => !allowedKeys || allowedKeys.includes(col.key));

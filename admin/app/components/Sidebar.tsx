@@ -14,7 +14,8 @@ import {
     Box,
     Activity,
     ChevronDown,
-    ChevronRight
+    ChevronRight,
+    Zap
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -45,6 +46,7 @@ export function Sidebar() {
             title: "Pipelines & AI",
             links: [
                 { href: "/pipelines", label: "Pipelines Flow", icon: Activity },
+                { href: "/pipelines/run", label: "Pipeline Runner", icon: Zap },
                 { href: "/ai-skills", label: "AI Skills Manager", icon: Box },
             ]
         },
