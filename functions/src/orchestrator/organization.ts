@@ -114,6 +114,7 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         // 5. Upgrade Custom Claims via Admin SDK
         const newClaims: Record<string, unknown> = {
             ...currentCustomClaims,
+            phoneNumber: userRec.phoneNumber || null,
             role: role || "pending",
             type: "ADMIN",
             userType: "ADMIN",

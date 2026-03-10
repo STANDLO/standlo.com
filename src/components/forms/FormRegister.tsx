@@ -1,19 +1,27 @@
 "use client";
 
 import * as React from "react";
+import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
-import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, User, sendEmailVerification } from "firebase/auth";
-import { auth, appCheck } from "@/core/firebase";
-import { getToken } from "firebase/app-check";
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, sendEmailVerification } from "firebase/auth";
+import { auth } from "@/core/firebase";
 import { Link } from "@/i18n/routing";
 import { Loader2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { CardAuth } from "@/components/ui/CardAuth";
+import { Card, CardColor, CardDivider } from "@/components/ui/Card";
+import { CardAuthSocials } from "@/components/ui/CardAuthSocials";
+import { useBrandColor } from "@/hooks/useBrandColor";
 
 export function FormRegister() {
     const t = useTranslations("Auth");
+    const { resolvedTheme } = useTheme();
+    const btnVariant = resolvedTheme === "dark" ? "dark" : "light";
+
+    const tBrand = useTranslations("Brand");
+    const { color } = useBrandColor();
+    const activeColor = color === "default" ? "green" : color;
 
     const [name, setName] = React.useState("");
     const [email, setEmail] = React.useState("");
@@ -37,55 +45,9 @@ export function FormRegister() {
         setIsLoading(false);
     };
 
-    const handleLoginSuccess = async (user: User) => {
-        const token = await user.getIdToken(true); // Force refresh to get custom claims
-        const headers: Record<string, string> = {
-            Authorization: `Bearer ${token}`
-        };
-
-        if (appCheck) {
-            try {
-                const appCheckTokenResponse = await getToken(appCheck, false);
-                if (appCheckTokenResponse.token) {
-                    headers["X-Firebase-AppCheck"] = appCheckTokenResponse.token;
-                }
-            } catch (err) {
-                console.warn("Failed to get AppCheck token:", err);
-            }
-        }
-
-        const res = await fetch("/api/auth/login", {
-            headers
-        });
-
-        if (res.ok) {
-            try {
-                let sessionId = localStorage.getItem("standlo_session");
-                if (!sessionId) {
-                    sessionId = crypto.randomUUID();
-                    localStorage.setItem("standlo_session", sessionId);
-                }
-                const trackHeaders: Record<string, string> = {
-                    "Content-Type": "application/json",
-                    ...headers
-                };
-                fetch("/api/gateway?target=orchestrator", {
-                    method: "POST",
-                    headers: trackHeaders,
-                    body: JSON.stringify({
-                        actionId: "auth_event",
-                        payload: { type: "create", sessionId }
-                    })
-                }).catch(e => console.error("Auth tracker error:", e));
-            } catch (e) {
-                console.error("Session init error:", e);
-            }
-
-            window.location.href = "/";
-        } else {
-            setError("Failed to create session. Please try again.");
-            setIsLoading(false);
-        }
+    const handleLoginSuccessRedirect = async () => {
+        await auth.signOut();
+        window.location.href = "/auth/login?registered=true";
     };
 
     const onSubmit = async (e: React.FormEvent) => {
@@ -100,7 +62,7 @@ export function FormRegister() {
                 await updateProfile(userCredential.user, { displayName: name });
             }
             await sendEmailVerification(userCredential.user);
-            await handleLoginSuccess(userCredential.user);
+            await handleLoginSuccessRedirect();
         } catch (err: unknown) {
             handleError(err);
         }
@@ -114,13 +76,9 @@ export function FormRegister() {
         setIsLoading(true);
         setError(null);
         try {
-            // Stessa cosa: salviamo il ruolo se vuole usare Google (che autogenererà l'email)
-            // MA non abbiamo un'email prima del login Google!
-            // Per i Provider OAuth, Google SignIn potrebbe usare Google email. Il beforeCreate fallirà a leggerlo se non c'è.
-            // Soluzione migliore: i social login defaultano a 'customer' se manca il record in registrationData.
             const provider = new GoogleAuthProvider();
-            const userCredential = await signInWithPopup(auth, provider);
-            await handleLoginSuccess(userCredential.user);
+            await signInWithPopup(auth, provider);
+            await handleLoginSuccessRedirect();
         } catch (err: unknown) {
             handleError(err);
         }
@@ -135,23 +93,37 @@ export function FormRegister() {
         setError(null);
         try {
             const provider = new GithubAuthProvider();
-            const userCredential = await signInWithPopup(auth, provider);
-            await handleLoginSuccess(userCredential.user);
+            await signInWithPopup(auth, provider);
+            await handleLoginSuccessRedirect();
         } catch (err: unknown) {
             handleError(err);
         }
     };
 
+    const footerText = t("Register.yesAccountText");
+    const footerHref = "/auth/login";
+    const footerActionText = t("Register.loginAction");
+
+    const footer = (
+        <>
+            <div className="ui-card-auth-note">
+                {footerText}{" "}
+                <Link href={footerHref} className="ui-card-auth-link">
+                    {footerActionText}
+                </Link>
+            </div>
+            <div className="ui-card-auth-copyright">
+                {tBrand("copyright", { year: new Date().getFullYear() })}
+            </div>
+        </>
+    );
+
     return (
-        <CardAuth
+        <Card
+            color={activeColor as CardColor}
+            layout="auto"
             title={t("Register.title")}
-            description={t("Register.description")}
-            footerText={t("Register.yesAccountText")}
-            footerHref="/auth/login"
-            footerActionText={t("Register.loginAction")}
-            onGoogleLogin={loginWithGoogle}
-            onGithubLogin={loginWithGithub}
-            isLoading={isLoading}
+            footer={footer}
         >
             <form onSubmit={onSubmit} className="layout-auth-form">
                 {error && (
@@ -160,6 +132,37 @@ export function FormRegister() {
                         <span>{error}</span>
                     </div>
                 )}
+
+                <CardDivider>{t("Register.termsDivider")}</CardDivider>
+
+                <Checkbox
+                    id="acceptTerms"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    disabled={isLoading}
+                    label={
+                        t.rich("Register.acceptTerms", {
+                            privacyLink: (chunks) => (
+                                <Link href="/privacy" className="ui-checkbox-link" target="_blank">
+                                    {chunks}
+                                </Link>
+                            ),
+                            termsLink: (chunks) => (
+                                <Link href="/terms" className="ui-checkbox-link" target="_blank">
+                                    {chunks}
+                                </Link>
+                            ),
+                            br: () => <br />,
+                            fallback: "I accept the Privacy Policy and Terms of Service"
+                        })
+                    }
+                />
+
+                <CardAuthSocials
+                    onGoogleLogin={loginWithGoogle}
+                    onGithubLogin={loginWithGithub}
+                    isLoading={isLoading}
+                />
 
                 <Input
                     id="name"
@@ -196,33 +199,13 @@ export function FormRegister() {
                     disabled={isLoading}
                 />
 
-                <Checkbox
-                    id="acceptTerms"
-                    checked={acceptedTerms}
-                    onChange={(e) => setAcceptedTerms(e.target.checked)}
-                    disabled={isLoading}
-                    label={
-                        t.rich("Register.acceptTerms", {
-                            privacyLink: (chunks) => (
-                                <Link href="/privacy" className="ui-checkbox-link" target="_blank">
-                                    {chunks}
-                                </Link>
-                            ),
-                            termsLink: (chunks) => (
-                                <Link href="/terms" className="ui-checkbox-link" target="_blank">
-                                    {chunks}
-                                </Link>
-                            ),
-                            fallback: "I accept the Privacy Policy and Terms & Conditions"
-                        })
-                    }
-                />
+                <CardDivider>{t("Register.registerDivider")}</CardDivider>
 
-                <Button type="submit" className="layout-auth-submit mt-2" disabled={isLoading || !acceptedTerms}>
+                <Button type="submit" variant={btnVariant} className="layout-auth-submit" disabled={isLoading || !acceptedTerms}>
                     {isLoading ? <Loader2 className="animate-spin" /> : t("Register.submitButton")}
                 </Button>
 
             </form>
-        </CardAuth>
+        </Card>
     );
 }

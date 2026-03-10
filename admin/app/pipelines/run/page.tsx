@@ -59,6 +59,7 @@ export default function PipelineRunnerPage() {
         } else {
             setSelectedPipelineId("");
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedEntity, pipelines]);
 
     const loadPipelines = async () => {

@@ -7,12 +7,23 @@ import { getToken } from "firebase/app-check";
 import { sendEmailVerification } from "firebase/auth";
 import { Loader2, TriangleAlert, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { CardAuth } from "@/components/ui/CardAuth";
+import { Card, CardColor } from "@/components/ui/Card";
+import { useBrandColor } from "@/hooks/useBrandColor";
 
 export function FormVerifyEmail() {
     const t = useTranslations("Auth");
+    const tBrand = useTranslations("Brand");
+    const { color } = useBrandColor();
+    const activeColor = color === "default" ? "green" : color;
+
     const [isLoading, setIsLoading] = React.useState(false);
     const [message, setMessage] = React.useState<{ type: 'error' | 'success', text: string } | null>(null);
+
+    const footer = (
+        <div className="ui-card-auth-copyright">
+            {tBrand("copyright", { year: new Date().getFullYear() })}
+        </div>
+    );
 
     const handleCheckStatus = async () => {
         setIsLoading(true);
@@ -87,9 +98,11 @@ export function FormVerifyEmail() {
     };
 
     return (
-        <CardAuth
+        <Card
+            color={activeColor as CardColor}
+            layout="auto"
             title={t("VerifyEmail.title")}
-            description={t("VerifyEmail.description")}
+            footer={footer}
         >
             <div className="layout-auth-form mt-4">
                 {message && (
@@ -118,6 +131,6 @@ export function FormVerifyEmail() {
                     {t("VerifyEmail.resendButton")}
                 </Button>
             </div>
-        </CardAuth>
+        </Card>
     );
 }

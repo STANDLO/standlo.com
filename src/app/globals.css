@@ -28,6 +28,8 @@
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
+  --color-glue: hsl(var(--glue));
+
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
@@ -44,13 +46,34 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 10% 4%;
 
-    /* PRIMARY: #003399 (H:220 S:100% L:30%) */
-    --primary: 220 100% 30%;
-    --primary-foreground: 0 0% 100%;
+    /* Base Theme Colors */
+    --base-green: 110 100% 50%;
+    --base-green-fg: 220 10% 4%;
 
-    /* SECONDARY: #FFCC00 (H:48 S:100% L:50%) */
-    --secondary: 48 100% 50%;
-    --secondary-foreground: 220 100% 15%;
+    --base-blue: 240 100% 56%;
+    --base-blue-fg: 0 0% 100%;
+
+    --base-yellow: 60 100% 50%;
+    --base-yellow-fg: 220 10% 4%;
+
+    --base-fucsia: 311 100% 50%;
+    --base-fucsia-fg: 0 0% 100%;
+
+    --base-violet: 283 100% 50%;
+    --base-violet-fg: 0 0% 100%;
+
+    --base-red: 3 84% 56%;
+    --base-red-fg: 0 0% 100%;
+
+    --base-orange: 29 100% 50%;
+    --base-orange-fg: 220 10% 4%;
+
+    /* Default Light Theme primary logic */
+    --primary: var(--base-green);
+    --primary-foreground: var(--base-green-fg);
+
+    --secondary: var(--base-fucsia);
+    --secondary-foreground: var(--base-fucsia-fg);
 
     --muted: 220 14% 96%;
     --muted-foreground: 220 9% 46%;
@@ -61,7 +84,9 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 220 100% 30%;
+    --ring: var(--base-green);
+
+    --glue: 0 0% 0%;
 
     --radius: 0.5rem;
   }
@@ -74,10 +99,10 @@
   --card-foreground: 0 0% 98%;
   --popover: 220 60% 4%;
   --popover-foreground: 0 0% 98%;
-  --primary: 220 100% 45%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 48 100% 45%;
-  --secondary-foreground: 220 100% 10%;
+  --primary: var(--base-green);
+  --primary-foreground: var(--base-green-fg);
+  --secondary: var(--base-fucsia);
+  --secondary-foreground: var(--base-fucsia-fg);
   --muted: 220 60% 15%;
   --muted-foreground: 220 10% 65%;
   --accent: 220 60% 15%;
@@ -86,64 +111,177 @@
   --destructive-foreground: 0 0% 98%;
   --border: 220 60% 15%;
   --input: 220 60% 15%;
-  --ring: 220 100% 45%;
+  --ring: var(--base-green);
+  --glue: 0 0% 100%;
 }
 
 /* Color Themes */
-.theme-green {
-  --primary: 110 100% 50%;
-  --primary-foreground: 220 10% 4%;
-  --secondary: 311 100% 50%;
-  --secondary-foreground: 0 0% 100%;
-  --ring: 110 100% 50%;
+.green {
+  --background: 220 60% 4%;
+  --foreground: 0 0% 98%;
+  --card: 220 60% 6%;
+  --card-foreground: 0 0% 98%;
+  --popover: 220 60% 4%;
+  --popover-foreground: 0 0% 98%;
+  --muted: 220 60% 15%;
+  --muted-foreground: 220 10% 65%;
+  --accent: 220 60% 15%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 60% 15%;
+  --input: 220 60% 15%;
+
+  --primary: var(--base-green);
+  --primary-foreground: var(--base-green-fg);
+  --secondary: var(--base-fucsia);
+  --secondary-foreground: var(--base-fucsia-fg);
+  --ring: var(--base-green);
+  --glue: 0 0% 100%;
 }
 
-.theme-blue {
-  --primary: 240 100% 56%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 60 100% 50%;
-  --secondary-foreground: 220 10% 4%;
-  --ring: 240 100% 56%;
+.blue {
+  --background: 220 60% 4%;
+  --foreground: 0 0% 98%;
+  --card: 220 60% 6%;
+  --card-foreground: 0 0% 98%;
+  --popover: 220 60% 4%;
+  --popover-foreground: 0 0% 98%;
+  --muted: 220 60% 15%;
+  --muted-foreground: 220 10% 65%;
+  --accent: 220 60% 15%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 60% 15%;
+  --input: 220 60% 15%;
+
+  --primary: var(--base-blue);
+  --primary-foreground: var(--base-blue-fg);
+  --secondary: var(--base-yellow);
+  --secondary-foreground: var(--base-yellow-fg);
+  --ring: var(--base-blue);
+  --glue: 0 0% 100%;
 }
 
-.theme-yellow {
-  --primary: 60 100% 50%;
-  --primary-foreground: 220 10% 4%;
-  --secondary: 240 100% 56%;
-  --secondary-foreground: 0 0% 100%;
-  --ring: 60 100% 50%;
+.yellow {
+  --background: 220 60% 4%;
+  --foreground: 0 0% 98%;
+  --card: 220 60% 6%;
+  --card-foreground: 0 0% 98%;
+  --popover: 220 60% 4%;
+  --popover-foreground: 0 0% 98%;
+  --muted: 220 60% 15%;
+  --muted-foreground: 220 10% 65%;
+  --accent: 220 60% 15%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 60% 15%;
+  --input: 220 60% 15%;
+
+  --primary: var(--base-yellow);
+  --primary-foreground: var(--base-yellow-fg);
+  --secondary: var(--base-blue);
+  --secondary-foreground: var(--base-blue-fg);
+  --ring: var(--base-yellow);
+  --glue: 0 0% 100%;
 }
 
-.theme-fucsia {
-  --primary: 311 100% 50%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 110 100% 50%;
-  --secondary-foreground: 220 10% 4%;
-  --ring: 311 100% 50%;
+.fucsia {
+  --background: 220 60% 4%;
+  --foreground: 0 0% 98%;
+  --card: 220 60% 6%;
+  --card-foreground: 0 0% 98%;
+  --popover: 220 60% 4%;
+  --popover-foreground: 0 0% 98%;
+  --muted: 220 60% 15%;
+  --muted-foreground: 220 10% 65%;
+  --accent: 220 60% 15%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 60% 15%;
+  --input: 220 60% 15%;
+
+  --primary: var(--base-fucsia);
+  --primary-foreground: var(--base-fucsia-fg);
+  --secondary: var(--base-green);
+  --secondary-foreground: var(--base-green-fg);
+  --ring: var(--base-fucsia);
+  --glue: 0 0% 100%;
 }
 
-.theme-violet {
-  --primary: 283 100% 50%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 60 100% 50%;
-  --secondary-foreground: 220 10% 4%;
-  --ring: 283 100% 50%;
+.violet {
+  --background: 220 60% 4%;
+  --foreground: 0 0% 98%;
+  --card: 220 60% 6%;
+  --card-foreground: 0 0% 98%;
+  --popover: 220 60% 4%;
+  --popover-foreground: 0 0% 98%;
+  --muted: 220 60% 15%;
+  --muted-foreground: 220 10% 65%;
+  --accent: 220 60% 15%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 60% 15%;
+  --input: 220 60% 15%;
+
+  --primary: var(--base-violet);
+  --primary-foreground: var(--base-violet-fg);
+  --secondary: var(--base-yellow);
+  --secondary-foreground: var(--base-yellow-fg);
+  --ring: var(--base-violet);
+  --glue: 0 0% 100%;
 }
 
-.theme-red {
-  --primary: 3 84% 56%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 60 100% 50%;
-  --secondary-foreground: 220 10% 4%;
-  --ring: 3 84% 56%;
+.red {
+  --background: 220 60% 4%;
+  --foreground: 0 0% 98%;
+  --card: 220 60% 6%;
+  --card-foreground: 0 0% 98%;
+  --popover: 220 60% 4%;
+  --popover-foreground: 0 0% 98%;
+  --muted: 220 60% 15%;
+  --muted-foreground: 220 10% 65%;
+  --accent: 220 60% 15%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 60% 15%;
+  --input: 220 60% 15%;
+
+  --primary: var(--base-red);
+  --primary-foreground: var(--base-red-fg);
+  --secondary: var(--base-yellow);
+  --secondary-foreground: var(--base-yellow-fg);
+  --ring: var(--base-red);
+  --glue: 0 0% 100%;
 }
 
-.theme-orange {
-  --primary: 29 100% 50%;
-  --primary-foreground: 220 10% 4%;
-  --secondary: 240 100% 56%;
-  --secondary-foreground: 0 0% 100%;
-  --ring: 29 100% 50%;
+.orange {
+  --background: 220 60% 4%;
+  --foreground: 0 0% 98%;
+  --card: 220 60% 6%;
+  --card-foreground: 0 0% 98%;
+  --popover: 220 60% 4%;
+  --popover-foreground: 0 0% 98%;
+  --muted: 220 60% 15%;
+  --muted-foreground: 220 10% 65%;
+  --accent: 220 60% 15%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 60% 15%;
+  --input: 220 60% 15%;
+
+  --primary: var(--base-orange);
+  --primary-foreground: var(--base-orange-fg);
+  --secondary: var(--base-blue);
+  --secondary-foreground: var(--base-blue-fg);
+  --ring: var(--base-orange);
+  --glue: 0 0% 100%;
 }
 
 @layer base {
@@ -155,6 +293,12 @@
   body {
     @apply bg-background text-foreground;
     transition: background-color 0.3s ease, color 0.3s ease;
+    background-image: radial-gradient(hsl(var(--foreground)/0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .dark body {
+    background-image: radial-gradient(hsl(var(--muted-foreground)/0.2) 1px, transparent 1px);
   }
 }
 
@@ -166,11 +310,19 @@
   }
 
   .ui-card-header {
-    @apply flex flex-col space-y-1.5 p-6;
+    @apply relative flex items-center justify-center h-[64px] p-0 w-full overflow-hidden;
+  }
+
+  .ui-card-icon {
+    @apply absolute left-0 top-0 flex items-center justify-center shrink-0 w-[64px] h-[64px];
+  }
+
+  .ui-card-action {
+    @apply absolute right-0 top-0 flex items-center justify-center shrink-0 w-[64px] h-[64px];
   }
 
   .ui-card-title {
-    @apply font-semibold leading-none tracking-tight;
+    @apply w-full h-full flex items-center justify-center text-center font-semibold leading-none tracking-tight text-2xl px-16;
   }
 
   .ui-card-description {
@@ -178,25 +330,470 @@
   }
 
   .ui-card-content {
-    @apply p-6 pt-0;
+    @apply p-8;
   }
 
   .ui-card-footer {
-    @apply flex items-center p-6 pt-0;
+    @apply flex flex-col items-center gap-4 w-full p-8 pt-0;
+  }
+
+  .ui-card-auth-socials {
+    @apply flex flex-col gap-4 w-full;
+  }
+
+  .ui-card-auth-socials-group {
+    @apply flex flex-col gap-4 w-full;
+  }
+
+  .ui-card-auth-social-btn {
+    @apply w-full;
+  }
+
+  .ui-card-auth-divider {
+    @apply flex items-center justify-center gap-4 w-full;
+  }
+
+  .ui-card-auth-divider-line-container {
+    @apply flex-1 flex;
+  }
+
+  .ui-card-auth-divider-line {
+    @apply h-px w-full bg-current opacity-20;
+  }
+
+  .ui-card-auth-divider-text-container {
+    @apply flex justify-center;
+  }
+
+  .ui-card-auth-divider-text {
+    @apply text-xs uppercase opacity-70;
   }
 
   /* UI Button Semantic Classes */
   .ui-btn {
-    @apply inline-flex items-center justify-center rounded-md text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1;
+    @apply inline-flex items-center justify-center rounded-md py-2 text-sm font-medium shadow transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 cursor-pointer disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .ui-btn-green:hover,
+  .ui-btn-blue:hover,
+  .ui-btn-yellow:hover,
+  .ui-btn-fuchsia:hover,
+  .ui-btn-violet:hover,
+  .ui-btn-red:hover,
+  .ui-btn-orange:hover {
+    @apply -translate-y-0.5;
+    background-color: color-mix(in srgb, var(--color-primary) 85%, var(--color-glue));
+  }
+
+  .ui-btn-size-default {
+    @apply h-9 px-4 py-2;
+  }
+
+  .ui-btn-size-sm {
+    @apply h-8 px-3 text-xs;
+  }
+
+  .ui-btn-size-lg {
+    @apply h-10 px-8;
+  }
+
+  .ui-btn-size-icon {
+    @apply h-9 w-9;
+  }
+
+  /* Base Default (auto adapts to theme) */
+  .ui-btn-default {
+    @apply bg-white text-zinc-950 hover:bg-zinc-100 border border-zinc-200 shadow-sm dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-900 dark:border-zinc-900 dark:shadow-sm;
+  }
+
+  .ui-btn-default-muted {
+    @apply bg-white/50 text-zinc-950/50 border border-zinc-200/50 cursor-not-allowed shadow-none dark:bg-zinc-900/50 dark:text-zinc-50/50 dark:border-zinc-900/50;
+  }
+
+  .ui-btn-default-readonly {
+    @apply bg-white text-zinc-950 border border-zinc-200 cursor-default pointer-events-none opacity-80 dark:bg-zinc-950 dark:text-zinc-50 dark:border-zinc-900;
+  }
+
+  .ui-btn-default-outline {
+    @apply border border-zinc-300 text-zinc-950 hover:bg-zinc-100 bg-transparent dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-900;
+  }
+
+  /* Legacy Outline */
+  .ui-btn-outline {
+    @apply border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground text-foreground;
+  }
+
+  /* Light Theme Specific */
+  .ui-btn-light {
+    @apply bg-white text-zinc-950 hover:bg-zinc-100 border border-zinc-200 shadow-sm;
+  }
+
+  .ui-btn-light-muted {
+    @apply bg-white/50 text-zinc-950/50 border border-zinc-200/50 cursor-not-allowed shadow-none;
+  }
+
+  .ui-btn-light-readonly {
+    @apply bg-white text-zinc-950 border border-zinc-200 cursor-default pointer-events-none opacity-80;
+  }
+
+  .ui-btn-light-outline {
+    @apply border border-zinc-300 text-zinc-950 hover:bg-zinc-100 bg-transparent;
+  }
+
+  /* Dark Theme Specific */
+  .ui-btn-dark {
+    @apply bg-zinc-950 text-zinc-50 hover:bg-zinc-900 border border-zinc-900 shadow-sm;
+  }
+
+  .ui-btn-dark-muted {
+    @apply bg-zinc-900/50 text-zinc-50/50 border border-zinc-900/50 cursor-not-allowed shadow-none;
+  }
+
+  .ui-btn-dark-readonly {
+    @apply bg-zinc-950 text-zinc-50 border border-zinc-900 cursor-default pointer-events-none opacity-80;
+  }
+
+  .ui-btn-dark-outline {
+    @apply border border-zinc-700 text-zinc-50 hover:bg-zinc-900 bg-transparent;
+  }
+
+  /* 7 Brand Colors */
+  .ui-btn-green {
+    background-color: var(--base-green);
+    color: var(--base-green-fg);
+    @apply shadow-sm;
+  }
+
+  .ui-btn-green:hover {
+    background-color: color-mix(in srgb, var(--base-green) 90%, black);
+  }
+
+  .ui-btn-green:focus-visible {
+    outline: 2px solid var(--base-green);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-green-muted {
+    background-color: color-mix(in srgb, var(--base-green) 20%, transparent);
+    color: var(--base-green);
+    @apply cursor-not-allowed border-transparent shadow-none;
+  }
+
+  .ui-btn-green-muted:focus-visible {
+    outline: 2px solid var(--base-green);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-green-readonly {
+    background-color: var(--base-green);
+    color: var(--base-green-fg);
+    @apply opacity-50 cursor-default pointer-events-none;
+  }
+
+  .ui-btn-green-outline {
+    border: 1px solid var(--base-green);
+    color: var(--base-green);
+    @apply bg-transparent;
+  }
+
+  .ui-btn-green-outline:hover {
+    background-color: color-mix(in srgb, var(--base-green) 10%, transparent);
+  }
+
+  .ui-btn-green-outline:focus-visible {
+    outline: 2px solid var(--base-green);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-blue {
+    background-color: var(--base-blue);
+    color: var(--base-blue-fg);
+    @apply shadow-sm;
+  }
+
+  .ui-btn-blue:hover {
+    background-color: color-mix(in srgb, var(--base-blue) 90%, black);
+  }
+
+  .ui-btn-blue:focus-visible {
+    outline: 2px solid var(--base-blue);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-blue-muted {
+    background-color: color-mix(in srgb, var(--base-blue) 20%, transparent);
+    color: var(--base-blue);
+    @apply cursor-not-allowed border-transparent shadow-none;
+  }
+
+  .ui-btn-blue-muted:focus-visible {
+    outline: 2px solid var(--base-blue);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-blue-readonly {
+    background-color: var(--base-blue);
+    color: var(--base-blue-fg);
+    @apply opacity-50 cursor-default pointer-events-none;
+  }
+
+  .ui-btn-blue-outline {
+    border: 1px solid var(--base-blue);
+    color: var(--base-blue);
+    @apply bg-transparent;
+  }
+
+  .ui-btn-blue-outline:hover {
+    background-color: color-mix(in srgb, var(--base-blue) 10%, transparent);
+  }
+
+  .ui-btn-blue-outline:focus-visible {
+    outline: 2px solid var(--base-blue);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-yellow {
+    background-color: var(--base-yellow);
+    color: var(--base-yellow-fg);
+    @apply shadow-sm;
+  }
+
+  .ui-btn-yellow:hover {
+    background-color: color-mix(in srgb, var(--base-yellow) 90%, black);
+  }
+
+  .ui-btn-yellow:focus-visible {
+    outline: 2px solid var(--base-yellow);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-yellow-muted {
+    background-color: color-mix(in srgb, var(--base-yellow) 20%, transparent);
+    color: var(--base-yellow);
+    @apply cursor-not-allowed border-transparent shadow-none;
+  }
+
+  .ui-btn-yellow-muted:focus-visible {
+    outline: 2px solid var(--base-yellow);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-yellow-readonly {
+    background-color: var(--base-yellow);
+    color: var(--base-yellow-fg);
+    @apply opacity-50 cursor-default pointer-events-none;
+  }
+
+  .ui-btn-yellow-outline {
+    border: 1px solid var(--base-yellow);
+    color: var(--base-yellow);
+    @apply bg-transparent;
+  }
+
+  .ui-btn-yellow-outline:hover {
+    background-color: color-mix(in srgb, var(--base-yellow) 10%, transparent);
+  }
+
+  .ui-btn-yellow-outline:focus-visible {
+    outline: 2px solid var(--base-yellow);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-fuchsia {
+    background-color: var(--base-fucsia);
+    color: var(--base-fucsia-fg);
+    @apply shadow-sm;
+  }
+
+  .ui-btn-fuchsia:hover {
+    background-color: color-mix(in srgb, var(--base-fucsia) 90%, black);
+  }
+
+  .ui-btn-fuchsia:focus-visible {
+    outline: 2px solid var(--base-fucsia);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-fuchsia-muted {
+    background-color: color-mix(in srgb, var(--base-fucsia) 20%, transparent);
+    color: var(--base-fucsia);
+    @apply cursor-not-allowed border-transparent shadow-none;
+  }
+
+  .ui-btn-fuchsia-muted:focus-visible {
+    outline: 2px solid var(--base-fucsia);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-fuchsia-readonly {
+    background-color: var(--base-fucsia);
+    color: var(--base-fucsia-fg);
+    @apply opacity-50 cursor-default pointer-events-none;
+  }
+
+  .ui-btn-fuchsia-outline {
+    border: 1px solid var(--base-fucsia);
+    color: var(--base-fucsia);
+    @apply bg-transparent;
+  }
+
+  .ui-btn-fuchsia-outline:hover {
+    background-color: color-mix(in srgb, var(--base-fucsia) 10%, transparent);
+  }
+
+  .ui-btn-fuchsia-outline:focus-visible {
+    outline: 2px solid var(--base-fucsia);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-violet {
+    background-color: var(--base-violet);
+    color: var(--base-violet-fg);
+    @apply shadow-sm;
+  }
+
+  .ui-btn-violet:hover {
+    background-color: color-mix(in srgb, var(--base-violet) 90%, black);
+  }
+
+  .ui-btn-violet:focus-visible {
+    outline: 2px solid var(--base-violet);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-violet-muted {
+    background-color: color-mix(in srgb, var(--base-violet) 20%, transparent);
+    color: var(--base-violet);
+    @apply cursor-not-allowed border-transparent shadow-none;
+  }
+
+  .ui-btn-violet-muted:focus-visible {
+    outline: 2px solid var(--base-violet);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-violet-readonly {
+    background-color: var(--base-violet);
+    color: var(--base-violet-fg);
+    @apply opacity-50 cursor-default pointer-events-none;
+  }
+
+  .ui-btn-violet-outline {
+    border: 1px solid var(--base-violet);
+    color: var(--base-violet);
+    @apply bg-transparent;
+  }
+
+  .ui-btn-violet-outline:hover {
+    background-color: color-mix(in srgb, var(--base-violet) 10%, transparent);
+  }
+
+  .ui-btn-violet-outline:focus-visible {
+    outline: 2px solid var(--base-violet);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-red {
+    background-color: var(--base-red);
+    color: var(--base-red-fg);
+    @apply shadow-sm;
+  }
+
+  .ui-btn-red:hover {
+    background-color: color-mix(in srgb, var(--base-red) 90%, black);
+  }
+
+  .ui-btn-red:focus-visible {
+    outline: 2px solid var(--base-red);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-red-muted {
+    background-color: color-mix(in srgb, var(--base-red) 20%, transparent);
+    color: var(--base-red);
+    @apply cursor-not-allowed border-transparent shadow-none;
+  }
+
+  .ui-btn-red-muted:focus-visible {
+    outline: 2px solid var(--base-red);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-red-readonly {
+    background-color: var(--base-red);
+    color: var(--base-red-fg);
+    @apply opacity-50 cursor-default pointer-events-none;
+  }
+
+  .ui-btn-red-outline {
+    border: 1px solid var(--base-red);
+    color: var(--base-red);
+    @apply bg-transparent;
+  }
+
+  .ui-btn-red-outline:hover {
+    background-color: color-mix(in srgb, var(--base-red) 10%, transparent);
+  }
+
+  .ui-btn-red-outline:focus-visible {
+    outline: 2px solid var(--base-red);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-orange {
+    background-color: var(--base-orange);
+    color: var(--base-orange-fg);
+    @apply shadow-sm;
+  }
+
+  .ui-btn-orange:hover {
+    background-color: color-mix(in srgb, var(--base-orange) 90%, black);
+  }
+
+  .ui-btn-orange:focus-visible {
+    outline: 2px solid var(--base-orange);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-orange-muted {
+    background-color: color-mix(in srgb, var(--base-orange) 20%, transparent);
+    color: var(--base-orange);
+    @apply cursor-not-allowed border-transparent shadow-none;
+  }
+
+  .ui-btn-orange-muted:focus-visible {
+    outline: 2px solid var(--base-orange);
+    outline-offset: 2px;
+  }
+
+  .ui-btn-orange-readonly {
+    background-color: var(--base-orange);
+    color: var(--base-orange-fg);
+    @apply opacity-50 cursor-default pointer-events-none;
+  }
+
+  .ui-btn-orange-outline {
+    border: 1px solid var(--base-orange);
+    color: var(--base-orange);
+    @apply bg-transparent;
+  }
+
+  .ui-btn-orange-outline:hover {
+    background-color: color-mix(in srgb, var(--base-orange) 10%, transparent);
+  }
+
+  .ui-btn-orange-outline:focus-visible {
+    outline: 2px solid var(--base-orange);
+    outline-offset: 2px;
   }
 
   /* UI Input Semantic Classes */
   .ui-input {
-    @apply flex w-full rounded-md border text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1;
+    @apply flex w-full rounded-md border text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 bg-background text-foreground;
   }
 
   .ui-input-primary {
-    @apply border-input bg-transparent px-3 py-1 focus-visible:ring-ring;
+    @apply border-input px-3 py-1 focus-visible:ring-ring;
   }
 
   .ui-input-primary-muted {
@@ -204,7 +801,7 @@
   }
 
   .ui-input-primary-readonly {
-    @apply border-transparent bg-transparent px-0 py-1 ring-0 cursor-default focus-visible:ring-0 shadow-none;
+    @apply border-transparent bg-background px-0 py-1 ring-0 cursor-default focus-visible:ring-0 shadow-none;
   }
 
   .ui-input-success {
@@ -216,7 +813,7 @@
   }
 
   .ui-input-secondary {
-    @apply border-input bg-transparent px-3 py-1 focus-visible:ring-secondary;
+    @apply border-input px-3 py-1 focus-visible:ring-secondary;
   }
 
   .ui-input-secondary-muted {
@@ -224,7 +821,7 @@
   }
 
   .ui-input-secondary-readonly {
-    @apply border-transparent bg-transparent px-0 py-1 ring-0 cursor-default focus-visible:ring-0 shadow-none text-secondary-foreground;
+    @apply border-transparent bg-background px-0 py-1 ring-0 cursor-default focus-visible:ring-0 shadow-none text-secondary-foreground;
   }
 
   .ui-input-wrapper {
@@ -237,11 +834,11 @@
 
   /* UI Checkbox Semantic Classes */
   .ui-checkbox-container {
-    @apply flex items-start gap-4 mt-4;
+    @apply flex items-start gap-4;
   }
 
   .ui-checkbox-input {
-    @apply mt-1 w-4 h-4 shrink-0 rounded appearance-none border border-input bg-background text-emerald-500 checked:bg-emerald-500 checked:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-background transition-all cursor-pointer relative after:content-['✓'] after:absolute after:text-primary-foreground after:text-xs after:left-0.5 after:top-[-1px] after:opacity-0 checked:after:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply mt-1 w-4 h-4 shrink-0 rounded appearance-none border border-input bg-background text-emerald-500 checked:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-background transition-all cursor-pointer relative after:content-['✓'] after:absolute after:text-emerald-500 after:text-xs after:left-0.5 after:top-[-1px] after:opacity-0 checked:after:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .ui-checkbox-text {
@@ -265,10 +862,79 @@
     @apply hidden dark:block object-contain;
   }
 
+  /* Icon Semantic Classes */
+  .ui-icon {
+    @apply flex items-center justify-center shrink-0;
+  }
+
+  .ui-icon-img {
+    @apply object-contain drop-shadow-sm;
+  }
+
+  /* Logo Semantic Classes */
+  .ui-link {
+    @apply relative block w-full h-full;
+  }
+
+  .ui-link:hover .ui-logo {
+    @apply -translate-y-1 shadow-lg border-b border-r border-black/10;
+  }
+
+  .ui-logo {
+    @apply relative w-full h-full transition-all duration-300;
+  }
+
+  .ui-logo-glue {
+    @apply absolute top-0 left-0 right-0 h-[15%] bg-glue/5 z-10;
+  }
+
+  .ui-logo-icon-container {
+    @apply absolute inset-0 flex items-center justify-center z-20 pt-[8%];
+  }
+
+  .ui-logo-icon {
+    @apply object-contain drop-shadow-sm;
+  }
+
+  .ui-logo-slogan {
+    @apply font-semibold tracking-tight text-center mt-1 uppercase text-foreground/80;
+  }
+
+  .ui-tools-logo {
+    @apply fixed pointer-events-auto;
+    top: calc(var(--spacing) * 4);
+    left: calc(var(--spacing) * 4);
+  }
+
   .card-post-it>.ui-card-header {
-    background-color: rgba(0, 0, 0, 0.1);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background-color: color-mix(in srgb, var(--color-glue) 10%, transparent);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--color-glue) 5%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-glue) 5%, transparent);
+  }
+
+  /* Post-it Specific Theme Overrides */
+  .card-post-it {
+    --background: var(--primary);
+    --card: var(--primary);
+  }
+
+  .card-post-it.theme-green,
+  .card-post-it.theme-yellow {
+    --foreground: 220 10% 4%;
+    --card-foreground: 220 10% 4%;
+    --muted-foreground: 220 14% 30%;
+    --border: 220 10% 4%;
+  }
+
+  .card-post-it.theme-blue,
+  .card-post-it.theme-fucsia,
+  .card-post-it.theme-violet,
+  .card-post-it.theme-red,
+  .card-post-it.theme-orange {
+    --foreground: 0 0% 100%;
+    --card-foreground: 0 0% 100%;
+    --muted-foreground: 220 14% 96%;
+    --border: 0 0% 100%;
   }
 
   /* Layout Specific Semantic Classes */
@@ -326,8 +992,6 @@
 
   .layout-public-root {
     @apply relative flex min-h-screen flex-col;
-    background-image: radial-gradient(hsl(var(--muted-foreground)/0.2) 1px, transparent 1px);
-    background-size: 24px 24px;
   }
 
   .layout-auth-wrapper {
@@ -371,7 +1035,7 @@
   }
 
   .layout-auth-footer-note {
-    @apply text-xs text-center text-muted-foreground mt-4;
+    @apply text-xs text-center text-muted-foreground;
   }
 
   .layout-w-full {
@@ -395,28 +1059,27 @@
     @apply mx-auto max-w-sm w-full;
   }
 
-  .layout-auth-card-header {
-    @apply flex flex-col items-center text-center;
+  .ui-card-auth {
+    @apply border-b border-black/10;
   }
 
-  .layout-auth-logo {
-    @apply py-6;
+  .ui-card-auth-footer {
+    @apply flex-col gap-4 w-full;
   }
 
-  .layout-auth-card-footer {
-    @apply flex-col gap-4;
+  .ui-card-auth-note {
+    @apply text-sm text-center w-full;
   }
 
-  .layout-auth-card-note {
-    @apply text-sm text-center text-muted-foreground;
+  .ui-card-auth-link {
+    @apply underline transition-colors;
+    color: currentColor;
   }
 
-  .layout-auth-card-link {
-    @apply underline hover:text-primary transition-colors;
-  }
-
-  .layout-auth-card-copyright {
-    @apply text-xs text-center text-muted-foreground/60 w-full pt-4 border-t;
+  .ui-card-auth-copyright {
+    @apply text-xs text-center w-full pt-4;
+    border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    color: color-mix(in srgb, currentColor 70%, transparent);
   }
 
   .ui-form-grid {
@@ -837,6 +1500,23 @@
     @apply text-destructive;
   }
 
+  /* Home Page Semantic Classes */
+  .ui-home {
+    @apply fixed;
+    top: 128px;
+    right: 128px;
+    bottom: 128px;
+    left: 128px;
+  }
+
+  .ui-home-logo {
+    @apply absolute inset-0 flex items-center justify-center pointer-events-none;
+  }
+
+  .ui-home-exit {
+    @apply absolute top-4 right-4 cursor-pointer text-muted-foreground transition-colors hover:text-foreground z-10 flex items-center justify-center;
+  }
+
   /* Auth & Onboarding Pages Semantic Classes */
   .layout-auth-page {
     @apply flex w-full min-h-[calc(100vh-200px)] items-center justify-center p-4;
@@ -860,5 +1540,166 @@
 
   .layout-onboarding-footer {
     @apply mt-6 text-center text-xs text-muted-foreground;
+  }
+
+  /* Tools Layout Semantic Classes */
+  .tool {
+    @apply fixed inset-0 flex flex-col overflow-hidden bg-transparent;
+  }
+
+  .ui-tools-main {
+    @apply flex flex-1 overflow-hidden relative w-full h-full;
+    padding-top: 96px;
+  }
+
+  .ui-tools-main-sidebar {
+    @apply flex flex-col h-full bg-transparent transition-all duration-300 ease-in-out z-40 overflow-hidden;
+  }
+
+  .ui-tools-main-sidebar--collapsed {
+    @apply w-[64px];
+  }
+
+  .ui-tools-main-sidebar--expanded {
+    @apply w-[240px];
+  }
+
+  .ui-tools-main-sidebar-content {
+    @apply flex-1 overflow-y-auto overflow-x-hidden;
+  }
+
+  .ui-tools-main-content {
+    @apply flex-1 flex flex-col h-full overflow-hidden relative p-4 md:p-8 overflow-y-auto;
+  }
+
+  .ui-tools-main-propbar {
+    @apply flex flex-col h-full bg-transparent transition-all duration-300 ease-in-out z-40 overflow-hidden;
+  }
+
+  .ui-tools-footer {
+    @apply h-[64px] w-full bg-background border-t border-border flex items-center px-4 z-40 relative flex-shrink-0;
+  }
+
+  /* Tools Navigator Semantic Classes */
+  .ui-tools-navigator {
+    @apply fixed pointer-events-auto flex items-center gap-2 bg-background/50 backdrop-blur-md px-3 py-2 rounded-2xl border border-border shadow-sm;
+    top: calc(var(--spacing) * 4);
+    right: calc(var(--spacing) * 4);
+  }
+
+  .ui-tools-navigator-link {
+    @apply text-xs font-medium hover:text-primary transition-colors px-2;
+  }
+
+  .ui-tools-navigator-btn {
+    @apply transition-all duration-200;
+  }
+
+
+
+  .ui-tools-navigator-menu {
+    @apply relative fixed top-8 right-8;
+  }
+
+  .ui-tools-navigator-user-group {
+    @apply flex items-center gap-3 bg-background/50 backdrop-blur-md px-3 py-2 rounded-2xl border border-border shadow-sm pointer-events-auto;
+  }
+
+  .ui-tools-navigator-user-info {
+    @apply hidden md:flex flex-col items-end pr-2 border-r border-border/50;
+  }
+
+  .ui-tools-navigator-user-org {
+    @apply text-[10px] font-medium text-muted-foreground uppercase tracking-wider;
+  }
+
+  .ui-tools-navigator-user-name {
+    @apply text-sm font-semibold leading-none;
+  }
+
+  .ui-tools-navigator-toggle-btn {
+    @apply p-1 hover:bg-accent rounded-full transition-colors;
+  }
+
+  @keyframes dropdown-fade-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .ui-tools-navigator-dropdown {
+    @apply absolute top-full right-0 mt-2 w-64 bg-card rounded-xl shadow-lg border border-border overflow-hidden pointer-events-auto origin-top-right;
+    animation: dropdown-fade-in 0.2s ease-out;
+  }
+
+  .ui-tools-navigator-dropdown-header {
+    @apply p-4 border-b border-border bg-muted/30;
+  }
+
+  .ui-tools-navigator-dropdown-org {
+    @apply text-xs font-medium text-muted-foreground mb-1;
+  }
+
+  .ui-tools-navigator-dropdown-name {
+    @apply font-semibold;
+  }
+
+  .ui-tools-navigator-dropdown-role {
+    @apply text-xs text-muted-foreground mt-0.5;
+  }
+
+  .ui-tools-navigator-nav {
+    @apply p-2 space-y-1;
+  }
+
+  .ui-tools-navigator-nav-item {
+    @apply flex items-center gap-3 w-full p-2 text-sm rounded-lg transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-medium;
+  }
+
+  .ui-tools-navigator-actions {
+    @apply p-2 border-t border-border grid grid-cols-4 gap-1;
+  }
+
+  .ui-tools-navigator-action-slot {
+    @apply flex items-center justify-center;
+  }
+
+  .ui-tools-navigator-action-btn {
+    @apply w-8 h-8 rounded-full;
+  }
+
+  .ui-tools-navigator-logout-wrapper {
+    @apply p-2 border-t border-border;
+  }
+
+  .ui-tools-navigator-logout-btn {
+    @apply flex items-center w-full p-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer;
+  }
+
+  /* SwitchMode Semantic Classes */
+  .ui-switch-mode {
+    @apply relative inline-block text-left;
+  }
+
+  .ui-switch-mode-dropdown {
+    @apply absolute z-50 mt-2 w-56 rounded-md border border-border bg-popover text-popover-foreground shadow-lg shadow-black/5 outline-none;
+  }
+
+  .ui-switch-mode-list {
+    @apply p-1 flex flex-col gap-1;
+  }
+
+  .ui-switch-mode-item {
+    @apply w-full flex items-center justify-start gap-3 bg-transparent border-transparent shadow-none text-foreground hover:bg-muted transition-colors font-normal;
+  }
+
+  .ui-switch-mode-item-active {
+    @apply w-full flex items-center justify-start gap-3 border-transparent shadow-none font-medium;
   }
 }

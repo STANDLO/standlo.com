@@ -6,7 +6,8 @@ import { applyActionCode } from "firebase/auth";
 import { auth, appCheck } from "@/core/firebase";
 import { getToken } from "firebase/app-check";
 import { useTranslations } from "next-intl";
-import { CardAuth } from "@/components/ui/CardAuth";
+import { Card, CardColor } from "@/components/ui/Card";
+import { useBrandColor } from "@/hooks/useBrandColor";
 import { Loader2 } from "lucide-react";
 
 export function FormAuthAction({ locale }: { locale: string }) {
@@ -14,6 +15,16 @@ export function FormAuthAction({ locale }: { locale: string }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const hasHandled = React.useRef(false);
+
+    const tBrand = useTranslations("Brand");
+    const { color } = useBrandColor();
+    const activeColor = color === "default" ? "green" : color;
+
+    const footer = (
+        <div className="ui-card-auth-copyright">
+            {tBrand("copyright", { year: new Date().getFullYear() })}
+        </div>
+    );
 
     const [status, setStatus] = React.useState<"loading" | "success" | "error">("loading");
     const [message, setMessage] = React.useState<string>("");
@@ -119,9 +130,11 @@ export function FormAuthAction({ locale }: { locale: string }) {
     }, [searchParams, router, locale, t]);
 
     return (
-        <CardAuth
+        <Card
+            color={activeColor as CardColor}
+            layout="auto"
             title={t("Action.title", { fallback: "Processing Request" })}
-            description={t("Action.description", { fallback: "Please wait while we verify your secure link." })}
+            footer={footer}
         >
             <div className="layout-auth-form mt-4 flex flex-col items-center justify-center p-6 text-center">
                 {status === "loading" && (
@@ -147,6 +160,6 @@ export function FormAuthAction({ locale }: { locale: string }) {
                     </div>
                 )}
             </div>
-        </CardAuth>
+        </Card>
     );
 }

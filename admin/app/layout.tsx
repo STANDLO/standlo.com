@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { NextIntlClientProvider } from "next-intl";
-import enMessages from "../../messages/en.json";
+import usMessages from "../../messages/us.json";
 import { Sidebar } from "./components/Sidebar";
 import { AdminAuthGuard } from "./components/AdminAuthGuard";
 import "./globals.css";
@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-[#f7f9fc] dark:bg-[#0e0e11] text-foreground`}>
-        <NextIntlClientProvider locale="en" messages={enMessages}>
+        <NextIntlClientProvider locale="us" messages={usMessages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <AdminAuthGuard>
               <div className="flex h-screen overflow-hidden">

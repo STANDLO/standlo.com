@@ -27,6 +27,7 @@ export async function activateUser(callerUid: string, payload: Record<string, un
         const targetRecord = await admin.auth().getUser(targetUserId);
         const newClaims = {
             ...targetRecord.customClaims,
+            phoneNumber: targetRecord.phoneNumber || null,
             active: true
         };
         await admin.auth().setCustomUserClaims(targetUserId, newClaims);

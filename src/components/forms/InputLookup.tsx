@@ -58,7 +58,7 @@ export function InputLookup({
                 {!readOnly && (
                     <Button
                         type="button"
-                        variant="secondary"
+                        variant="default"
                         size="icon"
                         disabled={disabled}
                         onClick={() => setIsOpen(true)}
@@ -95,7 +95,7 @@ export function InputLookup({
                         ))}
                     </div>
                     <div className="ui-lookup-footer">
-                        <Button variant="secondaryMuted" className="ui-lookup-btn" onClick={() => setIsOpen(false)}>
+                        <Button variant="defaultMuted" className="ui-lookup-btn" onClick={() => setIsOpen(false)}>
                             Cancel
                         </Button>
                     </div>

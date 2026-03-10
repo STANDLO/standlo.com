@@ -7,7 +7,7 @@ export type BrandColor = "default" | "green" | "blue" | "yellow" | "fucsia" | "v
 const BRAND_COLORS: BrandColor[] = ["default", "green", "blue", "yellow", "fucsia", "violet", "red", "orange"];
 
 export function useBrandColor() {
-    const [color, setColor] = useState<BrandColor>("default");
+    const [color, setColor] = useState<BrandColor>("green");
 
     const applyColorClass = (newColor: BrandColor) => {
         const root = window.document.documentElement;

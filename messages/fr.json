@@ -28,7 +28,7 @@
         "name": "STANDLO",
         "slogan": "The Global Factory",
         "description": "STANDLO présente TIM (Temporary Information Modeling) : le système d'exploitation qui transforme les données en structures physiques. Gérez des stands d'exposition et des modules d'urgence avec une synchronisation millimétrique, des paiements instantanés et une logistique prédictive. Bienvenue dans le Temporary Flow.",
-        "copyright": "© {year} STANDLO SÜ Tous droits réservés."
+        "copyright": "© {year} Kalex AI Inc. Tous droits réservés."
     },
     "Dashboard": {
         "Designer": {
@@ -64,7 +64,9 @@
             "nameLabel": "Nom complet",
             "namePlaceholder": "Jean Dupont",
             "submitButton": "S'inscrire",
-            "acceptTerms": "J'accepte la <privacyLink>Politique de confidentialité</privacyLink> et les <termsLink>Conditions générales</termsLink>."
+            "acceptTerms": "J'accepte la <privacyLink>Politique de confidentialité</privacyLink> et<br></br>les <termsLink>Conditions de Service</termsLink>.",
+            "termsDivider": "Accepter la confidentialité",
+            "registerDivider": "Terminer l'inscription"
         },
         "Login": {
             "title": "Se connecter à STANDLO",
@@ -83,8 +85,11 @@
         "emailPlaceholder": "jean.dupont@entreprise.fr",
         "passwordLabel": "Mot de passe",
         "submitButton": "Accès",
-        "dividerText": "Ou continuer avec",
-        "footerNote": "* L'accès peut nécessiter une vérification en deux étapes (MFA SMS) pour les rôles administratifs.",
+        "dividerText": "Ou",
+        "orDivider": "Ou (TÉLÉPHONE REQUIS pour MFA)",
+        "socialDivider": "Utiliser les réseaux sociaux (Recommandé)",
+        "loginDividerText": "Cliquez pour accéder",
+        "footerNote": "* L'accès nécessite une vérification en deux étapes (MFA SMS)",
         "noAccountText": "Vous n'avez pas de compte ?",
         "registerAction": "S'inscrire",
         "Errors": {
@@ -120,7 +125,16 @@
             "invalidLink": "Code d'action invalide ou manquant.",
             "invalidMode": "Mode d'action inconnu.",
             "errorMessage": "Une erreur s'est produite lors du traitement de votre demande."
-        }
+        },
+        "mfaVerifyMessage": "Nous avons envoyé un code SMS pour confirmer votre accès.",
+        "mfaEnrollMessage": "Pour des raisons de sécurité, l'accès nécessite une vérification en deux étapes. Veuillez ajouter votre numéro de téléphone.",
+        "mfaEnrollVerifyMessage": "Saisissez le code reçu par SMS pour confirmer.",
+        "otpLabel": "Code OTP",
+        "phoneNumberLabel": "Numéro de téléphone",
+        "verifyAccessButton": "Vérifier l'accès",
+        "sendVerificationSmsButton": "Envoyer un SMS",
+        "completeRegistrationButton": "Se connecter",
+        "registrationSuccess": "Inscription réussie. Veuillez vous connecter pour terminer la configuration de sécurité MFA."
     },
     "Register": {
         "title": "Créer un compte client",

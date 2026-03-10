@@ -81,7 +81,7 @@ export default function ProfileClient({ initialHint, initialCreatedAt }: Profile
                 <Button
                     onClick={handleGenerate}
                     disabled={isLoading}
-                    variant={hint ? "outline" : "primary"}
+                    variant={hint ? "outline" : "default"}
                 >
                     {isLoading ? "Generazione..." : hint ? "Rigenera API Key" : "Genera API Key"}
                 </Button>

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "firebase-admin/auth";
 import { getApps, initializeApp, cert, getApp } from "firebase-admin/app";
 import { getAppCheck } from "firebase-admin/app-check";
 import fs from "fs";
@@ -72,7 +71,7 @@ export async function POST(req: NextRequest) {
                 const payloadStr = JSON.parse(Buffer.from(parts[1], 'base64').toString('ascii'));
                 console.log("[API Proxy DEBUG] Decoding JWT - alg:", header.alg, "aud:", payloadStr.aud);
             }
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
 
         // 2. Parse request body
         const body = await req.json();

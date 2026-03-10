@@ -74,19 +74,19 @@ export async function GET() {
             }
         }
 
-        // 2. Load EN base translations
-        const enPath = path.join(MESSAGES_DIR, "en.json");
-        let enBase: Record<string, unknown> = {};
+        // 2. Load US base translations
+        const usPath = path.join(MESSAGES_DIR, "us.json");
+        let usBase: Record<string, unknown> = {};
         try {
-            const enRaw = await fs.readFile(enPath, "utf-8");
-            enBase = JSON.parse(enRaw);
+            const usRaw = await fs.readFile(usPath, "utf-8");
+            usBase = JSON.parse(usRaw);
         } catch {
-            return NextResponse.json({ success: false, error: "en.json not found or invalid" }, { status: 500 });
+            return NextResponse.json({ success: false, error: "us.json not found or invalid" }, { status: 500 });
         }
 
-        const flatEn = flattenObject(enBase);
-        const enKeys = Object.keys(flatEn);
-        const totalKeys = enKeys.length;
+        const flatUs = flattenObject(usBase);
+        const usKeys = Object.keys(flatUs);
+        const totalKeys = usKeys.length;
 
         // 3. Compare with other locales
         const analysis = await Promise.all(locales.map(async (locale) => {
@@ -104,10 +104,10 @@ export async function GET() {
             const missingKeysPayload: Record<string, string> = {};
             let missingCount = 0;
 
-            if (locale.code !== "en") {
-                enKeys.forEach(k => {
+            if (locale.code !== "us") {
+                usKeys.forEach(k => {
                     if (flatLocale[k] === undefined) {
-                        missingKeysPayload[k] = `[MISSING: ${locale.code.toUpperCase()}] ${flatEn[k]}`;
+                        missingKeysPayload[k] = `[MISSING: ${locale.code.toUpperCase()}] ${flatUs[k]}`;
                         missingCount++;
                     }
                 });
@@ -119,7 +119,7 @@ export async function GET() {
             return {
                 ...locale,
                 isFound,
-                missingCount: locale.code === "en" ? 0 : missingCount,
+                missingCount: locale.code === "us" ? 0 : missingCount,
                 exportData: Object.keys(exportData).length > 0 ? JSON.stringify(exportData, null, 2) : null
             };
         }));

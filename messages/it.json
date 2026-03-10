@@ -39,7 +39,9 @@
             "nameLabel": "Nome Completo",
             "namePlaceholder": "Mario Rossi",
             "submitButton": "Registrati",
-            "acceptTerms": "Accetto la <privacyLink>Privacy Policy</privacyLink> e i <termsLink>Termini e Condizioni</termsLink>."
+            "acceptTerms": "Accetto la <privacyLink>Privacy Policy</privacyLink> e<br></br>i <termsLink>Termini e Condizioni di Servizio</termsLink>.",
+            "termsDivider": "Accetta Privacy & Condizioni",
+            "registerDivider": "Completa la registrazione"
         },
         "Login": {
             "title": "Accedi a STANDLO",
@@ -57,9 +59,12 @@
         "passwordLabel": "Password",
         "submitButton": "Accedi",
         "dividerText": "Oppure continua con",
+        "orDivider": "Oppure (SERVE TELEFONO per MFA)",
+        "socialDivider": "Usa i social (Consigliato)",
+        "loginDividerText": "Clicca per accedere",
         "continueGoogle": "Continua con Google",
         "continueGithub": "Continua con GitHub",
-        "footerNote": "* L'accesso potrebbe richiedere una verifica in due passaggi (MFA SMS) per i ruoli amministrativi.",
+        "footerNote": "* L'accesso richiede una verifica in due passaggi",
         "noAccountText": "Non hai un account?",
         "registerAction": "Registrati",
         "Errors": {
@@ -95,7 +100,16 @@
             "invalidLink": "Link non valido o scaduto.",
             "invalidMode": "Tipo di azione non riconosciuta.",
             "errorMessage": "Si è verificato un errore durante l'elaborazione della tua richiesta."
-        }
+        },
+        "mfaVerifyMessage": "Ti abbiamo inviato un codice SMS per confermare il tuo accesso.",
+        "mfaEnrollMessage": "Per motivi di sicurezza, l'accesso richiede una verifica in due passaggi. Aggiungi il tuo numero di telefono.",
+        "mfaEnrollVerifyMessage": "Inserisci il codice ricevuto via SMS per confermare.",
+        "otpLabel": "Codice OTP",
+        "phoneNumberLabel": "Numero di Telefono",
+        "verifyAccessButton": "Verifica Accesso",
+        "sendVerificationSmsButton": "Invia SMS",
+        "completeRegistrationButton": "Esegui Login",
+        "registrationSuccess": "Registrazione completata con successo. Accedi per finire la configurazione di sicurezza MFA."
     },
     "Register": {
         "title": "Crea Account Customer",
@@ -142,7 +156,7 @@
         "name": "STANDLO",
         "slogan": "The Global Factory",
         "description": "STANDLO presenta TIM (Temporary Information Modeling): il sistema operativo che trasforma i dati in strutture fisiche. Gestisci stand fieristici e moduli di emergenza con sincronia millimetrica, pagamenti istantanei e logistica predittiva. Benvenuti nel Temporary Flow.",
-        "copyright": "© {year} STANDLO SÜ Tutti i diritti riservati."
+        "copyright": "© {year} Kalex AI Inc. Tutti i diritti riservati."
     },
     "Dashboard": {
         "Designer": {

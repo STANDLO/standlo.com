@@ -7,7 +7,7 @@ import { authConfig } from "./core/auth-edge";
 const intlMiddleware = createMiddleware(routing);
 
 // I file public che non richiedono login (es. /auth/login, landing, etc.)
-const PUBLIC_PATHS = ['/auth/login', '/auth/create', '/auth/action'];
+const PUBLIC_PATHS = ['/auth/login', '/auth/create', '/auth/action', '/privacy', '/terms'];
 
 export async function proxy(request: NextRequest) {
     // 1. JWT Parsing & Role Redirection
@@ -108,13 +108,14 @@ export async function proxy(request: NextRequest) {
         handleInvalidToken: async () => {
             const url = request.nextUrl.clone();
             const pathname = url.pathname;
-            const localeMatch = pathname.match(/^\/(it|en|es)/);
+            const localeMatch = pathname.match(/^\/(it|en|es|us|de|fr)/);
             const locale = localeMatch ? localeMatch[1] : 'it'; // Default IT
 
             const isPublic = PUBLIC_PATHS.some(p => pathname.includes(p));
+            const isRootLocale = /^\/(?:it|en|es|us|de|fr)\/?$/.test(pathname);
 
             // Se non è autenticato e cerca di andare in area privata
-            if (!isPublic && pathname !== '/' && !pathname.startsWith('/_next') && !pathname.startsWith('/api/')) {
+            if (!isPublic && pathname !== '/' && !isRootLocale && !pathname.startsWith('/_next') && !pathname.startsWith('/api/')) {
                 url.pathname = `/${locale}/auth/login`;
                 return NextResponse.redirect(url);
             }

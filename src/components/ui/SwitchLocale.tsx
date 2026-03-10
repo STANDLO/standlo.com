@@ -10,10 +10,7 @@ import { Globe } from "lucide-react"
 const systemLocales = [
     { code: "it", nativeLabel: "Italia", flag: "🇮🇹" },
     { code: "es", nativeLabel: "España", flag: "🇪🇸" },
-    { code: "en", nativeLabel: "United Kingdom", flag: "🇬🇧" },
-    { code: "us", nativeLabel: "United States of America", flag: "🇺🇸" },
-    { code: "de", nativeLabel: "Deutschland", flag: "🇩🇪" },
-    { code: "fr", nativeLabel: "France", flag: "🇫🇷" }
+    { code: "us", nativeLabel: "United States of America", flag: "🇺🇸" }
 ]
 
 export function SwitchLocale() {
@@ -88,7 +85,7 @@ export function SwitchLocale() {
 
             {isOpen && (
                 <div
-                    className="absolute z-50 mt-2 w-56 rounded-md border border-border bg-popover text-popover-foreground shadow-lg shadow-black/5 outline-none"
+                    className="absolute z-50 mt-2 w-72 rounded-md border border-border bg-popover text-popover-foreground shadow-lg shadow-black/5 outline-none"
                     style={dropdownPosition}
                 >
                     <div className="py-1">

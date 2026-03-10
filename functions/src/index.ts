@@ -15,12 +15,14 @@ const db = getFirestore(app, "standlo"); // Enterprise Named Database
 const REGION = "europe-west4";
 
 export const systemLocales = [
+    { code: "us", nativeLabel: "United States of America", flag: "🇺🇸" },
     { code: "it", nativeLabel: "Italia", flag: "🇮🇹" },
     { code: "es", nativeLabel: "España", flag: "🇪🇸" },
-    { code: "en", nativeLabel: "United Kingdom", flag: "🇬🇧" },
-    { code: "us", nativeLabel: "United States of America", flag: "🇺🇸" },
-    { code: "de", nativeLabel: "Deutschland", flag: "🇩🇪" },
-    { code: "fr", nativeLabel: "France", flag: "🇫🇷" }
+];
+
+export const systemUiModes = [
+    { code: "tools", nativeLabel: "Tools Dashboard", icon: "LayoutDashboard", color: "blue" },
+    { code: "canvas", nativeLabel: "3D Canvas", icon: "Box", color: "green" },
 ];
 
 /**

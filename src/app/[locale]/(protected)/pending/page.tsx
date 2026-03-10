@@ -87,7 +87,7 @@ export default function PendingPage() {
                     <LogOut className="w-4 h-4" />
                     <span>{t("logout", { fallback: "Crea Nuovo Account / Esci" })}</span>
                 </Button>
-                <Button variant="primary" onClick={handleRefresh} className="space-x-2" disabled={isRefreshing}>
+                <Button variant="default" onClick={handleRefresh} className="space-x-2" disabled={isRefreshing}>
                     <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                     <span>{isRefreshing ? 'Aggiornamento...' : 'Aggiorna Stato'}</span>
                 </Button>

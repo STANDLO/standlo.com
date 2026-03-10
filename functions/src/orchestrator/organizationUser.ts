@@ -92,6 +92,7 @@ export async function createOrganizationUserEntity(uid: string, payload: Record<
 
     const newClaims: Record<string, unknown> = {
         ...currentCustomClaims,
+        phoneNumber: userRec.phoneNumber || null,
         orgId: orgId,
         type: type,
         userType: type,
@@ -222,6 +223,7 @@ export async function updateOrganizationUserEntity(uid: string, id: string, payl
         const currentCustomClaims = userRec.customClaims || {};
         newClaims = {
             ...currentCustomClaims,
+            phoneNumber: userRec.phoneNumber || null,
             type: payload.type,
             userType: payload.type
         };
@@ -291,7 +293,10 @@ export async function deleteOrganizationUserEntity(uid: string, id: string, payl
     // 2. Revoke custom claims for this org
     const userRec = await admin.auth().getUser(id);
     const currentCustomClaims = userRec.customClaims || {};
-    const newClaims = { ...currentCustomClaims };
+    const newClaims: Record<string, unknown> = {
+        ...currentCustomClaims,
+        phoneNumber: userRec.phoneNumber || null
+    };
 
     if (newClaims.orgId === orgId) {
         delete newClaims.orgId;

@@ -28,13 +28,7 @@
         "name": "STANDLO",
         "slogan": "The Global Factory",
         "description": "STANDLO introduces TIM (Temporary Information Modeling): the operating system that transforms data into physical structures. Manage trade show booths and emergency modules with millimetric synchrony, instant payments, and predictive logistics. Welcome to the Temporary Flow.",
-        "copyright": "© {year} STANDLO SÜ All rights reserved."
-    },
-    "Common": {
-        "noResults": "No results found.",
-        "loadMore": "Load More",
-        "genericError": "There was a problem processing your request.",
-        "logout": "Log out"
+        "copyright": "© {year} Kalex AI Inc. All rights reserved."
     },
     "Dashboard": {
         "Designer": {
@@ -55,6 +49,12 @@
             "card2Title": "To Invoice"
         }
     },
+    "Common": {
+        "noResults": "No results found.",
+        "loadMore": "Load More",
+        "genericError": "There was a problem processing your request.",
+        "logout": "Log out"
+    },
     "Auth": {
         "Register": {
             "title": "Create an Account",
@@ -64,7 +64,9 @@
             "nameLabel": "Full Name",
             "namePlaceholder": "John Doe",
             "submitButton": "Register",
-            "acceptTerms": "I accept the <privacyLink>Privacy Policy</privacyLink> and the <termsLink>Terms & Conditions</termsLink>."
+            "acceptTerms": "I accept the <privacyLink>Privacy Policy</privacyLink> and<br></br>the <termsLink>Terms of Service</termsLink>.",
+            "termsDivider": "Accept Privacy & Terms",
+            "registerDivider": "Complete registration"
         },
         "Login": {
             "title": "Log in to STANDLO",
@@ -82,9 +84,12 @@
         "emailLabel": "Email",
         "emailPlaceholder": "mario.rossi@company.com",
         "passwordLabel": "Password",
-        "submitButton": "Login",
+        "submitButton": "Sign in",
         "dividerText": "Or continue with",
-        "footerNote": "* Access may require a two-step verification (MFA SMS) for administrative roles.",
+        "orDivider": "Or (PHONE REQUIRED for MFA)",
+        "socialDivider": "Use socials (Recommended)",
+        "loginDividerText": "Click to access",
+        "footerNote": "* Access requires a two-step verification",
         "noAccountText": "Don't have an account?",
         "registerAction": "Sign Up",
         "Errors": {
@@ -120,7 +125,16 @@
             "invalidLink": "Invalid or missing action code.",
             "invalidMode": "Unknown action mode.",
             "errorMessage": "An error occurred while processing your request."
-        }
+        },
+        "mfaVerifyMessage": "We have sent an SMS code to confirm your access.",
+        "mfaEnrollMessage": "For security reasons, access requires two-step verification. Please add your phone number.",
+        "mfaEnrollVerifyMessage": "Enter the code received via SMS to confirm.",
+        "otpLabel": "OTP Code",
+        "phoneNumberLabel": "Phone Number",
+        "verifyAccessButton": "Verify Access",
+        "sendVerificationSmsButton": "Send SMS",
+        "completeRegistrationButton": "Log In",
+        "registrationSuccess": "Registration successful. Please login to complete the MFA security setup."
     },
     "Register": {
         "title": "Create Customer Account",
@@ -139,6 +153,13 @@
     "Onboarding": {
         "title": "Complete Your B2B Profile",
         "subtitle": "To continue using Standlo, we need some mandatory information for billing.",
+        "orgTypeLabel": "Organization Type",
+        "orgTypeOptions": {
+            "EDUCATIONAL": "Educational (Free)",
+            "PROFESSIONAL": "Professional",
+            "BUSINESS": "Business"
+        },
+        "birthdayLabel": "Date of Birth",
         "orgNameLabel": "Company Name",
         "logoLabel": "Company Logo",
         "roleLabel": "Select your role",
@@ -150,13 +171,18 @@
     },
     "Components": {
         "InputPlace": {
-            "placeholder": "Search an address with Google..."
+            "placeholder": "search an address with Google..."
         }
     },
+    "Canvas": {
+        "title": "Canvas 3D Editor"
+    },
     "components": {
+        "canvas": "Canvas",
         "dashboard": "Dashboard",
         "orders": "Orders",
         "catalog": "Catalog",
+        "organization": "Organization",
         "organizations": "Organizations",
         "settings": "Settings",
         "projects": "Projects",
@@ -187,7 +213,8 @@
             "painter": "Painter",
             "technician": "Technician",
             "driver": "Driver",
-            "promoter": "Promoter"
+            "promoter": "Promoter",
+            "standlo_design": "STANDLO Design"
         },
         "devMode": {
             "title": "Work in Progress",

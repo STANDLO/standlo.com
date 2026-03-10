@@ -39,6 +39,7 @@ Data Access Layer standardizzato per l'interazione bidirezionale Frontend<->DB, 
 Gateway specializzato per l'infrastruttura 3D (WebGL / R3F) e la logica costruttiva del progetto.
 - **Architettura**: Utilizza Zustand per la reattività del Single Source of Truth locale, sincronizzato con istanze fisiche (Rapier) per collisioni e interazioni drag-and-drop millimetriche. 
 - **Componentistica**: Integrato tramite i moduli `CanvasEditor`, `CanvasParts`, `CanvasAssembly`, e gestito dal pannello spaziale `CameraControls`.
+- **Refactoring Recenti (Marzo 2026)**: Unificazione delle meccaniche dell'Admin Editor nel Canvas pubblico (`Canvas.tsx`). Integrazione di `ZUpGizmoViewcube` personalizzato (con `renderPriority` elevata per compatibilità post-processing), griglia dinamica adattiva al tema (Dark/Light) con blocchi da `1m` e `0.1m`, sistema di snapping avanzato assistito (origin, corners) e manipolazione interattiva degli oggetti (`GenericPart.tsx`) governata dallo store Zustand. Supporto per la persistenza del contesto via `CANVAS.md`.
 
 ### 2.4 Fusion 360 ERP Bridge
 Sistema di integrazione profonda per la preventivazione, logistica e trasformazione del BOM (Bill of Materials).

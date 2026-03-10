@@ -28,7 +28,7 @@
         "name": "STANDLO",
         "slogan": "The Global Factory",
         "description": "STANDLO präsentiert TIM (Temporary Information Modeling): das Betriebssystem, das Daten in physische Strukturen verwandelt. Verwalten Sie Messestände und Notfallmodule mit millimetergenauer Synchronisation, sofortigen Zahlungen und prädiktiver Logistik. Willkommen im Temporary Flow.",
-        "copyright": "© {year} STANDLO SÜ Alle Rechte vorbehalten."
+        "copyright": "© {year} Kalex AI Inc. Alle Rechte vorbehalten."
     },
     "Dashboard": {
         "Designer": {
@@ -58,7 +58,9 @@
             "nameLabel": "Vollständiger Name",
             "namePlaceholder": "Max Mustermann",
             "submitButton": "Registrieren",
-            "acceptTerms": "Ich akzeptiere die <privacyLink>Datenschutzrichtlinie</privacyLink> und die <termsLink>Allgemeinen Geschäftsbedingungen</termsLink>."
+            "acceptTerms": "Ich akzeptiere die <privacyLink>Datenschutzrichtlinie</privacyLink> und<br></br>die <termsLink>Nutzungsbedingungen</termsLink>.",
+            "termsDivider": "Datenschutz akzeptieren",
+            "registerDivider": "Registrierung abschließen"
         },
         "Login": {
             "title": "Bei STANDLO anmelden",
@@ -77,8 +79,11 @@
         "emailPlaceholder": "mario.rossi@firma.de",
         "passwordLabel": "Passwort",
         "submitButton": "Zugang",
-        "dividerText": "Oder weiter mit",
-        "footerNote": "* Für den Zugriff kann eine Bestätigung in zwei Schritten (MFA SMS) für Administratorrollen erforderlich sein.",
+        "dividerText": "Oder",
+        "orDivider": "Oder (TELEFON ERFORDERLICH für MFA)",
+        "socialDivider": "Soziale Netzwerke nutzen (Empfohlen)",
+        "loginDividerText": "Klicken zum Anmelden",
+        "footerNote": "* Der Zugriff erfordert eine Bestätigung in zwei Schritten (MFA SMS)",
         "noAccountText": "Haben Sie noch kein Konto?",
         "registerAction": "Registrieren",
         "Errors": {
@@ -114,7 +119,16 @@
             "invalidLink": "Ungültiger oder fehlender Aktionscode.",
             "invalidMode": "Unbekannter Aktionsmodus.",
             "errorMessage": "Bei der Bearbeitung Ihrer Anfrage ist ein Fehler aufgetreten."
-        }
+        },
+        "mfaVerifyMessage": "Wir haben einen SMS-Code gesendet, um Ihren Zugriff zu bestätigen.",
+        "mfaEnrollMessage": "Aus Sicherheitsgründen erfordert der Zugriff eine zweistufige Überprüfung. Bitte fügen Sie Ihre Telefonnummer hinzu.",
+        "mfaEnrollVerifyMessage": "Geben Sie den per SMS erhaltenen Code ein, um zu bestätigen.",
+        "otpLabel": "OTP-Code",
+        "phoneNumberLabel": "Telefonnummer",
+        "verifyAccessButton": "Zugriff überprüfen",
+        "sendVerificationSmsButton": "SMS senden",
+        "completeRegistrationButton": "Einloggen",
+        "registrationSuccess": "Registrierung erfolgreich. Bitte melden Sie sich an, um das MFA-Sicherheitssetup abzuschließen."
     },
     "Register": {
         "title": "Kundenkonto erstellen",

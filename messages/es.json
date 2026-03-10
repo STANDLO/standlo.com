@@ -28,7 +28,7 @@
         "name": "STANDLO",
         "slogan": "The Global Factory",
         "description": "STANDLO presenta TIM (Temporary Information Modeling): el sistema operativo que transforma datos en estructuras físicas. Gestiona stands de ferias y módulos de emergencia con sincronía milimétrica, pagos instantáneos y logística predictiva. Bienvenidos al Temporary Flow.",
-        "copyright": "© {year} STANDLO SÜ Todos los derechos reservados."
+        "copyright": "© {year} Kalex AI Inc. Todos los derechos reservados."
     },
     "Dashboard": {
         "Designer": {
@@ -64,7 +64,9 @@
             "nameLabel": "Nombre Completo",
             "namePlaceholder": "Juan Pérez",
             "submitButton": "Regístrate",
-            "acceptTerms": "Acepto la <privacyLink>Política de Privacidad</privacyLink> y los <termsLink>Términos y Condiciones</termsLink>."
+            "acceptTerms": "Acepto la <privacyLink>Política de Privacidad</privacyLink> y<br></br>los <termsLink>Términos de Servicio</termsLink>.",
+            "termsDivider": "Acepta Privacidad y Términos",
+            "registerDivider": "Completar Registro"
         },
         "Login": {
             "title": "Inicia sesión en STANDLO",
@@ -84,7 +86,10 @@
         "passwordLabel": "Contraseña",
         "submitButton": "Ingresar",
         "dividerText": "O continuar con",
-        "footerNote": "* El acceso puede requerir verificación en dos pasos (MFA SMS) para roles administrativos.",
+        "orDivider": "O (SE REQUIERE TELÉFONO para MFA)",
+        "socialDivider": "Usa redes sociales (Recomendado)",
+        "loginDividerText": "Haz clic para acceder",
+        "footerNote": "* El acceso requiere verificación en dos pasos",
         "noAccountText": "¿No tienes cuenta?",
         "registerAction": "Regístrate",
         "Errors": {
@@ -120,7 +125,16 @@
             "invalidLink": "Código de acción no válido o ausente.",
             "invalidMode": "Modo de acción desconocido.",
             "errorMessage": "Ocurrió un error al procesar tu solicitud."
-        }
+        },
+        "mfaVerifyMessage": "Hemos enviado un código SMS para confirmar tu acceso.",
+        "mfaEnrollMessage": "Por razones de seguridad, el acceso requiere verificación en dos pasos. Por favor agrega tu número de teléfono.",
+        "mfaEnrollVerifyMessage": "Ingresa el código recibido por SMS para confirmar.",
+        "otpLabel": "Código OTP",
+        "phoneNumberLabel": "Número de Teléfono",
+        "verifyAccessButton": "Verificar Acceso",
+        "sendVerificationSmsButton": "Enviar SMS",
+        "completeRegistrationButton": "Iniciar sesión",
+        "registrationSuccess": "Registro exitoso. Inicie sesión para completar la configuración de seguridad MFA."
     },
     "Register": {
         "title": "Crear Cuenta de Cliente",

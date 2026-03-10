@@ -3,21 +3,20 @@
 import { useState } from "react";
 import { ErrorGuard } from "@/components/ui/ErrorGuard";
 import { useSearchParams } from "next/navigation";
-import { useCanvasStore } from "@/components/canvas/store";
-import { CanvasHeader } from "@/components/canvas/CanvasHeader";
-import CanvasEditor, { xrStore } from "@/components/canvas/CanvasEditor";
-import { CanvasCreationWizard } from "@/components/canvas/CanvasCreationWizard";
-import { CanvasPart } from "@/components/canvas/CanvasPart";
-import { CanvasAssembly } from "@/components/canvas/CanvasAssembly";
-import { CanvasStand } from "@/components/canvas/CanvasStand";
-import { CanvasHierarchyTree } from "@/components/canvas/CanvasHierarchyTree";
+import { useCanvasStore } from "@/components/layout/canvas/store";
+import { CanvasHeader } from "@/components/layout/canvas/CanvasHeader";
+import { xrStore } from "@/components/layout/canvas/Canvas";
+import { CanvasCreationWizard } from "@/components/layout/canvas/CanvasCreationWizard";
+import { CanvasPart } from "@/components/layout/canvas/CanvasPart";
+import { CanvasAssembly } from "@/components/layout/canvas/CanvasAssembly";
+import { CanvasStand } from "@/components/layout/canvas/CanvasStand";
+import { CanvasHierarchyTree } from "@/components/layout/canvas/CanvasHierarchyTree";
 import { use } from "react";
 
 export default function Canvas3DEditorPage({ params }: { params: Promise<{ roleId: string, locale: string }> }) {
     const { roleId, locale } = use(params);
     const searchParams = useSearchParams();
     const entityId = searchParams.get("id") as string; // Retrieve Canvas document ID
-    const passedType = searchParams.get("type"); // Retrieve explicitly passed document type
     const [xrError, setXrError] = useState<Error | null>(null);
     const mode = useCanvasStore((state) => state.mode);
     const setViewMode = useCanvasStore((state) => state.setViewMode);
@@ -65,13 +64,8 @@ export default function Canvas3DEditorPage({ params }: { params: Promise<{ roleI
             {/* Main Area (No Fixed Sidebars - Floating Only) */}
             <div className="ui-canvas-main-area relative">
 
-                {/* 3D Viewport spans 100% of the main area */}
-                <main className="flex-1 w-full h-[calc(100vh-64px)] relative bg-[#f8f9fa] dark:bg-[#18181b] overflow-hidden">
-                    <CanvasEditor
-                        entityId={entityId}
-                        entityType={passedType || "part"}
-                    />
-                </main>
+                {/* 3D Viewport spans 100% of the main area - Rendered globally via CanvasOverlay */}
+                <main className="flex-1 w-full h-[calc(100vh-64px)] relative bg-transparent overflow-hidden pointer-events-none" />
                 {/* Overlays / Floating Windows */}
                 {!entityId ? (
                     <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-30 flex items-center justify-center">

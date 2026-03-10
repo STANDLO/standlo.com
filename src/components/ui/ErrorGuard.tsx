@@ -72,12 +72,12 @@ export function ErrorGuard({ error }: ErrorGuardProps) {
                     <ArrowLeft className="w-4 h-4" />
                     <span>Torna Indietro</span>
                 </Button>
-                <Button variant="primary" onClick={() => window.location.reload()} className="space-x-2">
+                <Button variant="default" onClick={() => window.location.reload()} className="space-x-2">
                     <RefreshCw className="w-4 h-4" />
                     <span>Ricarica Pagina</span>
                 </Button>
                 {/* Assume local support URL, adjust if needed */}
-                <Button variant="secondary" onClick={() => router.push('/support')}>
+                <Button variant="default" onClick={() => router.push('/support')}>
                     Contatta il Supporto
                 </Button>
             </div>

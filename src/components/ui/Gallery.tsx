@@ -211,7 +211,7 @@ export function Gallery({
                             <div className="absolute inset-x-0 bottom-0 flex justify-between items-center p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
                                     type="button"
-                                    variant="secondary"
+                                    variant="default"
                                     size="icon"
                                     onClick={(e) => { e.stopPropagation(); makeDefault(i); }}
                                     className={cn("h-7 w-7 rounded-sm", i === 0 ? "text-yellow-400 opacity-100" : "text-white hover:text-yellow-400")}
@@ -222,7 +222,7 @@ export function Gallery({
 
                                 <Button
                                     type="button"
-                                    variant="secondary"
+                                    variant="default"
                                     size="icon"
                                     onClick={(e) => { e.stopPropagation(); removeImage(i, url); }}
                                     className="h-7 w-7 rounded-sm"

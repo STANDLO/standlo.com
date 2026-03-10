@@ -61,7 +61,7 @@ export default function I18nManager() {
                         Translation Manager
                     </h1>
                     <p className="text-muted-foreground mt-2">
-                        Base Locale: <span className="font-mono text-primary font-medium">en (English)</span> with <strong>{baseCount}</strong> Translation Keys Source of Truth.
+                        Base Locale: <span className="font-mono text-primary font-medium">us (United States)</span> with <strong>{baseCount}</strong> Translation Keys Source of Truth.
                     </p>
                 </div>
                 <Button onClick={fetchStats} disabled={loading} variant="outline">
@@ -107,7 +107,7 @@ export default function I18nManager() {
                                     </td>
 
                                     <td className="p-4">
-                                        {locale.code === "en" ? (
+                                        {locale.code === "us" ? (
                                             <span className="inline-flex items-center text-xs font-semibold px-2 py-1 rounded-full bg-blue-100 text-blue-800">
                                                 Source of Truth
                                             </span>
@@ -123,7 +123,7 @@ export default function I18nManager() {
                                     </td>
 
                                     <td className="p-4">
-                                        {locale.code === "en" ? (
+                                        {locale.code === "us" ? (
                                             <span className="text-muted-foreground text-sm">-</span>
                                         ) : locale.missingCount > 0 ? (
                                             <div className="flex items-center text-red-600 gap-1.5 font-medium">

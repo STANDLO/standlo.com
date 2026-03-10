@@ -1,27 +1,31 @@
 import * as React from "react";
-import { ToolsLogo } from "./tools/ToolsLogo";
-import { ToolsNavigator, NavItem } from "./tools/ToolsNavigator";
+import { ToolsMain } from "./tools/ToolsMain";
+import { ToolsMainSidebar } from "./tools/ToolsMainSidebar";
+import { ToolsMainContent } from "./tools/ToolsMainContent";
+import { ToolsPropbar } from "./tools/ToolsPropbar";
 
 interface ToolsOverlayProps {
-    variant?: 'public' | 'protected';
-    navItems?: NavItem[];
+    active?: boolean;
     roleContext?: string;
     userName?: string;
     organizationName?: string;
+    children?: React.ReactNode;
 }
 
+export function ToolsOverlay({ active = true, children }: ToolsOverlayProps) {
+    if (!active) {
+        return <>{children}</>;
+    }
 
-export function ToolsOverlay({ variant = 'public', navItems, roleContext, userName, organizationName }: ToolsOverlayProps) {
     return (
-        <div className="absolute inset-0 pointer-events-none z-50">
-            <ToolsLogo />
-            <ToolsNavigator
-                variant={variant}
-                navItems={navItems}
-                roleContext={roleContext}
-                userName={userName}
-                organizationName={organizationName}
-            />
+        <div className="tool">
+            <ToolsMain>
+                <ToolsMainSidebar isCollapsed={true} />
+                <ToolsMainContent>
+                    {children}
+                </ToolsMainContent>
+                <ToolsPropbar isCollapsed={true} />
+            </ToolsMain>
         </div>
     );
 }
