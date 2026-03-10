@@ -9,7 +9,18 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Missing token" }, { status: 401 });
         }
 
-        const response = await setAuthCookies(request.headers, authConfig);
+        // AppCheck Token forwarding to Identity Platform
+        const appCheckToken = request.headers.get("X-Firebase-AppCheck");
+        const headers = new Headers();
+        if (appCheckToken) {
+            headers.set("X-Firebase-AppCheck", appCheckToken);
+        }
+
+        const response = await setAuthCookies(request.headers, {
+            ...authConfig,
+            // @ts-expect-error Iniezione non tipizzata ufficialmente ma supportata dal modulo fetch back
+            headers
+        });
         return response;
     } catch (e: unknown) {
         console.error("Login API Error", e);

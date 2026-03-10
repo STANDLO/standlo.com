@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Clock, LogOut, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { auth } from "@/core/firebase";
+import { auth, appCheck } from "@/core/firebase";
+import { getToken } from "firebase/app-check";
 
 export default function PendingPage() {
     const t = useTranslations("Common");
@@ -28,12 +29,27 @@ export default function PendingPage() {
             // 1. Forza Firebase a recuperare un NUOVO idToken dai server di Google (conterrà i nuovi Claims)
             const idToken = await auth.currentUser.getIdToken(true);
 
+            // 1.5. Ottieni il token AppCheck per evitare 'UNAUTHENTICATED' da Identity Platform
+            let appCheckTokenStr = "";
+            if (appCheck) {
+                try {
+                    const tokenResult = await getToken(appCheck, false);
+                    appCheckTokenStr = tokenResult.token;
+                } catch (err) {
+                    console.warn("⚠️ Impossibile ottenere il token AppCheck dal client:", err);
+                }
+            }
+
+            const headers = new Headers();
+            headers.append('Authorization', `Bearer ${idToken}`);
+            if (appCheckTokenStr) {
+                headers.append('X-Firebase-AppCheck', appCheckTokenStr);
+            }
+
             // 2. Passiamo il nuovo token immacolato al nostro endpoint di /api/auth/login che creerà la sessione
             const res = await fetch('/api/auth/login', {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${idToken}`
-                }
+                headers: headers
             });
 
             if (res.ok) {
