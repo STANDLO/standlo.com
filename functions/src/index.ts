@@ -9,10 +9,15 @@ import { beforeUserCreated, beforeUserSignedIn } from "firebase-functions/v2/ide
 import * as admin from "firebase-admin";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
+import { setGlobalOptions } from "firebase-functions/v2";
+
 const app = admin.initializeApp();
 const db = getFirestore(app, "standlo"); // Enterprise Named Database
 
 const REGION = "europe-west4";
+
+// Configure all v2 functions to have at least 1 minimum instance
+setGlobalOptions({ region: REGION, minInstances: 1 });
 
 export const systemLocales = [
     { code: "us", nativeLabel: "United States of America", flag: "🇺🇸" },

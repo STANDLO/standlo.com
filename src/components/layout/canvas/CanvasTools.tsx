@@ -86,12 +86,10 @@ export function CanvasTools() {
 
         if (canvasId) {
             try {
-                const { httpsCallable } = await import("firebase/functions");
-                const { functions: fbFunctions } = await import("@/core/firebase");
-                const canvasFn = httpsCallable(fbFunctions, "canvas");
+                const { callGateway } = await import("@/lib/api");
                 
                 const clamp = (v: number) => Number(v.toFixed(3));
-                canvasFn({
+                callGateway("canvas", {
                     actionId: "updateNode",
                     payload: {
                         canvasId,
@@ -256,10 +254,8 @@ export function CanvasTools() {
                                     
                                     if (canvasId) {
                                         try {
-                                            const { httpsCallable } = await import("firebase/functions");
-                                            const { functions: fbFunctions } = await import("@/core/firebase");
-                                            const canvasFn = httpsCallable(fbFunctions, "canvas");
-                                            canvasFn({
+                                            const { callGateway } = await import("@/lib/api");
+                                            callGateway("canvas", {
                                                 actionId: "insertNode",
                                                 payload: {
                                                     canvasId,
@@ -288,10 +284,8 @@ export function CanvasTools() {
                                     removeEntity(activeId);
                                     if (canvasId) {
                                         try {
-                                            const { httpsCallable } = await import("firebase/functions");
-                                            const { functions: fbFunctions } = await import("@/core/firebase");
-                                            const canvasFn = httpsCallable(fbFunctions, "canvas");
-                                            canvasFn({
+                                            const { callGateway } = await import("@/lib/api");
+                                            callGateway("canvas", {
                                                 actionId: "deleteNode",
                                                 payload: { canvasId, nodeId: activeId }
                                             }).catch(e => console.error("Async deleteNode failed", e));

@@ -15,6 +15,7 @@ interface CatalogItem {
     geometryType?: string;
     materialId?: string;
     textureId?: string;
+    meshId?: string;
 }
 
 export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: string, entityType?: string | null }) {
@@ -59,17 +60,15 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
                     }
                 };
 
-                const res = await fetch(`/api/gateway?target=orchestrator`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...(idToken ? { "Authorization": `Bearer ${idToken}` } : {})
-                    },
-                    body: JSON.stringify(reqBody)
-                });
+                const { callGateway } = await import("@/lib/api");
 
-                if (!res.ok) {
-                    // Fallback to mock data if unauthenticated or error
+                let actualList: CatalogItem[] = [];
+                try {
+                    const dataList = await callGateway("orchestrator", reqBody);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    actualList = (dataList as any).data as CatalogItem[] || dataList as CatalogItem[] || [];
+                } catch (err) {
+                    console.warn(`[CanvasCatalogSidebar] Fetch failed, falling back to mock...`, err);
                     if (isMounted) {
                         setItems([
                             { id: "mock-1", name: "Struttura Base", useCases: [{ canvasType: entityType || "stand", canvasLayer: "strutture" }], dimensions: [1, 2, 1], geometryType: "box" },
@@ -79,10 +78,6 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
                     }
                     return;
                 }
-
-                const jsonRes = await res.json();
-                const dataList = jsonRes.result?.data || jsonRes.data || jsonRes.result || [];
-                const actualList = dataList.data || dataList;
 
                 // Static materials map from codebase JSON
                 const materialsMap = new Map();
@@ -100,23 +95,12 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
                     if (meshIdsToFetch.length > 0) {
                         await Promise.all(meshIdsToFetch.map(async (mId) => {
                             try {
-                                const mRes = await fetch(`/api/gateway?target=orchestrator`, {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                        ...(idToken ? { "Authorization": `Bearer ${idToken}` } : {})
-                                    },
-                                    body: JSON.stringify({
-                                        actionId: "read",
-                                        entityId: "mesh",
-                                        payload: { id: mId }
-                                    })
+                                const meshData = await callGateway("orchestrator", {
+                                    actionId: "read",
+                                    entityId: "mesh",
+                                    payload: { id: mId }
                                 });
-                                if (mRes.ok) {
-                                    const mJson = await mRes.json();
-                                    const meshData = mJson.result?.data || mJson.data;
-                                    if (meshData) meshCache.set(mId, meshData);
-                                }
+                                if (meshData) meshCache.set(mId, meshData);
                             } catch (e) {
                                 console.warn("Failed fetching mesh", mId, e);
                             }
@@ -203,11 +187,9 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
         // 2. Orchestrator fire & forget
         if (entityId) {
             try {
-                const { httpsCallable } = await import("firebase/functions");
-                const { functions: fbFunctions } = await import("@/core/firebase");
-                const canvasFn = httpsCallable(fbFunctions, "canvas");
+                const { callGateway } = await import("@/lib/api");
                 
-                canvasFn({
+                callGateway("canvas", {
                     actionId: "insertNode",
                     payload: {
                         canvasId: entityId,

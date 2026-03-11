@@ -6,8 +6,8 @@ import { Plus, ShieldAlert, Trash2 } from "lucide-react";
 import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { httpsCallable } from "firebase/functions";
-import { auth, functions } from "@/core/firebase";
+import { auth } from "@/core/firebase";
+import { callGateway } from "@/lib/api";
 
 export default function OrganizationUsersCreate({ currentOrgId }: { currentOrgId: string }) {
     const [isInviteOpen, setIsInviteOpen] = React.useState(false);
@@ -35,8 +35,7 @@ export default function OrganizationUsersCreate({ currentOrgId }: { currentOrgId
                 throw new Error("UNAUTHENTICATED: Impossibile sincronizzare la sessione client. Ricarica la pagina.");
             }
 
-            const runner = httpsCallable(functions, "orchestrator");
-            await runner({
+            await callGateway("orchestrator", {
                 actionId: "create_entity",
                 entityId: "organizationUser",
                 payload: {
@@ -71,8 +70,7 @@ export default function OrganizationUsersCreate({ currentOrgId }: { currentOrgId
                 throw new Error("UNAUTHENTICATED: Impossibile sincronizzare la sessione client. Ricarica la pagina.");
             }
 
-            const runner = httpsCallable(functions, "orchestrator");
-            await runner({
+            await callGateway("orchestrator", {
                 actionId: "delete_entity",
                 entityId: "organizationUser",
                 payload: {

@@ -24,8 +24,8 @@ export default function GenericEntityDetailPage({ params }: { params: Promise<{ 
                 uid={uid}
                 schema={FallbackSchema}
                 fields={[{ name: "name", label: "Name", type: "text", required: true }]}
-                onSuccess={(id, data) => {
-                    console.log(`[${roleId}] Updated ${entity} with ID ${id}:`, data);
+                onSuccess={() => {
+
                     router.push(`/${locale}/partner/${roleId}/${entity}`);
                 }}
                 submitLabel="Save Changes"

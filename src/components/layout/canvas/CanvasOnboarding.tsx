@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { functions } from "@/core/firebase";
-import { httpsCallable } from "firebase/functions";
+import { callGateway } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Loader2, Lock, Box } from "lucide-react";
 
@@ -15,16 +14,13 @@ export function CanvasOnboarding() {
     setLoading(true);
     try {
       const autoPassword = Math.random().toString(36).slice(2, 8).toUpperCase();
-      const gatewayFn = httpsCallable(functions, "canvas");
-      const response = await gatewayFn({
+      const data = await callGateway<Record<string, unknown>>("canvas", {
         actionId: "createCanvasSandbox",
         payload: {
             canvasType: "canvas",
             editPassword: autoPassword
         }
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = response.data as any;
       if (data?.canvasId) {
          const locale = window.location.pathname.split("/")[1] || "it";
          router.push(`/${locale}/canvas/public/${data.canvasId}?key=${autoPassword}`);

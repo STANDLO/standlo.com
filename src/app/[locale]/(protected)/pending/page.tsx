@@ -13,7 +13,7 @@ export default function PendingPage() {
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
-        console.log("👉 [DEBUG] Generazione nuovo Session Token in corso...");
+
 
         try {
             if (typeof auth.authStateReady === "function") {
@@ -53,7 +53,7 @@ export default function PendingPage() {
             });
 
             if (res.ok) {
-                console.log("✅ Sessione Server rinfrescata con successo! Ricarico la pagina.");
+
                 setTimeout(() => {
                     window.location.reload();
                 }, 400); // 400ms delay to let console catch up

@@ -138,10 +138,8 @@ export function FormLogin() {
             const savedCanvasId = localStorage.getItem("standlo_active_sandbox_canvas");
             if (savedCanvasId) {
                 try {
-                    const { httpsCallable } = await import("firebase/functions");
-                    const { functions: fbFunctions } = await import("@/core/firebase");
-                    const canvasFn = httpsCallable(fbFunctions, "canvas");
-                    await canvasFn({ actionId: "claimCanvasSandbox", payload: { canvasId: savedCanvasId } });
+                    const { callGateway } = await import("@/lib/api");
+                    await callGateway("canvas", { actionId: "claimCanvasSandbox", payload: { canvasId: savedCanvasId } });
                     localStorage.removeItem("standlo_active_sandbox_canvas");
                 } catch (err) {
                     console.error("Failed to claim canvas", err);
@@ -154,17 +152,10 @@ export function FormLogin() {
                     sessionId = crypto.randomUUID();
                     localStorage.setItem("standlo_session", sessionId);
                 }
-                const trackHeaders: Record<string, string> = {
-                    "Content-Type": "application/json",
-                    ...headers
-                };
-                fetch("/api/gateway?target=orchestrator", {
-                    method: "POST",
-                    headers: trackHeaders,
-                    body: JSON.stringify({
-                        actionId: "auth_event",
-                        payload: { type: "login", sessionId }
-                    })
+                const { callGateway } = await import("@/lib/api");
+                callGateway("orchestrator", {
+                    actionId: "auth_event",
+                    payload: { type: "login", sessionId }
                 }).catch(e => console.error("Auth tracker error:", e));
             } catch (e) {
                 console.error("Session init error:", e);

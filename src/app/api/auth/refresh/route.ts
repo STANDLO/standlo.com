@@ -8,7 +8,7 @@ import { appendAuthCookies } from "next-firebase-auth-edge/lib/next/cookies";
 
 export async function POST(request: NextRequest) {
     try {
-        console.log("👉 [DEBUG API] Avvio sync forzato delle claims...");
+
         const cookieStore = await cookies();
         const tokens = await getTokens(cookieStore, authConfig);
 
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
             metadata: tokens.metadata,
         }, authConfig);
 
-        console.log("👉 [DEBUG API] Claims rinfrescate e Cookie aggiornati con successo per", uid);
+
         return newResponse;
 
     } catch (e: unknown) {

@@ -8,8 +8,8 @@ import { useTranslations } from "next-intl";
 
 import { UIFieldMeta } from "@/core/schemas";
 import { extractZodKeys } from "@/core/extractZodKeys";
-import { functions, auth } from "@/core/firebase";
-import { httpsCallable } from "firebase/functions";
+import { auth } from "@/core/firebase";
+import { callGateway } from "@/lib/api";
 import { onAuthStateChanged } from "firebase/auth";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -81,8 +81,8 @@ export function FormDetail<T extends z.ZodSchema<any>>({
             setIsLoading(true);
             setFetchError(null);
             try {
-                const gatewayFn = httpsCallable(functions, "orchestrator");
-                const response = await gatewayFn({
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const response = await callGateway<any>("orchestrator", {
                     orgId,
                     roleId,
                     entityId,
@@ -91,7 +91,7 @@ export function FormDetail<T extends z.ZodSchema<any>>({
                 });
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const resultData = response.data as any;
+                const resultData = response as any;
                 reset(resultData.data);
             } catch (err: unknown) {
                 console.error("Failed to load entity:", err);
@@ -110,9 +110,8 @@ export function FormDetail<T extends z.ZodSchema<any>>({
         setIsSubmitting(true);
         setGlobalError(null);
         try {
-            const gatewayFn = httpsCallable(functions, "orchestrator");
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const response = await gatewayFn({
+            const response = await callGateway("orchestrator", {
                 orgId,
                 roleId,
                 entityId,
@@ -180,7 +179,7 @@ export function FormDetail<T extends z.ZodSchema<any>>({
                                 ) : fieldMeta.type === "lookup" && fieldMeta.lookupTarget ? (
                                     <InputLookup
                                         value={null}
-                                        onChange={(val) => { console.log(val) }}
+                                        onChange={() => { }}
                                         target={fieldMeta.lookupTarget}
                                         placeholder={fieldMeta.placeholder}
                                         disabled={disabledOrReadonly}

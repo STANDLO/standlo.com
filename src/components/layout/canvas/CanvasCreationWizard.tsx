@@ -3,7 +3,7 @@ import { CanvasCard } from "@/components/ui/CanvasCard";
 import { Button } from "@/components/ui/Button";
 import { Box, Layers, Building2, Plus, Loader2, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/core/firebase"; // Required to get current user token
+// Request user token handled elsewhere
 import { FormCreate } from "@/components/ui/FormCreate";
 import { UIFieldMeta } from "@/core/meta";
 import { CanvasCreateSchema } from "../../../../functions/src/schemas/canvas";
@@ -21,38 +21,21 @@ export function CanvasCreationWizard({ roleId, locale }: WizardProps) {
     const handleCreateSubmit = async (data: Record<string, unknown>) => {
         setIsSubmitting(true);
         try {
-            const currentUser = auth.currentUser;
-            if (!currentUser) throw new Error("Unauthenticated");
+            const { callGateway } = await import("@/lib/api");
 
-            const idToken = await currentUser.getIdToken();
-
-            const response = await fetch("/api/gateway?target=orchestrator", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${idToken}`
-                },
-                body: JSON.stringify({
-                    actionId: "create_entity",
-                    entityId: selectedType, // Acts as context for the orchestrator
-                    payload: {
-                        ...data,
-                        type: selectedType,
-                        nodes: []
-                    }
-                })
+            const resultPayload = await callGateway<{ id: string }>("orchestrator", {
+                actionId: "create_entity",
+                entityId: selectedType || "stand", // Acts as context for the orchestrator
+                payload: {
+                    ...data,
+                    type: selectedType,
+                    nodes: []
+                }
             });
 
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
-            }
-
-            const jsonResponse = await response.json();
-            const resultPayload = jsonResponse.result || jsonResponse;
-
-            if (resultPayload?.status === "success" && resultPayload?.data?.id) {
+            if (resultPayload?.id) {
                 // Navigate to the new entity's canvas or sculptor, providing type to the router
-                const newId = resultPayload.data.id;
+                const newId = resultPayload.id;
                 router.push(`/${locale}/partner/${roleId}/canvas?id=${newId}&type=${selectedType}`);
             } else {
                 console.error("Backend validation or creation failed:", resultPayload);

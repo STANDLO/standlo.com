@@ -3,8 +3,8 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { DynamicSDUIForm, SDUIField } from "@/components/forms/DynamicSDUIForm";
-import { auth, functions, appCheck } from "@/core/firebase";
-import { httpsCallable } from "firebase/functions";
+import { auth, appCheck } from "@/core/firebase";
+import { callGateway } from "@/lib/api";
 import { signInWithCustomToken } from "firebase/auth";
 import { getToken } from "firebase/app-check";
 import { CardOnboarding } from "@/components/ui/CardOnboarding";
@@ -26,7 +26,7 @@ export function FormOnboarding({ locale }: { locale: string }) {
                 if (user) {
                     await user.getIdTokenResult(true);
                 } else {
-                    console.log("=== AUTH READY BUT NO USER FOUND ===");
+
                 }
 
                 // Richiediamo lo schema per le Organizzazioni dal livello Edge API per l'onboarding
@@ -88,13 +88,10 @@ export function FormOnboarding({ locale }: { locale: string }) {
         setError(null);
 
         try {
-            const orchestrator = httpsCallable(functions, "orchestrator");
-            const res = await orchestrator({
+            const data = await callGateway<{ status: string, message?: string, customToken?: string }>("orchestrator", {
                 actionId: "onboard_organization",
                 payload: formData
             });
-
-            const data = res.data as { status: string, message?: string, customToken?: string };
 
             if (data.status !== "success") {
                 throw new Error(data.message || "Failed to complete onboarding");
@@ -124,8 +121,7 @@ export function FormOnboarding({ locale }: { locale: string }) {
                 const savedCanvasId = localStorage.getItem("standlo_active_sandbox_canvas");
                 if (savedCanvasId) {
                     try {
-                        const canvasFn = httpsCallable(functions, "canvas");
-                        await canvasFn({ actionId: "claimCanvasSandbox", payload: { canvasId: savedCanvasId } });
+                        await callGateway("canvas", { actionId: "claimCanvasSandbox", payload: { canvasId: savedCanvasId } });
                         localStorage.removeItem("standlo_active_sandbox_canvas");
                     } catch (err) {
                         console.error("Failed to claim canvas", err);
@@ -135,13 +131,9 @@ export function FormOnboarding({ locale }: { locale: string }) {
                 // Log the final onboarding completion step to the Orchestrator
                 const sessionId = localStorage.getItem("standlo_session");
                 if (sessionId) {
-                    await fetch("/api/gateway?target=orchestrator", {
-                        method: "POST",
-                        headers,
-                        body: JSON.stringify({
-                            actionId: "auth_event",
-                            payload: { type: "onboarding", sessionId }
-                        })
+                    await callGateway("orchestrator", {
+                        actionId: "auth_event",
+                        payload: { type: "onboarding", sessionId }
                     }).catch(() => { });
                 }
             }

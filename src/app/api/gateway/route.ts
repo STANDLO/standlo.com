@@ -68,10 +68,10 @@ export async function POST(req: NextRequest) {
             body: JSON.stringify({ data: body })
         };
 
-        console.log(`[API Proxy] Forwarding to: ${targetUrl}`);
+
         const response = await fetch(targetUrl, fetchOptions);
 
-        console.log(`[API Proxy] Upstream returned status: ${response.status}`);
+
 
         // 5. Read response
         let data;

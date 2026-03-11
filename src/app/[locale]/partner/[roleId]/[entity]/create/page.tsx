@@ -21,8 +21,8 @@ export default function GenericEntityCreatePage({ params }: { params: Promise<{ 
                 entityId={entity}
                 schema={FallbackSchema}
                 fields={[{ name: "name", label: "Name", type: "text", required: true }]}
-                onSuccess={(id, data) => {
-                    console.log(`[${roleId}] Created ${entity} with ID ${id}:`, data);
+                onSuccess={() => {
+
                     router.push(`/${locale}/partner/${roleId}/${entity}`);
                 }}
                 submitLabel="Save"

@@ -8,8 +8,7 @@ import { useTranslations } from "next-intl";
 
 import { UIFieldMeta } from "@/core/schemas";
 import { extractZodKeys } from "@/core/extractZodKeys";
-import { functions } from "@/core/firebase";
-import { httpsCallable } from "firebase/functions";
+import { callGateway } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -66,17 +65,14 @@ export function FormCreate<T extends z.ZodSchema<any>>({
         setIsSubmitting(true);
         setGlobalError(null);
         try {
-            const gatewayFn = httpsCallable(functions, "orchestrator");
-            const response = await gatewayFn({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const resultData = await callGateway<any>("orchestrator", {
                 orgId,
                 roleId,
                 entityId,
                 actionId: "create",
                 payload: data
             });
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const resultData = response.data as any;
             if (onSuccess) {
                 onSuccess(resultData.id, data);
             }
@@ -122,8 +118,8 @@ export function FormCreate<T extends z.ZodSchema<any>>({
                                 ) : fieldMeta.type === "lookup" && fieldMeta.lookupTarget ? (
                                     <InputLookup
                                         value={null} // TODO: collegare a RHF useController
-                                        onChange={(val) => {
-                                            console.log("Lookup selected:", val);
+                                        onChange={() => {
+
                                         }}
                                         target={fieldMeta.lookupTarget}
                                         placeholder={fieldMeta.placeholder}

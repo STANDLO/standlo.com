@@ -19,7 +19,7 @@ export async function updateUserTheme(theme: string) {
             claims: { theme }
         }, { merge: true });
 
-        console.log(`Saved new theme preference '${theme}' for user ${uid}`);
+
         return { success: true };
     } catch (error) {
         console.error("Failed to update user theme:", error);

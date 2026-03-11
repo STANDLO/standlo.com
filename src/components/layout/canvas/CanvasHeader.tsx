@@ -26,14 +26,13 @@ export function CanvasHeader({ roleId, entityId, onEnterXR, onExport }: CanvasHe
         else if (entityId.startsWith("ASS-")) targetSchema = "assembly";
         else if (entityId.startsWith("STA-")) targetSchema = "stand";
 
-        console.log("Async saving started...", { targetSchema, entityId });
+
 
         try {
             const { auth } = await import("@/core/firebase");
             const currentUser = auth.currentUser;
             if (!currentUser) return;
-            const idToken = await currentUser.getIdToken();
-
+            
             let payload: Record<string, unknown> = {};
 
             if (targetSchema === "mesh") {
@@ -59,25 +58,21 @@ export function CanvasHeader({ roleId, entityId, onEnterXR, onExport }: CanvasHe
                 };
             }
 
+            const { callGateway } = await import("@/lib/api");
+
             // Fire and forget (no await blocking UI)
-            fetch(`/api/gateway?target=choreography`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${idToken}`
-                },
-                body: JSON.stringify({
-                    actionId: "save_canvas",
-                    entityId: targetSchema,
-                    payload: {
-                        id: entityId,
-                        ...payload
-                    }
-                })
-            }).then(res => {
-                if (!res.ok) console.error("Async background save failed", res);
-                else console.log("Async save successful!");
-            }).catch(e => console.error("Async save network error", e));
+            callGateway("choreography", {
+                actionId: "save_canvas",
+                entityId: targetSchema,
+                payload: {
+                    id: entityId,
+                    ...payload
+                }
+            }).then(() => {
+
+            }).catch(e => {
+                console.error("Async background save failed", e);
+            });
 
         } catch (e) {
             console.error("Save pipeline error", e);

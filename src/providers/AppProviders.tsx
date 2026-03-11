@@ -19,7 +19,7 @@ function GoogleAppCheckSync() {
                 // Configure the App Check interceptor for Google Maps API
                 // @ts-expect-error fetchAppCheckToken is not yet in @types/google.maps
                 window.google.maps.Settings.getInstance().fetchAppCheckToken = () => getToken(appCheck, false);
-                console.log("Firebase AppCheck token interceptor successfully configured for Google Maps API.");
+                // token interceptor successfully configured for Google Maps API
             } catch (err) {
                 console.error("Failed to configure AppCheck token interceptor for Google Maps:", err);
             }
@@ -42,7 +42,7 @@ function SessionTrackerSync() {
 
         let unsubscribe: () => void;
 
-        import("@/core/firebase").then(({ auth, appCheck }) => {
+        import("@/core/firebase").then(({ auth }) => {
             import("firebase/auth").then(({ onIdTokenChanged }) => {
                 unsubscribe = onIdTokenChanged(auth, async (user) => {
                     if (user) {
@@ -53,32 +53,13 @@ function SessionTrackerSync() {
                             const token = await user.getIdToken().catch(() => null);
                             if (!token) return;
 
-                            const headers: Record<string, string> = {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`
-                            };
-
-                            if (appCheck) {
-                                try {
-                                    const { getToken } = await import("firebase/app-check");
-                                    const appCheckTokenResponse = await getToken(appCheck, false);
-                                    if (appCheckTokenResponse.token) {
-                                        headers["X-Firebase-AppCheck"] = appCheckTokenResponse.token;
-                                    }
-                                } catch {
-                                    console.warn("Failed AppCheck token on background refresh");
-                                }
-                            }
-
                             // Emit session refresh telemetry without awaiting
-                            fetch("/api/gateway?target=orchestrator", {
-                                method: "POST",
-                                headers,
-                                body: JSON.stringify({
+                            import("@/lib/api").then(({ callGateway }) => {
+                                callGateway("orchestrator", {
                                     actionId: "auth_event",
                                     payload: { type: "session_refresh", sessionId }
-                                })
-                            }).catch(() => { });
+                                }).catch(() => {});
+                            });
                         } catch {
                             console.error("Session refresh tracker failed");
                         }

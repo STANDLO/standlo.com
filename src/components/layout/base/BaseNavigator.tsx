@@ -55,37 +55,17 @@ export function BaseNavigator({
 
     const handleLogout = async () => {
         try {
-            const { auth, appCheck } = await import("@/core/firebase");
+            const { auth } = await import("@/core/firebase");
 
             if (auth.currentUser) {
                 const token = await auth.currentUser.getIdToken().catch(() => null);
                 if (token) {
-                    const headers: Record<string, string> = {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                    };
-
-                    if (appCheck) {
-                        try {
-                            const { getToken } = await import("firebase/app-check");
-                            const appCheckTokenResponse = await getToken(appCheck, false);
-                            if (appCheckTokenResponse.token) {
-                                headers["X-Firebase-AppCheck"] = appCheckTokenResponse.token;
-                            }
-                        } catch (err) {
-                            console.warn("Failed AppCheck token on logout", err);
-                        }
-                    }
-
                     const sessionId = localStorage.getItem("standlo_session");
                     if (sessionId) {
-                        await fetch("/api/gateway?target=orchestrator", {
-                            method: "POST",
-                            headers: headers,
-                            body: JSON.stringify({
-                                actionId: "auth_event",
-                                payload: { type: "logout", sessionId }
-                            })
+                        const { callGateway } = await import("@/lib/api");
+                        await callGateway("orchestrator", {
+                            actionId: "auth_event",
+                            payload: { type: "logout", sessionId }
                         }).catch(e => console.error("Failed to log auth event (logout):", e));
                     }
                     localStorage.removeItem("standlo_session");

@@ -31,7 +31,7 @@ export function InputLookup({
     // based on the `target` collection prop
     React.useEffect(() => {
         if (isOpen) {
-            console.log(`Searching against collection: ${target} for query: ${query}`);
+
         }
     }, [isOpen, query, target]);
 

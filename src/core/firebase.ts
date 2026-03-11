@@ -36,7 +36,7 @@ if (typeof window !== "undefined") {
                 provider: new ReCaptchaEnterpriseProvider(siteKey),
                 isTokenAutoRefreshEnabled: true
             });
-            console.log("Firebase AppCheck initialized successfully on the client.");
+
         }
     } catch (e) {
         console.error("AppCheck initialization failed:", e);
@@ -46,7 +46,7 @@ if (typeof window !== "undefined") {
     isSupported().then((supported) => {
         if (supported) {
             analytics = getAnalytics(app);
-            console.log("Firebase Analytics initialized successfully.");
+
         }
     }).catch(console.error);
 }

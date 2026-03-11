@@ -77,14 +77,12 @@ export function FormAuthAction({ locale }: { locale: string }) {
                         // Log verification event to orchestrator
                         const sessionId = localStorage.getItem("standlo_session");
                         if (sessionId) {
-                            fetch("/api/gateway?target=orchestrator", {
-                                method: "POST",
-                                headers,
-                                body: JSON.stringify({
+                            import("@/lib/api").then(({ callGateway }) => {
+                                callGateway("orchestrator", {
                                     actionId: "auth_event",
                                     payload: { type: "verify", sessionId }
-                                })
-                            }).catch(() => { });
+                                }).catch(() => {});
+                            });
                         }
 
                         setStatus("success");

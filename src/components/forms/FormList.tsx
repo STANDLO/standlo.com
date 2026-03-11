@@ -4,8 +4,8 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { extractZodKeys } from "@/core/extractZodKeys";
-import { functions, auth } from "@/core/firebase";
-import { httpsCallable } from "firebase/functions";
+import { auth } from "@/core/firebase";
+import { callGateway, GatewayRequest } from "@/lib/api";
 import { onAuthStateChanged } from "firebase/auth";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -55,10 +55,8 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
         setIsLoading(true);
         setError(null);
         try {
-            const gatewayFn = httpsCallable(functions, gatewayName);
-
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const requestData: any = {
+            const requestData: GatewayRequest<any> = {
                 orgId,
                 roleId,
                 entityId,
@@ -77,10 +75,7 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
                 requestData.cursor = reset ? null : cursor;
             }
 
-            const response = await gatewayFn(requestData);
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const resultData = (response.data as any).data as Record<string, unknown>[];
+            const resultData = await callGateway<Record<string, unknown>[]>(gatewayName as "orchestrator" | "choreography" | "canvas", requestData);
             if (reset) {
                 setData(resultData);
             } else {
