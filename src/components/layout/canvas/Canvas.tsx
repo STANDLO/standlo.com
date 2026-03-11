@@ -10,7 +10,7 @@ import {
     Bvh
 } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
-import { XR, createXRStore } from "@react-three/xr";
+import { XR } from "@react-three/xr";
 import { EffectComposer, N8AO, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { Move, RotateCw, Magnet } from "lucide-react";
@@ -19,8 +19,7 @@ import { useCanvasStore, CanvasEntity } from "./store";
 import GenericPart from "./GenericPart";
 import { ZUpGizmoViewcube } from "./ZUpGizmoViewcube";
 import { useTheme } from "next-themes";
-
-export const xrStore = createXRStore({ emulate: false, offerSession: false });
+import { xrStore } from "./xrStore";
 
 const CanvasEntitiesRenderer = () => {
     const ObjectValues = Object.values(useCanvasStore((state) => state.entities));

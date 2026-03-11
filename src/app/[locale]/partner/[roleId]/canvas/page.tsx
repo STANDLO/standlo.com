@@ -5,7 +5,7 @@ import { ErrorGuard } from "@/components/ui/ErrorGuard";
 import { useSearchParams } from "next/navigation";
 import { useCanvasStore } from "@/components/layout/canvas/store";
 import { CanvasHeader } from "@/components/layout/canvas/CanvasHeader";
-import { xrStore } from "@/components/layout/canvas/Canvas";
+import { xrStore } from "@/components/layout/canvas/xrStore";
 import { CanvasCreationWizard } from "@/components/layout/canvas/CanvasCreationWizard";
 import { CanvasPart } from "@/components/layout/canvas/CanvasPart";
 import { CanvasAssembly } from "@/components/layout/canvas/CanvasAssembly";
