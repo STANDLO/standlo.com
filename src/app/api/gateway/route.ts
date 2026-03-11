@@ -24,7 +24,7 @@ if (!getApps().length) {
 
 export async function POST(req: NextRequest) {
     try {
-        const authHeader = req.headers.get("Authorization");
+        let authHeader = req.headers.get("Authorization");
         
         // Only verify logic if Authorization is passed
         if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -32,11 +32,8 @@ export async function POST(req: NextRequest) {
             try {
                 await getAuth().verifyIdToken(idToken);
             } catch (authError) {
-                console.error("[API Proxy] Auth verification failed:", authError);
-                return NextResponse.json(
-                    { status: "error", message: "Unauthorized token", details: authError },
-                    { status: 401 }
-                );
+                console.warn("[API Proxy] Auth verification failed. Falling back to unauthenticated request.", authError);
+                authHeader = null; // Fallback to unauthenticated
             }
         }
 
