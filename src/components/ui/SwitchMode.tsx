@@ -2,11 +2,12 @@
 
 import * as React from "react"
 import { Button, type ButtonProps } from "@/components/ui/Button"
-import { Box, LayoutDashboard, Settings } from "lucide-react"
+import { Box, LayoutDashboard, Settings, Home } from "lucide-react"
 
 // Array dei mode di sistema duplicato dal backend (functions/src/index.ts) per evitare
 // di importare `firebase-admin` nel bundle Next.js Client-Side.
 export const systemUiModes = [
+    { code: "home", nativeLabel: "Home Page", icon: "Home", color: "transparent" },
     { code: "tools", nativeLabel: "Tools Dashboard", icon: "LayoutDashboard", color: "blue" },
     { code: "canvas", nativeLabel: "3D Canvas", icon: "Box", color: "green" },
 ]
@@ -16,10 +17,10 @@ const setUiModeCookie = (newMode: string) => {
     window.location.reload()
 }
 
-export function SwitchMode({ authVariant = "protected" }: { authVariant?: "public" | "protected" }) {
+export function SwitchMode({ authVariant = "protected", hasToolsAccess = false }: { authVariant?: "public" | "protected", hasToolsAccess?: boolean }) {
     const [isOpen, setIsOpen] = React.useState(false)
     const [dropdownPosition, setDropdownPosition] = React.useState<{ top: string; left?: string; right?: string }>({ top: "100%", right: "0" })
-    const [mode, setMode] = React.useState("tools")
+    const [mode, setMode] = React.useState("canvas") // Default
 
     const containerRef = React.useRef<HTMLDivElement>(null)
     const buttonRef = React.useRef<HTMLButtonElement>(null)
@@ -35,7 +36,6 @@ export function SwitchMode({ authVariant = "protected" }: { authVariant?: "publi
     const currentModeObj = authVariant === "public"
         ? systemUiModes.find(m => m.code === "canvas")
         : systemUiModes.find(m => m.code === mode);
-    console.log(currentModeObj)
 
     React.useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -73,23 +73,24 @@ export function SwitchMode({ authVariant = "protected" }: { authVariant?: "publi
         switch (iconName) {
             case "LayoutDashboard": return <LayoutDashboard className={className} />;
             case "Box": return <Box className={className} />;
+            case "Home": return <Home className={className} />;
             default: return <Settings className={className} />;
         }
     }
 
     return (
         <div className="ui-switch-mode" ref={containerRef}>
-            <Button
-                variant={currentModeObj ? (`${currentModeObj.color}Outline` as ButtonProps["variant"]) : "outline"}
-                size="icon"
-                ref={buttonRef}
+            <button
+                type="button"
+                ref={buttonRef as React.RefObject<HTMLButtonElement>}
                 onClick={handleToggle}
-                className="rounded-full"
+                className="ui-canvas-tools-btn h-10 w-10 px-0 shrink-0"
                 title="Switch UI Mode"
+                data-active={isOpen}
             >
-                {currentModeObj ? getIcon(currentModeObj.icon, "h-[1.2rem] w-[1.2rem]") : <Settings className="h-[1.2rem] w-[1.2rem]" />}
+                {currentModeObj ? getIcon(currentModeObj.icon, "w-5 h-5") : <Settings className="w-5 h-5" />}
                 <span className="sr-only">Switch UI Mode</span>
-            </Button>
+            </button>
 
             {isOpen && authVariant === "protected" && (
                 <div
@@ -97,22 +98,24 @@ export function SwitchMode({ authVariant = "protected" }: { authVariant?: "publi
                     style={dropdownPosition}
                 >
                     <div className="ui-switch-mode-list">
-                        {systemUiModes.map((m) => {
-                            const isActive = mode === m.code;
-                            const itemVariant = isActive ? (`${m.color}Muted` as ButtonProps["variant"]) : "light";
+                        {systemUiModes
+                            .filter(m => m.code === "tools" ? hasToolsAccess : true)
+                            .map((m) => {
+                                const isActive = mode === m.code;
+                                const itemVariant = isActive ? (`${m.color}Muted` as ButtonProps["variant"]) : "light";
 
-                            return (
-                                <Button
-                                    key={m.code}
-                                    variant={itemVariant}
-                                    onClick={() => switchMode(m.code)}
-                                    className={isActive ? "ui-switch-mode-item-active" : "ui-switch-mode-item"}
-                                >
-                                    {getIcon(m.icon, "h-[1.2rem] w-[1.2rem]")}
-                                    <span className={isActive ? "" : "text-foreground"}>{m.nativeLabel}</span>
-                                </Button>
-                            );
-                        })}
+                                return (
+                                    <Button
+                                        key={m.code}
+                                        variant={itemVariant}
+                                        onClick={() => switchMode(m.code)}
+                                        className={isActive ? "ui-switch-mode-item-active" : "ui-switch-mode-item"}
+                                    >
+                                        {getIcon(m.icon, "h-[1.2rem] w-[1.2rem]")}
+                                        <span className={isActive ? "" : "text-foreground"}>{m.nativeLabel}</span>
+                                    </Button>
+                                );
+                            })}
                     </div>
                 </div>
             )}

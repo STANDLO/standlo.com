@@ -24,31 +24,26 @@ if (!getApps().length) {
 
 export async function POST(req: NextRequest) {
     try {
-        // 1. Verify Authentication from headers
         const authHeader = req.headers.get("Authorization");
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return NextResponse.json(
-                { status: "error", message: "Missing or invalid Authorization header" },
-                { status: 401 }
-            );
-        }
-
-        const idToken = authHeader.split("Bearer ")[1];
-        try {
-            await getAuth().verifyIdToken(idToken);
-        } catch (authError) {
-            console.error("[API Proxy] Auth verification failed:", authError);
-            return NextResponse.json(
-                { status: "error", message: "Unauthorized token", details: authError },
-                { status: 401 }
-            );
+        
+        // Only verify logic if Authorization is passed
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            const idToken = authHeader.split("Bearer ")[1];
+            try {
+                await getAuth().verifyIdToken(idToken);
+            } catch (authError) {
+                console.error("[API Proxy] Auth verification failed:", authError);
+                return NextResponse.json(
+                    { status: "error", message: "Unauthorized token", details: authError },
+                    { status: 401 }
+                );
+            }
         }
 
         // 2. Parse request body
         const body = await req.json();
 
         // 3. Construct callable URL
-        // If NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL is set (e.g. dev), use it. Else default to production URL.
         const url = new URL(req.url);
         const targetQuery = url.searchParams.get("target") || "orchestrator";
         const baseUrl = process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://europe-west4-standlo.cloudfunctions.net";
@@ -58,9 +53,13 @@ export async function POST(req: NextRequest) {
         const appCheckHeader = req.headers.get("X-Firebase-AppCheck") || req.headers.get("x-firebase-appcheck");
 
         const headers: Record<string, string> = {
-            "Content-Type": "application/json",
-            "Authorization": authHeader
+            "Content-Type": "application/json"
         };
+        
+        if (authHeader) {
+            headers["Authorization"] = authHeader;
+        }
+        
         if (appCheckHeader) {
             headers["X-Firebase-AppCheck"] = appCheckHeader;
         }

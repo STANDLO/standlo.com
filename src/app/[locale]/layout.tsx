@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getMessages, getLocale, getTranslations } from "next-intl/server";
 import { AppProviders } from "@/providers/AppProviders";
+import { HomeOverlay } from "@/components/layout/HomeOverlay";
 import { CanvasOverlay } from "@/components/layout/CanvasOverlay";
 import { ToolsOverlay } from "@/components/layout/ToolsOverlay";
 import { BaseLogo } from "@/components/layout/base/BaseLogo";
@@ -48,7 +49,8 @@ export default async function RootLayout({
   const t = await getTranslations("components");
 
   const cookieStore = await cookies();
-  const uiModeCookie = cookieStore.get('ui_mode')?.value || 'tools';
+  const uiModeCookieRaw = cookieStore.get('ui_mode')?.value || 'home'; // Default is now home
+  const uiThemeCookieRaw = (cookieStore.get('ui_theme')?.value as "light" | "dark") || 'light';
 
   const tokens = await getTokens(cookieStore, authConfig);
   let variant: "public" | "protected" = "public";
@@ -56,11 +58,19 @@ export default async function RootLayout({
   let roleContextLabel = "";
   let userName = "";
   let organizationName = "";
+  let hasToolsAccess = false;
 
   if (tokens) {
     variant = "protected";
     const claims = (tokens.decodedToken || {}) as Record<string, unknown>;
     const role = (claims.role as string) || "pending";
+    const isActive = claims.active === true;
+    
+    // Determine if user has permission to use the 'tools' mode
+    if (isActive && role !== "pending") {
+        hasToolsAccess = true;
+    }
+
     userName = (claims.name as string) || (claims.email as string) || "Utente Standlo";
     organizationName = (claims.orgName as string) || "Ospite";
 
@@ -98,12 +108,25 @@ export default async function RootLayout({
     }
   }
 
+    const isPublic = variant === "public";
+
+    // Enforce permission checks on the cookie value
+    let resolvedUiMode = uiModeCookieRaw;
+    if (resolvedUiMode === 'tools' && !hasToolsAccess) {
+        resolvedUiMode = 'home';
+    }
+
+    const homeActive = resolvedUiMode === 'home';
+    const canvasActive = resolvedUiMode === 'canvas';
+    const toolsActive = !isPublic && resolvedUiMode === 'tools';
+
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} className={uiThemeCookieRaw} suppressHydrationWarning>
       <body className={`${montserrat.variable} font-sans antialiased layout-public-root fixed inset-0 overflow-hidden`}>
-        <AppProviders locale={locale} messages={messages}>
-          <CanvasOverlay active={uiModeCookie === 'canvas'} />
-          <ToolsOverlay active={uiModeCookie === 'tools'}>
+        <AppProviders locale={locale} messages={messages} uiTheme={uiThemeCookieRaw}>
+          <HomeOverlay active={homeActive} />
+          <CanvasOverlay active={canvasActive} />
+          <ToolsOverlay active={toolsActive}>
             {children}
           </ToolsOverlay>
           <BaseLogo />
@@ -113,6 +136,7 @@ export default async function RootLayout({
             roleContext={roleContextLabel}
             userName={userName}
             organizationName={organizationName}
+            hasToolsAccess={hasToolsAccess}
           />
         </AppProviders>
       </body>

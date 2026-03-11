@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/providers/ThemeProvider";
 import { useTranslations } from "next-intl";
 import {
     signInWithEmailAndPassword,
@@ -36,7 +36,7 @@ declare global {
 
 export function FormLogin() {
     const t = useTranslations("Auth");
-    const { resolvedTheme } = useTheme();
+    const { theme: resolvedTheme } = useTheme();
     const btnVariant = resolvedTheme === "dark" ? "dark" : "light";
 
     const tBrand = useTranslations("Brand");
@@ -134,6 +134,20 @@ export function FormLogin() {
         });
 
         if (res.ok) {
+            // Check for and claim public Canvas Sandbox
+            const savedCanvasId = localStorage.getItem("standlo_active_sandbox_canvas");
+            if (savedCanvasId) {
+                try {
+                    const { httpsCallable } = await import("firebase/functions");
+                    const { functions: fbFunctions } = await import("@/core/firebase");
+                    const canvasFn = httpsCallable(fbFunctions, "canvas");
+                    await canvasFn({ actionId: "claimCanvasSandbox", payload: { canvasId: savedCanvasId } });
+                    localStorage.removeItem("standlo_active_sandbox_canvas");
+                } catch (err) {
+                    console.error("Failed to claim canvas", err);
+                }
+            }
+
             try {
                 let sessionId = localStorage.getItem("standlo_session");
                 if (!sessionId) {

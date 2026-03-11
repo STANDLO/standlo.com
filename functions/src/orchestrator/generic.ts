@@ -36,6 +36,7 @@ export async function createGenericEntity(entityId: string, uid: string, payload
 export async function updateGenericEntity(entityId: string, uid: string, docId: string, payload: Record<string, unknown>) {
     const db = getFirestore(admin.app(), "standlo");
     const now = new Date().toISOString();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _id, ...restPayload } = payload;
 
     const collectionPath = buildCollectionPath(entityId, payload.orgId as string);

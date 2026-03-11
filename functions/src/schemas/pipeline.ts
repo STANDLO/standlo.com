@@ -67,6 +67,13 @@ export type PipelineExecutionEntity = z.infer<typeof PipelineExecutionSchema>;
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 export const PipelinePolicyMatrix: Record<RoleId, EntityPolicy> = {
+    guest: {
+        canCreate: false,
+        canRead: false,
+        canUpdate: false,
+        canDelete: false,
+        fieldPermissions: {}
+    },
     pending: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },

@@ -1,6 +1,17 @@
 import { z } from "zod";
 import { BaseSchema } from "./base";
 export const CANVAS_TYPES = ["part", "assembly", "stand"] as const;
+export const CANVAS_LAYERS = [
+    "appendimento",
+    "pavimento",
+    "pareti",
+    "strutture",
+    "impianto",
+    "arredo",
+    "grafiche",
+    "consumabili"
+] as const;
+
 /**
  * Zod Schema for Vector3 values (position, rotation, scale)
  */
@@ -18,9 +29,11 @@ export const MeshOverrideSchema = z.object({
  * This replaces CanvasNode and represents an actual Object3D in the scene
  */
 export const CanvasObjectSchema = BaseSchema.extend({
+    id: z.string().uuid(), // Enforce crypto.randomUUID()
     type: z.enum(["part", "assembly", "stand", "mesh"]), // "mesh" is allowed here if they drop a raw mesh
     baseEntityId: z.string().uuid(), // ID pointing to the Master Catalog (e.g. partId, assemblyId)
     name: z.string(), // Custom name for the instance
+    layerId: z.enum(CANVAS_LAYERS).default("strutture"), // Enforces layers array
     position: Vector3Schema.default([0, 0, 0]),
     rotation: Vector3Schema.default([0, 0, 0]),
     scale: Vector3Schema.default([1, 1, 1]),
@@ -35,8 +48,10 @@ export type MeshOverride = z.infer<typeof MeshOverrideSchema>;
  * It no longer holds the nodes array. Items are stored in the "objects" sub-collection.
  */
 export const CanvasSchema = BaseSchema.extend({
+    id: z.string().uuid(), // Enforce crypto.randomUUID()
     name: z.string().min(1, "Unnamed"),
     type: z.enum(CANVAS_TYPES),
+    editPassword: z.string().optional().describe("Bcrypt hash pattern for public edit access protection"),
 });
 export type CanvasType = z.infer<typeof CanvasSchema>;
 export const CanvasCreateSchema = CanvasSchema.omit({

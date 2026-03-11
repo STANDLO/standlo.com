@@ -120,6 +120,18 @@ export function FormOnboarding({ locale }: { locale: string }) {
                 // Update Edge cookies
                 await fetch("/api/auth/login", { headers });
 
+                // Check for and claim public Canvas Sandbox
+                const savedCanvasId = localStorage.getItem("standlo_active_sandbox_canvas");
+                if (savedCanvasId) {
+                    try {
+                        const canvasFn = httpsCallable(functions, "canvas");
+                        await canvasFn({ actionId: "claimCanvasSandbox", payload: { canvasId: savedCanvasId } });
+                        localStorage.removeItem("standlo_active_sandbox_canvas");
+                    } catch (err) {
+                        console.error("Failed to claim canvas", err);
+                    }
+                }
+
                 // Log the final onboarding completion step to the Orchestrator
                 const sessionId = localStorage.getItem("standlo_session");
                 if (sessionId) {

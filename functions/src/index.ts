@@ -21,6 +21,7 @@ export const systemLocales = [
 ];
 
 export const systemUiModes = [
+    { code: "home", nativeLabel: "Home Page", icon: "Home", color: "transparent" },
     { code: "tools", nativeLabel: "Tools Dashboard", icon: "LayoutDashboard", color: "blue" },
     { code: "canvas", nativeLabel: "3D Canvas", icon: "Box", color: "green" },
 ];

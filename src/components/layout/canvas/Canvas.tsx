@@ -13,13 +13,16 @@ import { Physics } from "@react-three/rapier";
 import { XR } from "@react-three/xr";
 import { EffectComposer, N8AO, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
-import { Move, RotateCw, Magnet } from "lucide-react";
+
 import { partsTunnel } from "./tunnel";
 import { useCanvasStore, CanvasEntity } from "./store";
 import GenericPart from "./GenericPart";
 import { ZUpGizmoViewcube } from "./ZUpGizmoViewcube";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/providers/ThemeProvider";
 import { xrStore } from "./xrStore";
+import { CanvasCatalogSidebar } from "./CanvasCatalogSidebar";
+import { CanvasTour } from "./CanvasTour";
+import { CanvasTools } from "./CanvasTools";
 
 const CanvasEntitiesRenderer = () => {
     const ObjectValues = Object.values(useCanvasStore((state) => state.entities));
@@ -55,24 +58,15 @@ interface StandloCanvasProps {
 }
 
 export default function StandloCanvas({ entityId, entityType, active = true, isOverlay = false }: StandloCanvasProps) {
-    console.log("[Canvas Debug] StandloCanvas Core Component Rendering", { entityId, entityType, active, isOverlay });
-    const { resolvedTheme } = useTheme();
+    const { theme: resolvedTheme } = useTheme();
     const viewMode = useCanvasStore((state) => state.viewMode);
     const cameraControlsRef = useRef<CameraControls>(null);
     const addEntity = useCanvasStore((state) => state.addEntity);
     const clearCanvas = useCanvasStore((state) => state.clearCanvas);
-    
-    useEffect(() => {
-        console.log("[Canvas Debug] StandloCanvas Mounted in DOM");
-        return () => console.log("[Canvas Debug] StandloCanvas Unmounted");
-    }, []);
 
     const transformMode = useCanvasStore((state) => state.transformMode);
     const setTransformMode = useCanvasStore((state) => state.setTransformMode);
     const cameraMode = useCanvasStore((state) => state.cameraMode);
-    const setCameraMode = useCanvasStore((state) => state.setCameraMode);
-    const shadingMode = useCanvasStore((state) => state.shadingMode);
-    const setShadingMode = useCanvasStore((state) => state.setShadingMode);
 
     const hoverSnap = useCanvasStore((state) => state.hoverSnap);
     const setHoverSnap = useCanvasStore((state) => state.setHoverSnap);
@@ -129,22 +123,30 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                 const { onAuthStateChanged } = await import("firebase/auth");
 
                 unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-                    if (!currentUser || hasFetched || !isMounted) return;
-                    hasFetched = true;
+                    // Do not mark hasFetched=true immediately if currentUser is null, give it a moment unless we are forcing public
+                    if (!isMounted) return;
+                    if (hasFetched) return;
+                    
+                    // We mark fetched if there's a user, OR if this is definitely a public canvas context
+                    if (currentUser || entityType === "canvas") {
+                        hasFetched = true;
+                    }
 
                     try {
-                        const idToken = await currentUser.getIdToken();
+                        const idToken = currentUser ? await currentUser.getIdToken() : undefined;
 
-                        let targetSchema = "mesh";
+                        let targetSchema = entityType === "canvas" ? "canvas" : "mesh";
                         if (entityType === "part" || entityId.startsWith("PAR-")) targetSchema = "part";
                         else if (entityType === "assembly" || entityId.startsWith("ASS-")) targetSchema = "assembly";
                         else if (entityType === "stand" || entityId.startsWith("STA-")) targetSchema = "stand";
+
+                        console.log(`[Canvas Init] entityId=${entityId}, entityType=${entityType}, targetSchema=${targetSchema}, isGuest=${!idToken}`);
 
                         const res = await fetch(`/api/gateway?target=orchestrator`, {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
-                                "Authorization": `Bearer ${idToken}`
+                                ...(idToken ? { "Authorization": `Bearer ${idToken}` } : {})
                             },
                             body: JSON.stringify({
                                 actionId: "read",
@@ -158,6 +160,8 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                             const data = jsonRes.result?.data || jsonRes.data || jsonRes.result || jsonRes;
                             const unwrappedData = data.data || data; // handle deep nesting
 
+                            console.log(`[Canvas Init] Read entity success:`, unwrappedData);
+
                             if (unwrappedData) {
                                 clearCanvas(); // Reset canvas state before injection
 
@@ -166,7 +170,7 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                                         id: entityId,
                                         baseEntityId: `primitive_${unwrappedData.geometryType || "box"}`,
                                         type: "mesh",
-                                        position: [0, (unwrappedData.dimensions?.[1] || 1) / 2, 0],
+                                        position: [0, (unwrappedData.dimensions?.[2] ?? unwrappedData.dimensions?.[1] ?? 1) / 2, 0],
                                         rotation: [0, 0, 0, 1],
                                         sockets: [],
                                         order: 0,
@@ -179,11 +183,12 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                                     });
                                 } else {
                                     try {
+                                        console.log(`[Canvas Init] Fetching subcollection for ${targetSchema}/${entityId}/objects`);
                                         const subRes = await fetch(`/api/gateway?target=orchestrator`, {
                                             method: "POST",
                                             headers: {
                                                 "Content-Type": "application/json",
-                                                "Authorization": `Bearer ${idToken}`
+                                                ...(idToken ? { "Authorization": `Bearer ${idToken}` } : {})
                                             },
                                             body: JSON.stringify({
                                                 actionId: "list",
@@ -208,6 +213,7 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                                                         rotation: (obj.rotation as [number, number, number, number]) || [0, 0, 0, 1],
                                                         sockets: [],
                                                         order: (obj.order as number) || 0,
+                                                        metadata: obj.metadata as CanvasEntity["metadata"],
                                                         meshOverrides: obj.meshOverrides as CanvasEntity["meshOverrides"]
                                                     });
                                                 });
@@ -242,69 +248,45 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
     return (
         <div className={`w-full h-full relative ${isOverlay ? 'bg-transparent' : 'bg-[#f8f9fa] dark:bg-[#18181b]'}`}>
 
-            {/* Canvas Toolbar overlay */}
-            <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
-                <div className="flex gap-2 pointer-events-auto bg-background/80 backdrop-blur border rounded-md p-1 shadow-sm">
-                    <button
-                        type="button"
-                        onClick={() => setTransformMode("translate")}
-                        className={`p-2 rounded hover:bg-muted flex items-center gap-2 text-sm font-medium transition-colors ${transformMode === "translate" ? "bg-muted text-primary" : "text-muted-foreground"}`}
-                        title="Sposta"
-                    >
-                        <Move className="w-4 h-4" /> <span className="hidden sm:inline">Sposta</span>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setTransformMode("rotate")}
-                        className={`p-2 rounded hover:bg-muted flex items-center gap-2 text-sm font-medium transition-colors ${transformMode === "rotate" ? "bg-muted text-primary" : "text-muted-foreground"}`}
-                        title="Ruota"
-                    >
-                        <RotateCw className="w-4 h-4" /> <span className="hidden sm:inline">Ruota</span>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setTransformMode("snap");
-                            setHoverSnap(null);
-                            setSnapSource(null);
-                        }}
-                        className={`p-2 rounded hover:bg-muted flex items-center gap-2 text-sm font-medium transition-colors ${transformMode === "snap" ? "bg-muted text-primary" : "text-muted-foreground"}`}
-                        title="Allinea"
-                    >
-                        <Magnet className="w-4 h-4" /> <span className="hidden sm:inline">Allinea</span>
-                    </button>
-                </div>
-
-                <div className="flex gap-2 pointer-events-auto bg-background/80 backdrop-blur border rounded-md p-1 shadow-sm">
-                    <select
-                        value={cameraMode}
-                        onChange={(e) => setCameraMode(e.target.value as "perspective" | "orthographic")}
-                        className="bg-transparent text-sm font-medium p-1 outline-none cursor-pointer"
-                    >
-                        <option value="perspective">Prospettiva</option>
-                        <option value="orthographic">Ortogonale</option>
-                    </select>
-                    <div className="w-px h-6 bg-border mx-1 self-center" />
-                    <select
-                        value={shadingMode}
-                        onChange={(e) => setShadingMode(e.target.value as "shaded" | "shaded_edges" | "white_edges")}
-                        className="bg-transparent text-sm font-medium p-1 outline-none cursor-pointer"
-                    >
-                        <option value="shaded">Normale</option>
-                        <option value="shaded_edges">Bordi</option>
-                        <option value="white_edges">Bianco</option>
-                    </select>
-                </div>
-            </div>
-
             <Canvas
                 shadows={{ type: THREE.PCFShadowMap }}
-                camera={cameraMode === 'orthographic' ? { position: [15, 15, 15], zoom: 20 } : { position: [15, 15, 15], fov: 45 }}
+                camera={cameraMode === 'orthographic' ? { position: [10, 10, 10], zoom: 20 } : { position: [10, 10, 10], fov: 45 }}
                 orthographic={cameraMode === 'orthographic'}
                 // Orthographic behavior is managed dynamically or via CameraControls if needed,
                 // but for seamless transitions, a perspective camera at a high distance with low FOV can simulate orthographic,
                 // or we use setLookAt. We stick to perspective for smooth interpolation out-of-the-box.
                 gl={{ preserveDrawingBuffer: true, alpha: true }} // Required for .toDataURL() exports and transparent backgrounds
+                onPointerMissed={async () => {
+                    const store = useCanvasStore.getState();
+                    const activeId = store.selectedEntityId;
+                    if (activeId) {
+                        const activeEntity = store.entities[activeId];
+                        store.selectEntity(null);
+                        store.setTransformMode(null);
+
+                        if (activeEntity && entityId) { // canvasId is passed as entityId to this component
+                            try {
+                                const { httpsCallable } = await import("firebase/functions");
+                                const { functions: fbFunctions } = await import("@/core/firebase");
+                                const canvasFn = httpsCallable(fbFunctions, "canvas");
+                                const clamp = (v: number) => Number(v.toFixed(3));
+                                canvasFn({
+                                    actionId: "updateNode",
+                                    payload: {
+                                        canvasId: entityId,
+                                        nodeId: activeId,
+                                        position: activeEntity.position.map(clamp) as [number, number, number],
+                                        rotation: activeEntity.rotation.map(clamp) as [number, number, number, number] | [number, number, number],
+                                        scale: activeEntity.metadata?.dimensions?.map(clamp) || [1, 1, 1],
+                                        metadata: activeEntity.metadata
+                                    }
+                                }).catch((e) => console.error("Async updateNode failed on deselect", e));
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }
+                    }
+                }}
             >
                 <Suspense fallback={null}>
                     <partsTunnel.Out />
@@ -453,6 +435,10 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                     </XR>
                 </Suspense>
             </Canvas>
+
+            <CanvasCatalogSidebar entityId={entityId} entityType={entityType} />
+            <CanvasTour />
+            <CanvasTools />
         </div>
     );
 }

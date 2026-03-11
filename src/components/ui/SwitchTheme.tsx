@@ -2,11 +2,9 @@
 
 import * as React from "react"
 import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/providers/ThemeProvider"
 import { getAuth, onAuthStateChanged, User } from "firebase/auth"
 import { app } from "@/core/firebase"
-
-import { Button } from "@/components/ui/Button"
 import { updateUserTheme } from "@/app/actions/theme"
 
 const auth = getAuth(app)
@@ -45,26 +43,25 @@ export function SwitchTheme() {
 
     if (!mounted) {
         return (
-            <Button variant="outline" size="icon" className="w-9 h-9 border-transparent rounded-full opacity-50">
+            <button type="button" className="ui-canvas-tools-btn h-10 w-10 px-0 shrink-0 border-transparent opacity-50">
                 <span className="sr-only">Toggle theme placeholder</span>
-            </Button>
+            </button>
         )
     }
 
     return (
-        <Button
-            variant="outline"
-            size="icon"
+        <button
+            type="button"
             onClick={toggleTheme}
-            className="layout-header-action-btn"
+            className="ui-canvas-tools-btn h-10 w-10 px-0 shrink-0"
             title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
         >
             {theme === "light" ? (
-                <Moon className="h-[1.2rem] w-[1.2rem] transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="w-5 h-5 transition-all dark:-rotate-90 dark:scale-0" />
             ) : (
-                <Sun className="h-[1.2rem] w-[1.2rem] transition-all dark:rotate-0 dark:scale-100" />
+                <Sun className="w-5 h-5 transition-all dark:rotate-0 dark:scale-100" />
             )}
             <span className="sr-only">Toggle theme</span>
-        </Button>
+        </button>
     )
 }

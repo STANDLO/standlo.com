@@ -3,64 +3,63 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
-import { useTheme } from "next-themes"
 
 const buttonVariants = cva(
     "ui-btn",
     {
         variants: {
             variant: {
-                default: "ui-btn-default",
-                defaultMuted: "ui-btn-default-muted",
-                defaultReadonly: "ui-btn-default-readonly",
-                defaultOutline: "ui-btn-default-outline",
+                default: "ui-btn-theme",
+                defaultMuted: "ui-btn-theme-muted",
+                defaultReadonly: "ui-btn-theme-readonly",
+                defaultOutline: "ui-btn-theme-outline",
 
-                light: "ui-btn-light",
-                lightMuted: "ui-btn-light-muted",
-                lightReadonly: "ui-btn-light-readonly",
-                lightOutline: "ui-btn-light-outline",
+                light: "ui-btn-theme theme-light",
+                lightMuted: "ui-btn-theme-muted theme-light",
+                lightReadonly: "ui-btn-theme-readonly theme-light",
+                lightOutline: "ui-btn-theme-outline theme-light",
 
-                dark: "ui-btn-dark",
-                darkMuted: "ui-btn-dark-muted",
-                darkReadonly: "ui-btn-dark-readonly",
-                darkOutline: "ui-btn-dark-outline",
+                dark: "ui-btn-theme theme-dark",
+                darkMuted: "ui-btn-theme-muted theme-dark",
+                darkReadonly: "ui-btn-theme-readonly theme-dark",
+                darkOutline: "ui-btn-theme-outline theme-dark",
 
-                green: "ui-btn-green",
-                greenMuted: "ui-btn-green-muted",
-                greenReadonly: "ui-btn-green-readonly",
-                greenOutline: "ui-btn-green-outline",
+                green: "ui-btn-theme theme-green",
+                greenMuted: "ui-btn-theme-muted theme-green",
+                greenReadonly: "ui-btn-theme-readonly theme-green",
+                greenOutline: "ui-btn-theme-outline theme-green",
 
-                blue: "ui-btn-blue",
-                blueMuted: "ui-btn-blue-muted",
-                blueReadonly: "ui-btn-blue-readonly",
-                blueOutline: "ui-btn-blue-outline",
+                blue: "ui-btn-theme theme-blue",
+                blueMuted: "ui-btn-theme-muted theme-blue",
+                blueReadonly: "ui-btn-theme-readonly theme-blue",
+                blueOutline: "ui-btn-theme-outline theme-blue",
 
-                yellow: "ui-btn-yellow",
-                yellowMuted: "ui-btn-yellow-muted",
-                yellowReadonly: "ui-btn-yellow-readonly",
-                yellowOutline: "ui-btn-yellow-outline",
+                yellow: "ui-btn-theme theme-yellow",
+                yellowMuted: "ui-btn-theme-muted theme-yellow",
+                yellowReadonly: "ui-btn-theme-readonly theme-yellow",
+                yellowOutline: "ui-btn-theme-outline theme-yellow",
 
-                fuchsia: "ui-btn-fuchsia",
-                fuchsiaMuted: "ui-btn-fuchsia-muted",
-                fuchsiaReadonly: "ui-btn-fuchsia-readonly",
-                fuchsiaOutline: "ui-btn-fuchsia-outline",
+                fuchsia: "ui-btn-theme theme-fucsia",
+                fuchsiaMuted: "ui-btn-theme-muted theme-fucsia",
+                fuchsiaReadonly: "ui-btn-theme-readonly theme-fucsia",
+                fuchsiaOutline: "ui-btn-theme-outline theme-fucsia",
 
-                violet: "ui-btn-violet",
-                violetMuted: "ui-btn-violet-muted",
-                violetReadonly: "ui-btn-violet-readonly",
-                violetOutline: "ui-btn-violet-outline",
+                violet: "ui-btn-theme theme-violet",
+                violetMuted: "ui-btn-theme-muted theme-violet",
+                violetReadonly: "ui-btn-theme-readonly theme-violet",
+                violetOutline: "ui-btn-theme-outline theme-violet",
 
-                red: "ui-btn-red",
-                redMuted: "ui-btn-red-muted",
-                redReadonly: "ui-btn-red-readonly",
-                redOutline: "ui-btn-red-outline",
+                red: "ui-btn-theme theme-red",
+                redMuted: "ui-btn-theme-muted theme-red",
+                redReadonly: "ui-btn-theme-readonly theme-red",
+                redOutline: "ui-btn-theme-outline theme-red",
 
-                orange: "ui-btn-orange",
-                orangeMuted: "ui-btn-orange-muted",
-                orangeReadonly: "ui-btn-orange-readonly",
-                orangeOutline: "ui-btn-orange-outline",
+                orange: "ui-btn-theme theme-orange",
+                orangeMuted: "ui-btn-theme-muted theme-orange",
+                orangeReadonly: "ui-btn-theme-readonly theme-orange",
+                orangeOutline: "ui-btn-theme-outline theme-orange",
 
-                outline: "ui-btn-outline",
+                outline: "ui-btn-theme-outline",
             },
             size: {
                 default: "ui-btn-size-default",
@@ -80,12 +79,7 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant, size, ...props }, ref) => {
-        const { resolvedTheme } = useTheme()
-
-        let activeVariant = variant
-        if (!activeVariant) {
-            activeVariant = resolvedTheme === "dark" ? "dark" : "light"
-        }
+        const activeVariant = variant || "default"
 
         return (
             <button

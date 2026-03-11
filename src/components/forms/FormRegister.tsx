@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/providers/ThemeProvider";
 import { useTranslations } from "next-intl";
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, sendEmailVerification } from "firebase/auth";
 import { auth } from "@/core/firebase";
@@ -16,7 +16,7 @@ import { useBrandColor } from "@/hooks/useBrandColor";
 
 export function FormRegister() {
     const t = useTranslations("Auth");
-    const { resolvedTheme } = useTheme();
+    const { theme: resolvedTheme } = useTheme();
     const btnVariant = resolvedTheme === "dark" ? "dark" : "light";
 
     const tBrand = useTranslations("Brand");

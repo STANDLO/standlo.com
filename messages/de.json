@@ -167,6 +167,38 @@
             "placeholder": "Suchen Sie eine Adresse über Google..."
         }
     },
+    "Canvas": {
+        "title": "Canvas 3D Editor",
+        "tools": {
+            "inserimento": "Einfügen",
+            "addPart": "Teil hinzufügen",
+            "addAssembly": "Baugruppe hinzufügen",
+            "addBundle": "Bundle hinzufügen",
+            "addStand": "Stand hinzufügen",
+            "azioni": "Aktionen",
+            "move": "Verschieben",
+            "rotate": "Drehen",
+            "snap": "Einrasten",
+            "view": "Ansicht",
+            "view3d": "3D-Ansicht",
+            "viewAr": "AR-Modus (Pass-through)",
+            "viewVr": "VR-Modus (Immersiv)",
+            "manufacturing": "Fertigung",
+            "bom": "Stückliste (BoM)",
+            "bop": "Prozessliste (BoP)",
+            "share": "Teilen",
+            "shareDialogTitle": "Link teilen (Nur Lesen)",
+            "shareDialogDesc": "Jeder mit diesem Link kann das 3D-Modell ohne Bearbeitungsmöglichkeiten ansehen.",
+            "adminCredentials": "Admin-Zugangsdaten (Bearbeiten)",
+            "adminDesc": "Senden Sie die vollständige URL oder das Passwort separat, um Änderungen zuzulassen.",
+            "urlLabel": "URL:",
+            "passwordLabel": "Passwort:",
+            "play": "Spielen",
+            "applyMaterial": "Material Anwenden",
+            "duplicate": "Duplizieren",
+            "delete": "Löschen"
+        }
+    },
     "components": {
         "dashboard": "Dashboard",
         "orders": "Bestellungen",

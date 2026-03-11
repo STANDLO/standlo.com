@@ -5,6 +5,7 @@ import { z } from "zod";
  */
 export const SystemRoles = [
     // SYSTEM
+    'guest',
     'pending',
     'other',
     // STANDLO
@@ -45,6 +46,7 @@ export const SystemRoleLabels: Record<RoleId, string> = {
     standlo_engeneer: 'Engeneer @ STANDLO',
     standlo_designer: 'Designer @ STANDLO',
     // SYSTEM
+    guest: 'Guest',
     pending: 'Pending',
     other: 'Other',
     // USERS

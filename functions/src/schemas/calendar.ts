@@ -22,6 +22,13 @@ export const CalendarSlotSearchSchema = PaginationQuerySchema.extend({
     referenceType: z.enum(['task', 'rent', 'availability']).optional()
 });
 export const CalendarSlotPolicyMatrix: Record<RoleId, EntityPolicy> = {
+    guest: {
+        canCreate: false,
+        canRead: false,
+        canUpdate: false,
+        canDelete: false,
+        fieldPermissions: {}
+    },
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },

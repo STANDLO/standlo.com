@@ -64,18 +64,26 @@ export function getEntityConfig(entityId: string): EntityConfig {
 }
 
 export function buildCollectionPath(entityId: string, orgId?: string): string {
-    const config = getEntityConfig(entityId);
+    const parts = entityId.split("/");
+    const rootEntity = parts[0];
+    const config = getEntityConfig(rootEntity);
 
+    let basePath = "";
     if (config.scope === "global") {
-        return config.name;
-    }
-
-    if (config.scope === "tenant") {
+        basePath = config.name;
+    } else if (config.scope === "tenant") {
         if (!orgId) {
-            throw new Error(`[EntityRegistry] orgId is REQUIRED to access tenant-scoped entity '${entityId}'.`);
+            throw new Error(`[EntityRegistry] orgId is REQUIRED to access tenant-scoped entity '${rootEntity}'.`);
         }
-        return `organizations/${orgId}/${config.name}`;
+        basePath = `organizations/${orgId}/${config.name}`;
+    } else {
+        throw new Error(`[EntityRegistry] Invalid scope for entity '${rootEntity}'.`);
     }
 
-    throw new Error(`[EntityRegistry] Invalid scope for entity '${entityId}'.`);
+    if (parts.length === 3) {
+        // e.g., "canvas/id/objects" -> "canvases/id/objects"
+        return `${basePath}/${parts[1]}/${parts[2]}`;
+    }
+
+    return basePath;
 }

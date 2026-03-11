@@ -150,7 +150,36 @@
         }
     },
     "Canvas": {
-        "title": "Editor 3D Canvas"
+        "title": "Editor 3D Canvas",
+        "tools": {
+            "inserimento": "Inserimento",
+            "addPart": "Aggiungi Parte",
+            "addAssembly": "Aggiungi Assemblato",
+            "addBundle": "Aggiungi Bundle",
+            "addStand": "Aggiungi Stand",
+            "azioni": "Azioni",
+            "move": "Sposta",
+            "rotate": "Ruota",
+            "snap": "Aggancia",
+            "view": "View",
+            "view3d": "Vista 3D",
+            "viewAr": "Modo AR (Pass-through)",
+            "viewVr": "Modo VR (Immersiva)",
+            "manufacturing": "Manufacturing",
+            "bom": "Distinta Base (BoM)",
+            "bop": "Distinta di Processo (BoP)",
+            "share": "Condividi",
+            "shareDialogTitle": "Link di Condivisione (Sola Lettura)",
+            "shareDialogDesc": "Chiunque abbia questo link può visualizzare il modello 3D senza poterlo modificare.",
+            "adminCredentials": "Credenziali Admin (Modifica)",
+            "adminDesc": "Invia l'URL completo o la password separatamente per consentire le modifiche.",
+            "urlLabel": "URL:",
+            "passwordLabel": "Password:",
+            "play": "Gioca",
+            "applyMaterial": "Applica Materiale",
+            "duplicate": "Duplica",
+            "delete": "Elimina"
+        }
     },
     "Brand": {
         "name": "STANDLO",

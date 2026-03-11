@@ -107,6 +107,13 @@ export const OrganizationPolicyMatrix: Record<RoleId, EntityPolicy> = {
         }
     },
     // PENDING role for Onboarding
+    guest: {
+        canCreate: false,
+        canRead: false,
+        canUpdate: false,
+        canDelete: false,
+        fieldPermissions: {}
+    },
     pending: {
         canCreate: true, // Used effectively during onboarding
         canRead: true,

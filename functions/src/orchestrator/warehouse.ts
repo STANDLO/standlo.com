@@ -32,6 +32,7 @@ export async function createWarehouseEntity(uid: string, payload: Record<string,
 
 export async function updateWarehouseEntity(uid: string, warehouseId: string, payload: Record<string, unknown>) {
     const now = new Date().toISOString();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _id, ...restPayload } = payload;
 
     const updateData = {

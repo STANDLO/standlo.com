@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Icon } from "@/components/ui/Icon"
 
-export type CardColor = "default" | "green" | "blue" | "yellow" | "fucsia" | "violet" | "red" | "orange";
+export type CardColor = "default" | "green" | "blue" | "yellow" | "fucsia" | "violet" | "red" | "orange" | "dark" | "light";
 
 export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
     color?: CardColor;
@@ -88,7 +88,7 @@ export interface CardIconProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const CardIcon = React.forwardRef<HTMLDivElement, CardIconProps>(
     ({ className, color = "default", ...props }, ref) => {
-        const iconColor = (color === "green" || color === "yellow") ? "black" : "white";
+        const iconColor = (color === "green" || color === "yellow" || color === "light") ? "black" : "white";
 
         return (
             <div

@@ -4,6 +4,7 @@ import { Save, Undo, Redo, Download, Cuboid } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CanvasHeaderViewer } from "./CanvasHeaderViewer";
 import { CanvasHeaderAdd } from "./CanvasHeaderAdd";
+import { CanvasHeaderLayers } from "./CanvasHeaderLayers";
 import { AssemblyTimeline } from "./AssemblyTimeline";
 import { useCanvasStore } from "./store";
 
@@ -99,6 +100,7 @@ export function CanvasHeader({ roleId, entityId, onEnterXR, onExport }: CanvasHe
             {/* Right Box: Mode Toolbar, CanvasHeaderViewer, Actions */}
             <div className="ui-canvas-header-right">
                 <CanvasHeaderAdd roleId={roleId} entityId={entityId} />
+                <CanvasHeaderLayers />
 
                 <AssemblyTimeline />
 

@@ -1,39 +1,49 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import { Suspense } from "react";
 
 // Dynamically import the advanced Canvas with no SSR
 const StandloCanvas = dynamic(() => import("./canvas/Canvas"), { ssr: false });
 
 function CanvasOverlayInner({ active = true }: { active?: boolean }) {
-    console.log("[Canvas Debug] CanvasOverlayInner Rendering. Active:", active);
     // We wrap useSearchParams in a component or suspense boundary to avoid Next.js de-opts
     const searchParams = useSearchParams();
+    const pathname = usePathname();
 
     // Pass context from URL down to the global canvas if we happen to be in the editor route
-    const entityId = searchParams?.get("id") || undefined;
-    const entityType = searchParams?.get("type") || undefined;
-    
-    console.log("[Canvas Debug] CanvasOverlayInner search params parsed", { entityId, entityType });
+    let entityId = searchParams?.get("id") || undefined;
+    let entityType = searchParams?.get("type") || undefined;
+
+    // Support for public canvas sharing paths: /[locale]/canvas/public/[uid]
+    if (!entityId && pathname) {
+        const publicMatch = pathname.match(/\/canvas\/public\/([a-zA-Z0-9-]+)/);
+        if (publicMatch && publicMatch[1]) {
+            entityId = publicMatch[1];
+            entityType = "canvas"; // Sandbox canvases evaluate as canvas
+        }
+    }
 
     return (
         <StandloCanvas
             active={active}
             isOverlay={true}
             entityId={entityId}
-            entityType={entityType}
+            entityType={entityType as "part" | "assembly" | "stand" | "bundle" | "canvas" | undefined}
         />
     );
 }
 
 export function CanvasOverlay({ active = true }: { active?: boolean }) {
-    console.log("[Canvas Debug] CanvasOverlay Outer Wrapper Rendering. Active:", active);
+    const pathname = usePathname();
+    const isCanvasRoute = pathname?.includes("/canvas");
+    const finalActive = active || isCanvasRoute;
+
     return (
         <div className="absolute inset-0 z-0 pointer-events-auto">
-            <Suspense fallback={<div className="text-white z-50 absolute top-20 left-4 bg-black/50 p-2">Loading Canvas Suspense...</div>}>
-                <CanvasOverlayInner active={active} />
+            <Suspense fallback={null}>
+                <CanvasOverlayInner active={finalActive} />
             </Suspense>
         </div>
     );

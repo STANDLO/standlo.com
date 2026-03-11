@@ -13,12 +13,13 @@ export interface SocketDefinition {
 export interface CanvasEntity {
     id: string; // The specific instance ID on the canvas
     baseEntityId: string; // The reference ID from the catalog (Part ID or Assembly ID)
-    type: "part" | "assembly" | "stand" | "mesh";
+    type: "part" | "assembly" | "stand" | "mesh" | "bundle";
     position: Vector3Tuple;
     rotation: QuaternionTuple;
     sockets: SocketDefinition[];
     isColliding?: boolean; // True if Rapier detects an overlap
     order: number; // New mounting order logic
+    layerId?: string; // Auto-routed layer destination
     meshOverrides?: Record<string, {
         textureId?: string | null;
         materialId?: string | null;
@@ -34,11 +35,12 @@ export interface CanvasEntity {
         color?: string;
         roughness?: number;
         metalness?: number;
+        dimensions?: number[];
         [key: string]: unknown;
     }; // Preserving metadata for edge case primitive testing
 }
 
-export type CanvasMode = "part" | "assembly" | "stand" | null;
+export type CanvasMode = "part" | "assembly" | "bundle" | "stand" | null;
 export type ViewMode = "2D" | "3D" | "XR" | "AR";
 
 interface CanvasState {
@@ -47,19 +49,27 @@ interface CanvasState {
     entities: Record<string, CanvasEntity>;
     selectedEntityId: string | null;
     playbackStep: number | null; // Null means 'show all' (default editing mode). Number means simulate assembly.
+    editPassword: string | null;
 
     // Actions
+    setEditPassword: (password: string | null) => void;
     setMode: (mode: CanvasMode) => void;
     setViewMode: (viewMode: ViewMode) => void;
 
-    transformMode: "translate" | "rotate" | "snap";
-    setTransformMode: (mode: "translate" | "rotate" | "snap") => void;
+    transformMode: "translate" | "rotate" | "snap" | null;
+    setTransformMode: (mode: "translate" | "rotate" | "snap" | null) => void;
 
     cameraMode: "perspective" | "orthographic" | "ortho_faces";
     setCameraMode: (mode: "perspective" | "orthographic" | "ortho_faces") => void;
 
     shadingMode: "shaded" | "shaded_edges" | "white_edges";
     setShadingMode: (mode: "shaded" | "shaded_edges" | "white_edges") => void;
+
+    activeLayer: string | null;
+    setActiveLayer: (layer: string | null) => void;
+
+    tutorialStep: number | null;
+    setTutorialStep: (step: number | null) => void;
 
     hoverSnap: { id: string; point: Vector3Tuple; normal: Vector3Tuple; type: 'corner' | 'midpoint' | 'origin' } | null;
     setHoverSnap: (snap: CanvasState['hoverSnap']) => void;
@@ -91,14 +101,20 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     transformMode: "translate",
     cameraMode: "perspective",
     shadingMode: "shaded",
+    activeLayer: null,
+    tutorialStep: null,
     hoverSnap: null,
     snapSource: null,
+    editPassword: null,
 
+    setEditPassword: (password) => set({ editPassword: password }),
     setMode: (mode) => set({ mode }),
     setViewMode: (viewMode) => set({ viewMode }),
     setTransformMode: (transformMode) => set({ transformMode }),
     setCameraMode: (cameraMode) => set({ cameraMode }),
     setShadingMode: (shadingMode) => set({ shadingMode }),
+    setActiveLayer: (activeLayer) => set({ activeLayer }),
+    setTutorialStep: (tutorialStep) => set({ tutorialStep }),
     setHoverSnap: (hoverSnap) => set({ hoverSnap }),
     setSnapSource: (snapSource) => set({ snapSource }),
 

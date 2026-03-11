@@ -19,6 +19,13 @@ export const ShelveSearchSchema = PaginationQuerySchema.extend({
     name: z.string().optional(),
 });
 export const ShelvePolicyMatrix: Record<RoleId, EntityPolicy> = {
+    guest: {
+        canCreate: false,
+        canRead: false,
+        canUpdate: false,
+        canDelete: false,
+        fieldPermissions: {}
+    },
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: {} },

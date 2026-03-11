@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { ToolsMain } from "./tools/ToolsMain";
 import { ToolsMainSidebar } from "./tools/ToolsMainSidebar";
 import { ToolsMainContent } from "./tools/ToolsMainContent";
@@ -13,7 +16,13 @@ interface ToolsOverlayProps {
 }
 
 export function ToolsOverlay({ active = true, children }: ToolsOverlayProps) {
-    if (!active) {
+    const pathname = usePathname();
+    const isCanvasRoute = pathname?.endsWith("/canvas");
+    
+    // Tools should naturally deactivate on canvas direct routes
+    const finalActive = active && !isCanvasRoute;
+
+    if (!finalActive) {
         return <>{children}</>;
     }
 

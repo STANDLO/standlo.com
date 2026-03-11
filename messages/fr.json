@@ -167,6 +167,38 @@
             "placeholder": "Rechercher une adresse avec Google..."
         }
     },
+    "Canvas": {
+        "title": "Éditeur 3D Canvas",
+        "tools": {
+            "inserimento": "Insérer",
+            "addPart": "Ajouter Pièce",
+            "addAssembly": "Ajouter Assemblage",
+            "addBundle": "Ajouter Faisceau",
+            "addStand": "Ajouter Stand",
+            "azioni": "Actions",
+            "move": "Déplacer",
+            "rotate": "Pivoter",
+            "snap": "Alimenter",
+            "view": "Vue",
+            "view3d": "Vue 3D",
+            "viewAr": "Mode AR (Pass-through)",
+            "viewVr": "Mode VR (Immersif)",
+            "manufacturing": "Fabrication",
+            "bom": "Nomenclature (BoM)",
+            "bop": "Nomenclature de Processus (BoP)",
+            "share": "Partager",
+            "shareDialogTitle": "Lien de Partage (Lecture Seule)",
+            "shareDialogDesc": "Toute personne disposant de ce lien peut voir le modèle 3D sans le modifier.",
+            "adminCredentials": "Identifiants d'Administration (Édition)",
+            "adminDesc": "Envoyez l'URL complète ou le mot de passe séparément pour autoriser les modifications.",
+            "urlLabel": "URL :",
+            "passwordLabel": "Mot de passe :",
+            "play": "Jouer",
+            "applyMaterial": "Appliquer Matériau",
+            "duplicate": "Dupliquer",
+            "delete": "Supprimer"
+        }
+    },
     "components": {
         "dashboard": "Tableau de Bord",
         "orders": "Commandes",

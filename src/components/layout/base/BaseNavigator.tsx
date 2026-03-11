@@ -4,10 +4,9 @@ import * as React from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Menu, X, User, Headset, LogOut } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { Link } from "@/i18n/routing";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { SwitchLocale } from "@/components/ui/SwitchLocale";
 import { SwitchMode } from "@/components/ui/SwitchMode";
 import { SwitchTheme } from "@/components/ui/SwitchTheme";
@@ -25,6 +24,7 @@ interface BaseNavigatorProps {
     roleContext?: string;
     userName?: string;
     organizationName?: string;
+    hasToolsAccess?: boolean;
 }
 
 export function BaseNavigator({
@@ -32,7 +32,8 @@ export function BaseNavigator({
     navItems = [],
     roleContext,
     userName,
-    organizationName
+    organizationName,
+    hasToolsAccess = false
 }: BaseNavigatorProps) {
     const t = useTranslations("components");
     const authT = useTranslations("Auth");
@@ -107,7 +108,7 @@ export function BaseNavigator({
         <div className="ui-tools-navigator">
             {variant === 'public' ? (
                 <>
-                    <SwitchMode authVariant="public" />
+                    <SwitchMode authVariant="public" hasToolsAccess={hasToolsAccess} />
                     <SwitchLocale />
                     <SwitchTheme />
                     <Link href="/auth/login" className="ui-tools-navigator-link">
@@ -170,7 +171,7 @@ export function BaseNavigator({
 
                             <div className="ui-tools-navigator-actions">
                                 <div className="ui-tools-navigator-action-slot">
-                                    <SwitchMode authVariant="protected" />
+                                    <SwitchMode authVariant="protected" hasToolsAccess={hasToolsAccess} />
                                 </div>
                                 <div className="ui-tools-navigator-action-slot">
                                     <SwitchLocale />
@@ -179,13 +180,13 @@ export function BaseNavigator({
                                     <SwitchTheme />
                                 </div>
                                 <div className="ui-tools-navigator-action-slot">
-                                    <Link href="/profile" onClick={() => setIsMenuOpen(false)} className={cn(buttonVariants({ variant: "outline", size: "icon" }), "ui-tools-navigator-action-btn")}>
-                                        <User className="h-4 w-4" />
+                                    <Link href="/profile" onClick={() => setIsMenuOpen(false)} className="ui-canvas-tools-btn h-10 w-10 px-0 shrink-0">
+                                        <User className="h-5 w-5" />
                                     </Link>
                                 </div>
                                 <div className="ui-tools-navigator-action-slot">
-                                    <Link href="/partner/support" onClick={() => setIsMenuOpen(false)} className={cn(buttonVariants({ variant: "outline", size: "icon" }), "ui-tools-navigator-action-btn")}>
-                                        <Headset className="h-4 w-4" />
+                                    <Link href="/partner/support" onClick={() => setIsMenuOpen(false)} className="ui-canvas-tools-btn h-10 w-10 px-0 shrink-0">
+                                        <Headset className="h-5 w-5" />
                                     </Link>
                                 </div>
                             </div>

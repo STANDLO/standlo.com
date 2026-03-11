@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ThemeProvider } from "./ThemeProvider";
 import { NextIntlClientProvider, AbstractIntlMessages } from "next-intl";
 import { appCheck } from "@/core/firebase";
 import { getToken } from "firebase/app-check";
@@ -98,20 +98,22 @@ function SessionTrackerSync() {
 export function AppProviders({
     children,
     messages,
-    locale
+    locale,
+    uiTheme
 }: {
     children: React.ReactNode;
     messages: AbstractIntlMessages;
     locale: string;
+    uiTheme: "light" | "dark";
 }) {
     return (
         <NextIntlClientProvider locale={locale} messages={messages} timeZone="Europe/Rome">
             <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""} libraries={['places']}>
                 <GoogleAppCheckSync />
                 <SessionTrackerSync />
-                <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
+                <ThemeProvider initialTheme={uiTheme}>
                     {children}
-                </NextThemesProvider>
+                </ThemeProvider>
             </APIProvider>
         </NextIntlClientProvider>
     );

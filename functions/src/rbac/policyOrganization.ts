@@ -1,4 +1,4 @@
-export function evaluateOrgUserPermissions(userClaims: Record<string, any>, orgId: string, targetUserId?: string) {
+export function evaluateOrgUserPermissions(userClaims: Record<string, unknown>, orgId: string, targetUserId?: string) {
     if (!userClaims || !orgId) {
         return {
             canCreate: false,

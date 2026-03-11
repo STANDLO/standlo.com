@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { useLocale } from "next-intl"
-import { Button } from "@/components/ui/Button"
 import { Globe } from "lucide-react"
 
 // Array dei locali di sistema duplicato dal backend (functions/src/index.ts) per evitare 
@@ -67,21 +66,21 @@ export function SwitchLocale() {
 
     return (
         <div className="relative inline-block text-left" ref={containerRef}>
-            <Button
-                variant="outline"
-                size="icon"
-                ref={buttonRef}
+            <button
+                type="button"
+                ref={buttonRef as React.RefObject<HTMLButtonElement>}
                 onClick={handleToggle}
-                className="layout-header-action-btn"
+                className="ui-canvas-tools-btn h-10 w-10 px-0 shrink-0"
                 title="Change language"
+                data-active={isOpen}
             >
                 {currentLocaleObj ? (
-                    <span className="text-lg leading-none">{currentLocaleObj.flag}</span>
+                    <span className="text-xl leading-none">{currentLocaleObj.flag}</span>
                 ) : (
-                    <Globe className="h-[1.2rem] w-[1.2rem]" />
+                    <Globe className="w-5 h-5" />
                 )}
                 <span className="sr-only">Switch language</span>
-            </Button>
+            </button>
 
             {isOpen && (
                 <div

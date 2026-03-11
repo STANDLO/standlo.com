@@ -164,7 +164,7 @@ export const firestore = onCall({
                 const now = FieldValue.serverTimestamp();
                 const docData = {
                     ...parsedResult.data, // Strictly validated data
-                    orgId: resolvedOrgId || null,
+                    orgId: resolvedOrgId || "system",
                     createdBy: request.auth.uid,
                     createdAt: now,
                     updatedAt: now,

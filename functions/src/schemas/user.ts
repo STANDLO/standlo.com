@@ -46,6 +46,13 @@ export const UserPolicyMatrix: Record<RoleId, EntityPolicy> = {
     standlo_engeneer: defaultPolicy,
     standlo_designer: defaultPolicy,
     designer: defaultPolicy,
+    guest: {
+        canCreate: false,
+        canRead: false,
+        canUpdate: false,
+        canDelete: false,
+        fieldPermissions: {}
+    },
     pending: {
         canCreate: false,
         canRead: false,

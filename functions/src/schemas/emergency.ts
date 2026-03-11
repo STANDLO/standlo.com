@@ -44,6 +44,13 @@ export const EmergencySearchSchema = PaginationQuerySchema.extend({
     severity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
 });
 export const EmergencyPolicyMatrix: Record<RoleId, EntityPolicy> = {
+    guest: {
+        canCreate: false,
+        canRead: false,
+        canUpdate: false,
+        canDelete: false,
+        fieldPermissions: {}
+    },
     pending: { canCreate: false, canRead: false, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },

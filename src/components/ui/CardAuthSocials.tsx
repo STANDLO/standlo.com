@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useTranslations } from "next-intl"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/providers/ThemeProvider";
 
 import { CardDivider } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
@@ -15,7 +15,7 @@ interface CardAuthSocialsProps {
 
 export function CardAuthSocials({ onGoogleLogin, onGithubLogin, isLoading }: CardAuthSocialsProps) {
     const tAuth = useTranslations("Auth");
-    const { resolvedTheme } = useTheme();
+    const { theme: resolvedTheme } = useTheme();
     const btnVariant = resolvedTheme === "dark" ? "dark" : "light";
 
     return (

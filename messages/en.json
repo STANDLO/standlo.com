@@ -175,7 +175,36 @@
         }
     },
     "Canvas": {
-        "title": "Canvas 3D Editor"
+        "title": "Canvas 3D Editor",
+        "tools": {
+            "inserimento": "Insert",
+            "addPart": "Add Part",
+            "addAssembly": "Add Assembly",
+            "addBundle": "Add Bundle",
+            "addStand": "Add Stand",
+            "azioni": "Actions",
+            "move": "Move",
+            "rotate": "Rotate",
+            "snap": "Snap",
+            "view": "View",
+            "view3d": "3D View",
+            "viewAr": "AR Mode (Pass-through)",
+            "viewVr": "VR Mode (Immersive)",
+            "manufacturing": "Manufacturing",
+            "bom": "Bill of Materials (BoM)",
+            "bop": "Bill of Process (BoP)",
+            "share": "Share",
+            "shareDialogTitle": "Share Link (Read-Only)",
+            "shareDialogDesc": "Anyone with this link can view the 3D model without editing.",
+            "adminCredentials": "Admin Credentials (Edit)",
+            "adminDesc": "Send the full URL or password separately to allow edits.",
+            "urlLabel": "URL:",
+            "passwordLabel": "Password:",
+            "play": "Play",
+            "applyMaterial": "Apply Material",
+            "duplicate": "Duplicate",
+            "delete": "Delete"
+        }
     },
     "components": {
         "canvas": "Canvas",

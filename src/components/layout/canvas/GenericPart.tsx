@@ -30,6 +30,11 @@ export default function GenericPart({ entity }: GenericPartProps) {
     const snapSource = useCanvasStore((state) => state.snapSource);
     const setSnapSource = useCanvasStore((state) => state.setSnapSource);
     const setTransformMode = useCanvasStore((state) => state.setTransformMode);
+    const activeLayer = useCanvasStore((state) => state.activeLayer);
+
+    const isFaded = activeLayer !== null && activeLayer !== entity.layerId;
+    const opacity = isFaded ? 0.15 : 1;
+    const transparent = opacity < 1;
 
     // Determine if entity should be hidden by assembly timeline
     const isHidden = playbackStep !== null && typeof entity.order === "number" && entity.order > playbackStep;
@@ -38,7 +43,7 @@ export default function GenericPart({ entity }: GenericPartProps) {
 
     const isParametricBox = entity.baseEntityId.startsWith("parametric_box");
     const isParametricCyl = entity.baseEntityId.startsWith("parametric_cylinder");
-    const isCustomMesh = (entity.type as string) === "mesh" && entity.metadata;
+    const isCustomMesh = ["mesh", "part", "assembly", "stand"].includes(entity.type as string) && !!entity.metadata?.geometry;
 
     const dimensions = [1, 1, 1] as [number, number, number];
 
@@ -62,11 +67,9 @@ export default function GenericPart({ entity }: GenericPartProps) {
     }
 
     useFrame(() => {
-        if (isSelected && rigidBodyRef.current && groupRef.current) {
-            // Keep the kinematic rigid body strictly synced with the visual group dragged by TransformControls
-            rigidBodyRef.current.setNextKinematicTranslation(groupRef.current.position);
-            rigidBodyRef.current.setNextKinematicRotation(groupRef.current.quaternion);
-        }
+        // We do not manually setNextKinematicTranslation when the RigidBody is a child of the group being transformed.
+        // react-three-rapier handles syncing the rigid body's absolute position relative to the moving parent group natively.
+        // Calling it manually with groupRef.current.position (which is local/world mixed context) causes double-offsets and drifts from the TransformControls cursor.
     });
 
     const handleClick = (e: ThreeEvent<MouseEvent>) => {
@@ -146,6 +149,9 @@ export default function GenericPart({ entity }: GenericPartProps) {
 
         const obj = e.eventObject; // e.object points to the specific geometry mesh, what if it's the bounding box? The `GenericPart` group is better represented by e.eventObject
         const localPoint = obj.worldToLocal(e.point.clone());
+        
+        // Define exact visual limits
+        const targetDims = (entity.metadata?.dimensions as [number, number, number]) || dimensions;
 
         const snapToNearest = (val: number, extent: number) => {
             const half = extent / 2;
@@ -162,9 +168,9 @@ export default function GenericPart({ entity }: GenericPartProps) {
             return closest;
         };
 
-        const sx = snapToNearest(localPoint.x, dimensions[0]);
-        const sy = snapToNearest(localPoint.y, dimensions[1]);
-        const sz = snapToNearest(localPoint.z, dimensions[2]); // Z and Y might be swapped depending on orientation
+        const sx = snapToNearest(localPoint.x, targetDims[0]);
+        const sy = snapToNearest(localPoint.y, targetDims[1]);
+        const sz = snapToNearest(localPoint.z, targetDims[2]); 
 
         const isMidpoint = Math.abs(sx) < 1e-4 || Math.abs(sy) < 1e-4 || Math.abs(sz) < 1e-4;
         const pointType: 'corner' | 'midpoint' = isMidpoint ? 'midpoint' : 'corner';
@@ -197,8 +203,6 @@ export default function GenericPart({ entity }: GenericPartProps) {
                 return;
             }
             // Execute snap by moving source object
-            // The logic from admin moves the object represented by `snapSource.id`
-            // But we can only move the entire entity.
 
             const sourceEntity = useCanvasStore.getState().entities[snapSource.id];
             if (sourceEntity) {
@@ -218,6 +222,7 @@ export default function GenericPart({ entity }: GenericPartProps) {
     };
 
     const handleClickWrapper = (e: ThreeEvent<MouseEvent>) => {
+        if (isFaded) return;
         if (transformMode === 'snap') {
             handleSnapInteractionClick(e);
         } else {
@@ -229,6 +234,13 @@ export default function GenericPart({ entity }: GenericPartProps) {
     const colorCyl = entity.isColliding ? "#ef4444" : (isSelected ? "#3b82f6" : "#cbd5e1");
     const colorWf = entity.isColliding ? "#ef4444" : (isSelected ? "#3b82f6" : "#a1a1aa");
 
+    // Dynamic resolution of the visual bounds from fetched metadata (for catalog items)
+    const entityDims = (entity as unknown as Record<string, unknown>).dimensions as [number, number, number] | undefined;
+    const renderDims = (entity.metadata?.dimensions as [number, number, number]) 
+        || (entity.metadata?.args as [number, number, number]) 
+        || entityDims
+        || dimensions;
+
     return (
         <>
             <group
@@ -237,11 +249,13 @@ export default function GenericPart({ entity }: GenericPartProps) {
                 quaternion={entity.rotation}
                 onClick={handleClickWrapper}
                 onPointerMove={(e) => {
+                    if (isFaded) return;
                     if (transformMode === 'snap') {
                         handleSnapInteractionMove(e);
                     }
                 }}
                 onPointerOver={(e) => {
+                    if (isFaded) return;
                     e.stopPropagation();
                     if (transformMode === 'snap') {
                         document.body.style.cursor = 'crosshair';
@@ -250,6 +264,7 @@ export default function GenericPart({ entity }: GenericPartProps) {
                     }
                 }}
                 onPointerOut={() => {
+                    if (isFaded) return;
                     if (transformMode === 'snap') {
                         setHoverSnap(null);
                     }
@@ -260,7 +275,6 @@ export default function GenericPart({ entity }: GenericPartProps) {
                 {/* 
                   Rapier needs at least one body to be Kinematic to detect collisions with Fixed bodies.
                   We make the currently selected (dragged) body Kinematic.
-                  ActiveEvents.COLLISION_EVENTS is implied by callbacks.
                 */}
                 <RigidBody
                     ref={rigidBodyRef}
@@ -277,8 +291,10 @@ export default function GenericPart({ entity }: GenericPartProps) {
                                 roughness={0.8}
                                 emissive={isSelected ? "#3b82f6" : "#000000"}
                                 emissiveIntensity={isSelected ? 0.3 : 0}
+                                transparent={transparent}
+                                opacity={opacity}
                             />
-                            {shadingMode !== "shaded" && <Edges threshold={15} color="black" />}
+                            {shadingMode !== "shaded" && <Edges threshold={15} color={isFaded ? "gray" : "black"} />}
                         </mesh>
                     )}
 
@@ -291,32 +307,36 @@ export default function GenericPart({ entity }: GenericPartProps) {
                                 roughness={0.2}
                                 emissive={isSelected ? "#3b82f6" : "#000000"}
                                 emissiveIntensity={isSelected ? 0.3 : 0}
+                                transparent={transparent}
+                                opacity={opacity}
                             />
-                            {shadingMode !== "shaded" && <Edges threshold={15} color="black" />}
+                            {shadingMode !== "shaded" && <Edges threshold={15} color={isFaded ? "gray" : "black"} />}
                         </mesh>
                     )}
 
                     {!isParametricBox && !isParametricCyl && !isCustomMesh && (
                         <mesh castShadow receiveShadow>
-                            <boxGeometry args={[1, 1, 1]} />
-                            <meshStandardMaterial color={entity.meshOverrides?.['$root']?.color || colorWf} wireframe />
+                            <boxGeometry args={[renderDims[0], renderDims[2] ?? renderDims[1], renderDims[1] ?? renderDims[2]]} />
+                            <meshStandardMaterial color={entity.meshOverrides?.['$root']?.color || colorWf} wireframe transparent={transparent} opacity={opacity} />
                         </mesh>
                     )}
 
                     {isCustomMesh && entity.metadata && (
                         <mesh castShadow receiveShadow>
-                            {entity.metadata.geometry === "box" && <boxGeometry args={entity.metadata.args as [number, number, number]} />}
+                            {entity.metadata.geometry === "box" && <boxGeometry args={[renderDims[0], renderDims[2] ?? renderDims[1], renderDims[1] ?? renderDims[2]]} />}
                             {entity.metadata.geometry === "sphere" && <sphereGeometry args={entity.metadata.args as [number, number, number]} />}
                             {entity.metadata.geometry === "cylinder" && <cylinderGeometry args={entity.metadata.args as [number, number, number, number]} />}
                             <meshStandardMaterial
-                                color={shadingMode === 'white_edges' ? "#ffffff" : (isSelected ? "#3b82f6" : entity.meshOverrides?.['$root']?.color || entity.metadata.color || "#ffffff")}
+                                color={shadingMode === 'white_edges' ? "#ffffff" : (isSelected ? "#3b82f6" : entity.meshOverrides?.['$root']?.color || entity.metadata.color || colorBox)}
                                 map={textureMap || null}
                                 roughness={entity.metadata.roughness ?? 0.5}
                                 metalness={entity.metadata.metalness ?? 0.1}
                                 emissive={entity.isColliding ? "#ef4444" : (isSelected ? "#3b82f6" : "#000000")}
                                 emissiveIntensity={entity.isColliding ? 0.5 : (isSelected ? 0.3 : 0)}
+                                transparent={transparent}
+                                opacity={opacity}
                             />
-                            {shadingMode !== "shaded" && <Edges threshold={15} color="black" />}
+                            {shadingMode !== "shaded" && <Edges threshold={15} color={isFaded ? "gray" : "black"} />}
                         </mesh>
                     )}
                 </RigidBody>

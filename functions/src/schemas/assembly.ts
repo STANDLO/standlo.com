@@ -11,6 +11,10 @@ export const AssemblySchema = BaseSchema.extend({
     cost: z.number().optional().describe("Internal standard cost"),
     price: z.number().optional().describe("External standard price"),
     gltfUrl: z.string().optional().describe("URL to a pre-baked .glb representation of this assembly (optional)"),
+    useCases: z.array(z.object({
+        canvasType: z.string(),
+        canvasLayer: z.string()
+    })).default([]),
     sockets: z.array(z.object({
         id: z.string(),
         type: z.enum(['male', 'female', 'neutral']),
@@ -33,6 +37,7 @@ export const AssemblySearchSchema = PaginationQuerySchema.extend({
     locationType: z.enum(['warehouse', 'site']).optional(),
 });
 export const AssemblyPolicyMatrix: Record<RoleId, EntityPolicy> = {
+    guest: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: { id: { read: true, write: false }, orgId: { read: true, write: false }, name: { read: true, write: false }, code: { read: true, write: false }, ownId: { read: true, write: false }, active: { read: true, write: false }, version: { read: true, write: false }, users: { read: true, write: false }, updates: { read: true, write: false }, meta: { read: true, write: false }, createdAt: { read: true, write: false }, createdBy: { read: true, write: false }, updatedAt: { read: true, write: false }, updatedBy: { read: true, write: false }, deletedAt: { read: true, write: false }, deletedBy: { read: true, write: false }, isArchived: { read: true, write: false }, endLifeTime: { read: true, write: false }, description: { read: true, write: false }, locationType: { read: true, write: false }, cost: { read: true, write: false }, price: { read: true, write: false }, gltfUrl: { read: true, write: false }, useCases: { read: true, write: false }, sockets: { read: true, write: false } } },
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     provider: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
@@ -57,8 +62,8 @@ export const AssemblyPolicyMatrix: Record<RoleId, EntityPolicy> = {
     promoter: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     other: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     dryliner: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    standlo_manager: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
+    standlo_manager: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: { id: { read: true, write: true }, orgId: { read: true, write: true }, name: { read: true, write: true }, code: { read: true, write: true }, ownId: { read: true, write: true }, active: { read: true, write: true }, version: { read: true, write: true }, users: { read: true, write: true }, updates: { read: true, write: true }, meta: { read: true, write: true }, createdAt: { read: true, write: true }, createdBy: { read: true, write: true }, updatedAt: { read: true, write: true }, updatedBy: { read: true, write: true }, deletedAt: { read: true, write: true }, deletedBy: { read: true, write: true }, isArchived: { read: true, write: true }, endLifeTime: { read: true, write: true }, description: { read: true, write: true }, locationType: { read: true, write: true }, cost: { read: true, write: true }, price: { read: true, write: true }, gltfUrl: { read: true, write: true }, useCases: { read: true, write: true }, sockets: { read: true, write: true } } },
     standlo_architect: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     standlo_engeneer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
-    standlo_designer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} }
+    standlo_designer: { canCreate: true, canRead: true, canUpdate: true, canDelete: true, fieldPermissions: { id: { read: true, write: true }, orgId: { read: true, write: true }, name: { read: true, write: true }, code: { read: true, write: true }, ownId: { read: true, write: true }, active: { read: true, write: true }, version: { read: true, write: true }, users: { read: true, write: true }, updates: { read: true, write: true }, meta: { read: true, write: true }, createdAt: { read: true, write: true }, createdBy: { read: true, write: true }, updatedAt: { read: true, write: true }, updatedBy: { read: true, write: true }, deletedAt: { read: true, write: true }, deletedBy: { read: true, write: true }, isArchived: { read: true, write: true }, endLifeTime: { read: true, write: true }, description: { read: true, write: true }, locationType: { read: true, write: true }, cost: { read: true, write: true }, price: { read: true, write: true }, gltfUrl: { read: true, write: true }, useCases: { read: true, write: true }, sockets: { read: true, write: true } } }
 };

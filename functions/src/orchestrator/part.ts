@@ -50,6 +50,7 @@ export async function updatePartEntity(uid: string, partId: string, payload: Rec
     const now = new Date().toISOString();
 
     // Remove id from payload so we don't accidentally overwrite it
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...restPayload } = payload;
 
     const updateData = {

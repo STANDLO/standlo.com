@@ -32,6 +32,7 @@ export async function createPlaceEntity(uid: string, payload: Record<string, unk
 
 export async function updatePlaceEntity(uid: string, placeId: string, payload: Record<string, unknown>) {
     const now = new Date().toISOString();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _id, ...restPayload } = payload;
 
     const updateData = {
