@@ -55,11 +55,17 @@ interface StandloCanvasProps {
 }
 
 export default function StandloCanvas({ entityId, entityType, active = true, isOverlay = false }: StandloCanvasProps) {
+    console.log("[Canvas Debug] StandloCanvas Core Component Rendering", { entityId, entityType, active, isOverlay });
     const { resolvedTheme } = useTheme();
     const viewMode = useCanvasStore((state) => state.viewMode);
     const cameraControlsRef = useRef<CameraControls>(null);
     const addEntity = useCanvasStore((state) => state.addEntity);
     const clearCanvas = useCanvasStore((state) => state.clearCanvas);
+    
+    useEffect(() => {
+        console.log("[Canvas Debug] StandloCanvas Mounted in DOM");
+        return () => console.log("[Canvas Debug] StandloCanvas Unmounted");
+    }, []);
 
     const transformMode = useCanvasStore((state) => state.transformMode);
     const setTransformMode = useCanvasStore((state) => state.setTransformMode);
