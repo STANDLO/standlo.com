@@ -196,7 +196,19 @@
             "play": "Spielen",
             "applyMaterial": "Material Anwenden",
             "duplicate": "Duplizieren",
-            "delete": "Löschen"
+            "delete": "Löschen",
+            "gizmo": {
+                "top": "Oben",
+                "bottom": "Unten",
+                "front": "Vorne",
+                "back": "Hinten",
+                "right": "Rechts",
+                "left": "Links"
+            },
+            "projections": "Projektionen",
+            "perspective": "Perspektive",
+            "orthographic": "Orthogonal",
+            "ortho_faces": "Gemischte Perspektive"
         }
     },
     "components": {

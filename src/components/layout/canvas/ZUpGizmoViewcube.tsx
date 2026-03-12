@@ -12,9 +12,7 @@ const colors = {
 
 const defaultFaces = ['Right', 'Left', 'Top', 'Bottom', 'Front', 'Back'];
 
-// Z-up Rotations for each face index (px, nx, py, ny, pz, nz)
-const MathPIHalf = Math.PI / 2;
-const rotations = [-MathPIHalf, MathPIHalf, Math.PI, 0, 0, 0];
+const rotations = [0, 0, 0, 0, 0, 0];
 
 const makePositionVector = (xyz: number[]) => new Vector3(...xyz).multiplyScalar(0.38);
 
@@ -203,6 +201,7 @@ const EdgeCube = ({
 };
 
 export const ZUpGizmoViewcube = (props: Record<string, unknown>) => {
+
     return (
         <group scale={[60, 60, 60]}>
             <FaceCube {...props} />

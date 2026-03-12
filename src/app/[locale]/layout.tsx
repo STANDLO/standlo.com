@@ -130,14 +130,16 @@ export default async function RootLayout({
             {children}
           </ToolsOverlay>
           <BaseLogo />
-          <BaseNavigator
-            variant={variant}
-            navItems={navItems}
-            roleContext={roleContextLabel}
-            userName={userName}
-            organizationName={organizationName}
-            hasToolsAccess={hasToolsAccess}
-          />
+          {!canvasActive && (
+            <BaseNavigator
+              variant={variant}
+              navItems={navItems}
+              roleContext={roleContextLabel}
+              userName={userName}
+              organizationName={organizationName}
+              hasToolsAccess={hasToolsAccess}
+            />
+          )}
         </AppProviders>
       </body>
     </html>

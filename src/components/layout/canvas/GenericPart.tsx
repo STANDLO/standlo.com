@@ -31,6 +31,8 @@ export default function GenericPart({ entity }: GenericPartProps) {
     const setSnapSource = useCanvasStore((state) => state.setSnapSource);
     const setTransformMode = useCanvasStore((state) => state.setTransformMode);
     const activeLayer = useCanvasStore((state) => state.activeLayer);
+    
+    const setIsDragging = useCanvasStore((state) => state.setIsDragging);
 
     const isFaded = activeLayer !== null && activeLayer !== entity.layerId;
     const opacity = isFaded ? 0.15 : 1;
@@ -67,9 +69,14 @@ export default function GenericPart({ entity }: GenericPartProps) {
     }
 
     useFrame(() => {
-        // We do not manually setNextKinematicTranslation when the RigidBody is a child of the group being transformed.
-        // react-three-rapier handles syncing the rigid body's absolute position relative to the moving parent group natively.
-        // Calling it manually with groupRef.current.position (which is local/world mixed context) causes double-offsets and drifts from the TransformControls cursor.
+        if (isSelected && rigidBodyRef.current && transformMode !== 'snap' && groupRef.current) {
+            const worldPos = new THREE.Vector3();
+            const worldQuat = new THREE.Quaternion();
+            groupRef.current.getWorldPosition(worldPos);
+            groupRef.current.getWorldQuaternion(worldQuat);
+            rigidBodyRef.current.setNextKinematicTranslation(worldPos);
+            rigidBodyRef.current.setNextKinematicRotation(worldQuat);
+        }
     });
 
     const handleClick = (e: ThreeEvent<MouseEvent>) => {
@@ -147,11 +154,24 @@ export default function GenericPart({ entity }: GenericPartProps) {
         if (transformMode !== 'snap') return;
         e.stopPropagation();
 
-        const obj = e.eventObject; // e.object points to the specific geometry mesh, what if it's the bounding box? The `GenericPart` group is better represented by e.eventObject
-        const localPoint = obj.worldToLocal(e.point.clone());
+        const targetDims = (entity.metadata?.dimensions as [number, number, number]) 
+            || (entity.metadata?.args as [number, number, number]) 
+            || ((entity as unknown as Record<string, unknown>).dimensions as [number, number, number]) 
+            || dimensions;
+            
+        const geoArgs = [targetDims[0], targetDims[2] ?? targetDims[1], targetDims[1] ?? targetDims[2]];
+
+        // Create a matrix from entity.position and entity.rotation
+        const matrixWorld = new THREE.Matrix4();
+        const position = new THREE.Vector3(...entity.position);
+        const quaternion = new THREE.Quaternion(...entity.rotation);
+        const scale = new THREE.Vector3(1, 1, 1);
+        matrixWorld.compose(position, quaternion, scale);
+
+        const matrixWorldInverse = matrixWorld.clone().invert();
         
-        // Define exact visual limits
-        const targetDims = (entity.metadata?.dimensions as [number, number, number]) || dimensions;
+        // Convert e.point to local
+        const localPoint = e.point.clone().applyMatrix4(matrixWorldInverse);
 
         const snapToNearest = (val: number, extent: number) => {
             const half = extent / 2;
@@ -168,18 +188,18 @@ export default function GenericPart({ entity }: GenericPartProps) {
             return closest;
         };
 
-        const sx = snapToNearest(localPoint.x, targetDims[0]);
-        const sy = snapToNearest(localPoint.y, targetDims[1]);
-        const sz = snapToNearest(localPoint.z, targetDims[2]); 
+        const sx = snapToNearest(localPoint.x, geoArgs[0]);
+        const sy = snapToNearest(localPoint.y, geoArgs[1]);
+        const sz = snapToNearest(localPoint.z, geoArgs[2]); 
 
         const isMidpoint = Math.abs(sx) < 1e-4 || Math.abs(sy) < 1e-4 || Math.abs(sz) < 1e-4;
         const pointType: 'corner' | 'midpoint' = isMidpoint ? 'midpoint' : 'corner';
 
         const snappedLocal = new THREE.Vector3(sx, sy, sz);
-        const snappedWorld = obj.localToWorld(snappedLocal.clone());
+        const snappedWorld = snappedLocal.clone().applyMatrix4(matrixWorld);
 
         const normalLocal = e.face?.normal || new THREE.Vector3(0, 1, 0);
-        const normalMat = new THREE.Matrix3().getNormalMatrix(obj.matrixWorld);
+        const normalMat = new THREE.Matrix3().getNormalMatrix(matrixWorld);
         const normalWorld = normalLocal.clone().applyMatrix3(normalMat).normalize();
 
         setHoverSnap({
@@ -243,45 +263,62 @@ export default function GenericPart({ entity }: GenericPartProps) {
 
     return (
         <>
+            {/* The Target for TransformControls and Sockets */}
             <group
                 ref={groupRef}
                 position={entity.position}
                 quaternion={entity.rotation}
-                onClick={handleClickWrapper}
-                onPointerMove={(e) => {
-                    if (isFaded) return;
-                    if (transformMode === 'snap') {
-                        handleSnapInteractionMove(e);
-                    }
-                }}
-                onPointerOver={(e) => {
-                    if (isFaded) return;
-                    e.stopPropagation();
-                    if (transformMode === 'snap') {
-                        document.body.style.cursor = 'crosshair';
-                    } else {
-                        document.body.style.cursor = 'pointer';
-                    }
-                }}
-                onPointerOut={() => {
-                    if (isFaded) return;
-                    if (transformMode === 'snap') {
-                        setHoverSnap(null);
-                    }
-                    document.body.style.cursor = 'auto';
-                }}
-                visible={!isHidden}
             >
-                {/* 
-                  Rapier needs at least one body to be Kinematic to detect collisions with Fixed bodies.
-                  We make the currently selected (dragged) body Kinematic.
-                */}
-                <RigidBody
-                    ref={rigidBodyRef}
-                    type={isSelected ? "kinematicPosition" : "fixed"}
-                    colliders="cuboid"
-                    onCollisionEnter={() => setEntityCollision(entity.id, true)}
-                    onCollisionExit={() => setEntityCollision(entity.id, false)}
+                {/* Render Connectors/Sockets as small colored spheres if selected */}
+                {isSelected && entity.sockets && entity.sockets.map(soc => (
+                    <Sphere key={soc.id} args={[0.08, 16, 16]} position={soc.position}>
+                        <meshBasicMaterial
+                            color={soc.type === "male" ? "#3b82f6" : soc.type === "female" ? "#ec4899" : "#22c55e"}
+                            transparent
+                            opacity={0.8}
+                        />
+                    </Sphere>
+                ))}
+            </group>
+
+            {/* The Actual Physics & Visual Body */}
+            <RigidBody
+                ref={rigidBodyRef}
+                type={isSelected ? "kinematicPosition" : "fixed"}
+                colliders="cuboid"
+                onCollisionEnter={() => setEntityCollision(entity.id, true)}
+                onCollisionExit={() => setEntityCollision(entity.id, false)}
+                position={entity.position}
+                quaternion={entity.rotation}
+            >
+                <group
+                    onClick={handleClickWrapper}
+                    onPointerMove={(e) => {
+                        if (isFaded) return;
+                        if (isSelected && transformMode !== 'snap') return;
+                        if (transformMode === 'snap') {
+                            handleSnapInteractionMove(e);
+                        }
+                    }}
+                    onPointerOver={(e) => {
+                        if (isFaded) return;
+                        if (isSelected && transformMode !== 'snap') return;
+                        e.stopPropagation();
+                        if (transformMode === 'snap') {
+                            document.body.style.cursor = 'crosshair';
+                        } else {
+                            document.body.style.cursor = 'pointer';
+                        }
+                    }}
+                    onPointerOut={() => {
+                        if (isFaded) return;
+                        if (isSelected && transformMode !== 'snap') return;
+                        if (transformMode === 'snap') {
+                            setHoverSnap(null);
+                        }
+                        document.body.style.cursor = 'auto';
+                    }}
+                    visible={!isHidden}
                 >
                     {isParametricBox && !isCustomMesh && (
                         <mesh castShadow receiveShadow>
@@ -339,25 +376,18 @@ export default function GenericPart({ entity }: GenericPartProps) {
                             {shadingMode !== "shaded" && <Edges threshold={15} color={isFaded ? "gray" : "black"} />}
                         </mesh>
                     )}
-                </RigidBody>
-
-                {/* Render Connectors/Sockets as small colored spheres if selected */}
-                {isSelected && entity.sockets && entity.sockets.map(soc => (
-                    <Sphere key={soc.id} args={[0.08, 16, 16]} position={soc.position}>
-                        <meshBasicMaterial
-                            color={soc.type === "male" ? "#3b82f6" : soc.type === "female" ? "#ec4899" : "#ffffff"}
-                            transparent
-                            opacity={0.8}
-                        />
-                    </Sphere>
-                ))}
-            </group>
+                </group>
+            </RigidBody>
 
             {isSelected && transformMode !== 'snap' && (
                 <TransformControls
                     object={groupRef}
                     mode={transformMode === 'rotate' ? 'rotate' : 'translate'}
-                    onMouseUp={handleMouseUp}
+                    onMouseDown={() => setIsDragging(true)}
+                    onMouseUp={() => {
+                        setIsDragging(false);
+                        handleMouseUp();
+                    }}
                     // Snap to grid of 0.05 units for finer movement, similar to admin interface
                     translationSnap={0.05}
                     rotationSnap={Math.PI / 12} // 15 degrees

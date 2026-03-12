@@ -2,6 +2,7 @@
 
 import { useCanvasStore } from "@/components/layout/canvas/store";
 import { useTranslations } from "next-intl";
+import { xrStore } from "./xrStore";
 import {
     Layers,
     Move3d,
@@ -22,7 +23,13 @@ import {
     Copy,
     Trash2,
     Palette,
-    X
+    X,
+    View,
+    ScanEye,
+    SwitchCamera,
+    Headset,
+    LogOut,
+    LogIn
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
@@ -33,6 +40,13 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/Popover";
+import { useState, useEffect } from "react";
+import { ErrorGuard } from "@/components/ui/ErrorGuard";
+import { SwitchLocale } from "@/components/ui/SwitchLocale";
+import { SwitchTheme } from "@/components/ui/SwitchTheme";
+import { Link } from "@/i18n/routing";
+import type { User as FirebaseUser } from "firebase/auth";
+import { useLocale } from "next-intl";
 
 export function CanvasTools() {
     const t = useTranslations("Canvas.tools");
@@ -40,6 +54,9 @@ export function CanvasTools() {
     const setMode = useCanvasStore((state) => state.setMode);
     const transformMode = useCanvasStore((state) => state.transformMode);
     const setTransformMode = useCanvasStore((state) => state.setTransformMode);
+    const cameraMode = useCanvasStore((state) => state.cameraMode);
+    const setCameraMode = useCanvasStore((state) => state.setCameraMode);
+    const triggerCameraReset = useCanvasStore((state) => state.triggerCameraReset);
     const editPassword = useCanvasStore((state) => state.editPassword);
 
     const selectedEntityId = useCanvasStore((state) => state.selectedEntityId);
@@ -55,13 +72,29 @@ export function CanvasTools() {
     const currentUrl = typeof window !== 'undefined' ? window.location.href.split('?')[0] : '';
     const adminUrl = editPassword ? `${currentUrl}?key=${editPassword}` : '';
 
+    const [xrError, setXrError] = useState<Error | null>(null);
+    const [user, setUser] = useState<FirebaseUser | null | undefined>(undefined);
+    const locale = useLocale();
+
+    useEffect(() => {
+        let unsubscribe: (() => void) | undefined;
+        import("@/core/firebase").then(({ auth }) => {
+            unsubscribe = auth.onAuthStateChanged((u) => {
+                setUser(u);
+            });
+        });
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, []);
+
     const executeMaterialApply = async (matId?: string, texId?: string | "clear") => {
         if (!selectedEntityId) return;
         const entity = entities[selectedEntityId];
         if (!entity || !entity.metadata) return;
 
         const newMeta = { ...entity.metadata };
-        
+
         if (matId !== undefined) {
             newMeta.materialId = matId;
             const matObj = canvasMaterials.find(m => m.id === matId);
@@ -71,7 +104,7 @@ export function CanvasTools() {
                 newMeta.metalness = matObj.metalness;
             }
         }
-        
+
         if (texId !== undefined) {
             newMeta.textureId = texId === "clear" ? null : texId;
             if (texId !== "clear") {
@@ -87,7 +120,7 @@ export function CanvasTools() {
         if (canvasId) {
             try {
                 const { callGateway } = await import("@/lib/api");
-                
+
                 const clamp = (v: number) => Number(v.toFixed(3));
                 callGateway("canvas", {
                     actionId: "updateNode",
@@ -112,32 +145,32 @@ export function CanvasTools() {
             <div className="ui-canvas-tools-block">
                 <div className="ui-canvas-tools-title">{t("inserimento")}</div>
                 <div className="ui-canvas-tools-group">
-                    <button 
-                        className="ui-canvas-tools-btn h-10 w-10 px-0" 
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
                         data-active={mode === "part"}
                         onClick={() => setMode("part")}
                         title={t("addPart")}
                     >
                         <Component className="ui-canvas-tools-icon" />
                     </button>
-                    <button 
-                        className="ui-canvas-tools-btn h-10 w-10 px-0" 
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
                         data-active={mode === "assembly"}
                         onClick={() => setMode("assembly")}
                         title={t("addAssembly")}
                     >
                         <Group className="ui-canvas-tools-icon" />
                     </button>
-                    <button 
-                        className="ui-canvas-tools-btn h-10 w-10 px-0" 
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
                         data-active={mode === "bundle"}
                         onClick={() => setMode("bundle")}
                         title={t("addBundle")}
                     >
                         <Layers className="ui-canvas-tools-icon" />
                     </button>
-                    <button 
-                        className="ui-canvas-tools-btn h-10 w-10 px-0" 
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
                         data-active={mode === "stand"}
                         onClick={() => setMode("stand")}
                         title={t("addStand")}
@@ -195,8 +228,8 @@ export function CanvasTools() {
                                             <div className="text-xs text-muted-foreground mb-1">Materiale Base</div>
                                             <div className="flex gap-1 flex-wrap">
                                                 {canvasMaterials.map(m => (
-                                                    <button 
-                                                        key={m.id} 
+                                                    <button
+                                                        key={m.id}
                                                         className="w-6 h-6 rounded-full border border-black/10 dark:border-white/10 hover:scale-110 transition-transform"
                                                         style={{ backgroundColor: m.baseColor }}
                                                         title={m.name}
@@ -208,7 +241,7 @@ export function CanvasTools() {
                                         <div>
                                             <div className="text-xs text-muted-foreground mb-1">Applica Colore/Texture</div>
                                             <div className="flex gap-1 flex-wrap">
-                                                 <button 
+                                                <button
                                                     className="w-6 h-6 rounded border border-black/10 dark:border-white/10 hover:scale-110 transition-transform bg-gray-200 dark:bg-zinc-800 flex items-center justify-center text-[10px]"
                                                     title="Nessuna Texture"
                                                     onClick={() => executeMaterialApply(undefined, "clear")}
@@ -216,8 +249,8 @@ export function CanvasTools() {
                                                     <X className="w-3 h-3" />
                                                 </button>
                                                 {canvasTextures.map((t: Record<string, unknown> & { id: string; name: string; valueLight?: string; valueDark?: string }) => (
-                                                    <button 
-                                                        key={t.id} 
+                                                    <button
+                                                        key={t.id}
                                                         className="w-6 h-6 rounded border border-black/10 dark:border-white/10 hover:scale-110 transition-transform"
                                                         style={{ backgroundColor: t.valueLight || t.valueDark || '#ccc' }}
                                                         title={t.name}
@@ -234,7 +267,7 @@ export function CanvasTools() {
                                 onClick={async () => {
                                     const sourceEntity = entities[selectedEntityId];
                                     if (!sourceEntity) return;
-                                    
+
                                     const clamp = (v: number) => Number(v.toFixed(3));
                                     const newNodeId = uuidv4();
                                     const newPos: [number, number, number] = [
@@ -242,16 +275,16 @@ export function CanvasTools() {
                                         clamp(sourceEntity.position[1]),
                                         clamp(sourceEntity.position[2] + 0.5)
                                     ];
-                                    
+
                                     const clonedEntity = {
                                         ...sourceEntity,
                                         id: newNodeId,
                                         position: newPos,
                                         order: getNextOrder()
                                     };
-                                    
+
                                     addEntity(clonedEntity);
-                                    
+
                                     if (canvasId) {
                                         try {
                                             const { callGateway } = await import("@/lib/api");
@@ -270,7 +303,7 @@ export function CanvasTools() {
                                                     name: `${clonedEntity.metadata?.name || 'Copia'} (Copia)`
                                                 }
                                             }).catch(e => console.error("Async insertNode failed", e));
-                                        } catch(e) { console.error(e); }
+                                        } catch (e) { console.error(e); }
                                     }
                                 }}
                                 title={t("duplicate", { fallback: "Duplica" })}
@@ -289,7 +322,7 @@ export function CanvasTools() {
                                                 actionId: "deleteNode",
                                                 payload: { canvasId, nodeId: activeId }
                                             }).catch(e => console.error("Async deleteNode failed", e));
-                                        } catch(e) { console.error(e); }
+                                        } catch (e) { console.error(e); }
                                     }
                                 }}
                                 title={t("delete", { fallback: "Elimina" })}
@@ -301,6 +334,44 @@ export function CanvasTools() {
                 </div>
             </div>
 
+            {/* PROIEZIONI BLOCK */}
+            <div className="ui-canvas-tools-block">
+                <div className="ui-canvas-tools-title">{t("projections")}</div>
+                <div className="ui-canvas-tools-group">
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
+                        data-active={cameraMode === "perspective"}
+                        onClick={() => setCameraMode("perspective")}
+                        title={t("perspective")}
+                    >
+                        <View className="ui-canvas-tools-icon" />
+                    </button>
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
+                        data-active={cameraMode === "orthographic"}
+                        onClick={() => setCameraMode("orthographic")}
+                        title={t("orthographic")}
+                    >
+                        <ScanEye className="ui-canvas-tools-icon" />
+                    </button>
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
+                        data-active={cameraMode === "ortho_faces"}
+                        onClick={() => setCameraMode("ortho_faces")}
+                        title={t("ortho_faces")}
+                    >
+                        <Glasses className="ui-canvas-tools-icon" />
+                    </button>
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
+                        onClick={() => triggerCameraReset()}
+                        title={"Home"}
+                    >
+                        <SwitchCamera className="ui-canvas-tools-icon" />
+                    </button>
+                </div>
+            </div>
+
             {/* VIEW BLOCK (AR/VR) */}
             <div className="ui-canvas-tools-block">
                 <div className="ui-canvas-tools-title">{t("view")}</div>
@@ -308,11 +379,28 @@ export function CanvasTools() {
                     <button className="ui-canvas-tools-btn h-10 w-10 px-0" data-active={true} title={t("view3d")}>
                         <Axis3D className="ui-canvas-tools-icon" />
                     </button>
-                    {/* Placeholder for WebXR triggers, ready for Meta Quest 3 testing later */}
-                    <button className="ui-canvas-tools-btn h-10 w-10 px-0" title={t("viewAr")}>
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
+                        title={t("viewAr")}
+                        onClick={() => {
+                            xrStore.enterAR().catch((e: Error) => {
+                                console.warn("XR non supportato:", e);
+                                setXrError(e);
+                            });
+                        }}
+                    >
                         <Glasses className="ui-canvas-tools-icon" />
                     </button>
-                    <button className="ui-canvas-tools-btn h-10 w-10 px-0" title={t("viewVr")}>
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
+                        title={t("viewVr")}
+                        onClick={() => {
+                            xrStore.enterVR().catch((e: Error) => {
+                                console.warn("XR non supportato:", e);
+                                setXrError(e);
+                            });
+                        }}
+                    >
                         <RectangleGoggles className="ui-canvas-tools-icon" />
                     </button>
                 </div>
@@ -338,8 +426,8 @@ export function CanvasTools() {
             <div className="ui-canvas-tools-block">
                 <div className="ui-canvas-tools-title">{t("share")}</div>
                 <div className="ui-canvas-tools-group">
-                    <button 
-                        className="ui-canvas-tools-btn h-10 w-10 px-0" 
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
                         title="Instagram"
                         onClick={() => {
                             const text = `STANDLO | The Global Factory\n${currentUrl}`;
@@ -352,8 +440,8 @@ export function CanvasTools() {
                     >
                         <Instagram className="ui-canvas-tools-icon" />
                     </button>
-                    <button 
-                        className="ui-canvas-tools-btn h-10 w-10 px-0" 
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
                         title="LinkedIn"
                         onClick={() => {
                             const text = `STANDLO | The Global Factory\n${currentUrl}`;
@@ -395,6 +483,57 @@ export function CanvasTools() {
                     </Popover>
                 </div>
             </div>
+
+            {/* ACCOUNT BLOCK */}
+            <div className="ui-canvas-tools-block">
+                <div className="ui-canvas-tools-title">{t("account", { fallback: "Account" })}</div>
+                <div className="ui-canvas-tools-group">
+                    <SwitchLocale />
+                    <SwitchTheme />
+                    <Link href="/partner/support" className="ui-canvas-tools-btn h-10 w-10 px-0 flex items-center justify-center" title={t("support", { fallback: "Support" })}>
+                        <Headset className="ui-canvas-tools-icon" />
+                    </Link>
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
+                        title={user ? t("logout", { fallback: "Esci" }) : t("login", { fallback: "Accedi" })}
+                        onClick={async () => {
+                            if (user) {
+                                try {
+                                    const { auth } = await import("@/core/firebase");
+                                    const token = await auth.currentUser?.getIdToken().catch(() => null);
+                                    if (token) {
+                                        const sessionId = localStorage.getItem("standlo_session");
+                                        if (sessionId) {
+                                            const { callGateway } = await import("@/lib/api");
+                                            await callGateway("orchestrator", {
+                                                actionId: "auth_event",
+                                                payload: { type: "logout", sessionId }
+                                            }).catch((e: Error) => console.error("Failed to log auth event (logout):", e));
+                                        }
+                                        localStorage.removeItem("standlo_session");
+                                    }
+
+                                    await auth.signOut();
+                                    await fetch("/api/auth/logout", { method: "GET" });
+                                    window.location.href = `/${locale}`;
+                                } catch (error) {
+                                    console.error("Logout failed", error);
+                                }
+                            } else {
+                                window.location.href = `/${locale}/auth/login`;
+                            }
+                        }}
+                    >
+                        {user ? <LogOut className="ui-canvas-tools-icon" /> : <LogIn className="ui-canvas-tools-icon" />}
+                    </button>
+                </div>
+            </div>
+
+            {xrError && (
+                <div className="fixed inset-0 z-[9999] bg-background">
+                    <ErrorGuard error={xrError} onBack={() => setXrError(null)} />
+                </div>
+            )}
         </div>
     );
 }

@@ -9,9 +9,10 @@ import { useState } from "react";
 interface ErrorGuardProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error: Error | any;
+    onBack?: () => void;
 }
 
-export function ErrorGuard({ error }: ErrorGuardProps) {
+export function ErrorGuard({ error, onBack }: ErrorGuardProps) {
     const t = useTranslations("Common");
     const router = useRouter();
     const [showSincere, setShowSincere] = useState(false);
@@ -68,7 +69,7 @@ export function ErrorGuard({ error }: ErrorGuardProps) {
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
-                <Button variant="outline" onClick={() => router.back()} className="space-x-2">
+                <Button variant="outline" onClick={() => onBack ? onBack() : router.back()} className="space-x-2">
                     <ArrowLeft className="w-4 h-4" />
                     <span>Torna Indietro</span>
                 </Button>

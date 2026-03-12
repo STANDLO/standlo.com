@@ -203,7 +203,19 @@
             "play": "Play",
             "applyMaterial": "Apply Material",
             "duplicate": "Duplicate",
-            "delete": "Delete"
+            "delete": "Delete",
+            "gizmo": {
+                "top": "Top",
+                "bottom": "Bottom",
+                "front": "Front",
+                "back": "Back",
+                "right": "Right",
+                "left": "Left"
+            },
+            "projections": "Projections",
+            "perspective": "Perspective",
+            "orthographic": "Orthographic",
+            "ortho_faces": "Mixed Perspective"
         }
     },
     "components": {

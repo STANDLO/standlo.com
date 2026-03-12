@@ -186,7 +186,7 @@
             "move": "Move",
             "rotate": "Rotate",
             "snap": "Snap",
-            "view": "View",
+            "view": "REALITY",
             "view3d": "3D View",
             "viewAr": "AR Mode (Pass-through)",
             "viewVr": "VR Mode (Immersive)",
@@ -203,7 +203,23 @@
             "play": "Play",
             "applyMaterial": "Apply Material",
             "duplicate": "Duplicate",
-            "delete": "Delete"
+            "delete": "Delete",
+            "gizmo": {
+                "top": "Top",
+                "bottom": "Bottom",
+                "front": "Front",
+                "back": "Back",
+                "right": "Right",
+                "left": "Left"
+            },
+            "projections": "Projections",
+            "perspective": "Perspective",
+            "orthographic": "Orthographic",
+            "ortho_faces": "Mixed Perspective",
+            "account": "Account",
+            "support": "Support",
+            "login": "Log In",
+            "logout": "Log Out"
         }
     },
     "components": {

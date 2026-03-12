@@ -220,7 +220,7 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
     };
 
     return (
-        <div className="absolute top-[80px] left-4 bottom-4 w-72 bg-card/95 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl z-20 flex flex-col overflow-hidden animate-in fade-in slide-in-from-left-4 duration-300">
+        <div className="absolute top-[128px] left-4 bottom-[32px] w-72 bg-card/95 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl z-20 flex flex-col overflow-hidden animate-in fade-in slide-in-from-left-4 duration-300">
             <div className="flex items-center justify-between p-4 border-b border-border/50">
                 <h3 className="font-semibold capitalize text-sm">{mode} Catalog</h3>
                 <button onClick={() => setMode(null)} className="text-muted-foreground hover:text-foreground">

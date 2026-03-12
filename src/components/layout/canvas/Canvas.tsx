@@ -1,7 +1,8 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { Suspense, useRef, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import {
     CameraControls,
     Environment,
@@ -23,6 +24,40 @@ import { xrStore } from "./xrStore";
 import { CanvasCatalogSidebar } from "./CanvasCatalogSidebar";
 import { CanvasTour } from "./CanvasTour";
 import { CanvasTools } from "./CanvasTools";
+
+function ScaledMarker({ type, isActive }: { type: 'corner' | 'origin' | 'midpoint', isActive: boolean }) {
+    const ref = useRef<THREE.Mesh>(null!);
+
+    useFrame(({ camera }) => {
+        if (ref.current) {
+            const dist = camera.position.distanceTo(ref.current.getWorldPosition(new THREE.Vector3()));
+            // Dynamic scale formula based on camera distance
+            const scale = Math.max(0.2, dist * 0.15);
+            ref.current.scale.setScalar(scale);
+        }
+    });
+
+    const color = isActive ? "#ef4444" : "#2CFF05";
+    const zOffset = 0.005; // Lift off surface to avoid z-fighting
+
+    if (type === 'corner' || type === 'origin') {
+        const radius = isActive ? 0.025 : 0.015;
+        return (
+            <mesh ref={ref} position={[0, 0, zOffset]}>
+                <sphereGeometry args={[radius, 16, 16]} />
+                <meshBasicMaterial color={color} depthTest={false} transparent opacity={isActive ? 0.8 : 1} />
+            </mesh>
+        );
+    } else {
+        const radius = isActive ? 0.04 : 0.03;
+        return (
+            <mesh ref={ref} position={[0, 0, zOffset]}>
+                <circleGeometry args={[radius, 3]} />
+                <meshBasicMaterial color={color} side={THREE.DoubleSide} depthTest={false} transparent opacity={isActive ? 0.8 : 0.8} />
+            </mesh>
+        );
+    }
+}
 
 const CanvasEntitiesRenderer = () => {
     const ObjectValues = Object.values(useCanvasStore((state) => state.entities));
@@ -59,6 +94,7 @@ interface StandloCanvasProps {
 
 export default function StandloCanvas({ entityId, entityType, active = true, isOverlay = false }: StandloCanvasProps) {
     const { theme: resolvedTheme } = useTheme();
+    const tGizmo = useTranslations("Canvas.tools.gizmo");
     const viewMode = useCanvasStore((state) => state.viewMode);
     const cameraControlsRef = useRef<CameraControls>(null);
     const addEntity = useCanvasStore((state) => state.addEntity);
@@ -67,6 +103,8 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
     const transformMode = useCanvasStore((state) => state.transformMode);
     const setTransformMode = useCanvasStore((state) => state.setTransformMode);
     const cameraMode = useCanvasStore((state) => state.cameraMode);
+    const cameraResetTrigger = useCanvasStore((state) => state.cameraResetTrigger);
+    const isDragging = useCanvasStore((state) => state.isDragging);
 
     const hoverSnap = useCanvasStore((state) => state.hoverSnap);
     const setHoverSnap = useCanvasStore((state) => state.setHoverSnap);
@@ -110,6 +148,14 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
         }
     }, [viewMode]);
 
+    // React to manual camera resets from GUI tools
+    useEffect(() => {
+        if (!cameraControlsRef.current || cameraResetTrigger === 0) return;
+        const cc = cameraControlsRef.current;
+        // Isometric-ish view
+        cc.setLookAt(10, 10, 10, 0, 0, 0, true);
+    }, [cameraResetTrigger]);
+
     // Initialization logic: Fetch root entity (mesh or hierarchy nodes)
     useEffect(() => {
         if (!entityId) return;
@@ -126,7 +172,7 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                     // Do not mark hasFetched=true immediately if currentUser is null, give it a moment unless we are forcing public
                     if (!isMounted) return;
                     if (hasFetched) return;
-                    
+
                     // We mark fetched if there's a user, OR if this is definitely a public canvas context
                     if (currentUser || entityType === "canvas") {
                         hasFetched = true;
@@ -250,7 +296,7 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
 
             <Canvas
                 shadows={{ type: THREE.PCFShadowMap }}
-                camera={cameraMode === 'orthographic' ? { position: [10, 10, 10], zoom: 20 } : { position: [10, 10, 10], fov: 45 }}
+                camera={cameraMode === 'orthographic' ? { position: [10, 10, 10], zoom: 20 } : { position: [10, 10, 10], fov: 60 }}
                 orthographic={cameraMode === 'orthographic'}
                 // Orthographic behavior is managed dynamically or via CameraControls if needed,
                 // but for seamless transitions, a perspective camera at a high distance with low FOV can simulate orthographic,
@@ -258,11 +304,11 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                 gl={{ preserveDrawingBuffer: true, alpha: true }} // Required for .toDataURL() exports and transparent backgrounds
                 onPointerMissed={async () => {
                     const store = useCanvasStore.getState();
+                    store.setTransformMode(null);
                     const activeId = store.selectedEntityId;
                     if (activeId) {
                         const activeEntity = store.entities[activeId];
                         store.selectEntity(null);
-                        store.setTransformMode(null);
 
                         if (activeEntity && entityId) { // canvasId is passed as entityId to this component
                             try {
@@ -363,32 +409,12 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                     {/* Snap Indicators */}
                     {transformMode === "snap" && hoverSnap && (
                         <group position={hoverSnap.point} quaternion={new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...hoverSnap.normal))}>
-                            {hoverSnap.type === 'corner' || hoverSnap.type === 'origin' ? (
-                                <mesh>
-                                    <sphereGeometry args={[snapSource?.id === hoverSnap.id ? 0.025 : 0.015, 16, 16]} />
-                                    <meshBasicMaterial color={snapSource?.id === hoverSnap.id ? "#ef4444" : "#ffffff"} />
-                                </mesh>
-                            ) : (
-                                <mesh>
-                                    <circleGeometry args={[0.03, 3]} />
-                                    <meshBasicMaterial color={snapSource?.id === hoverSnap.id ? "#ef4444" : "#ffffff"} side={THREE.DoubleSide} />
-                                </mesh>
-                            )}
+                            <ScaledMarker type={hoverSnap.type} isActive={snapSource?.id === hoverSnap.id} />
                         </group>
                     )}
                     {transformMode === "snap" && snapSource && (
                         <group position={snapSource.point} quaternion={new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...snapSource.normal))}>
-                            {snapSource.type === 'corner' || snapSource.type === 'origin' ? (
-                                <mesh>
-                                    <sphereGeometry args={[0.025, 16, 16]} />
-                                    <meshBasicMaterial color="#ef4444" opacity={0.8} transparent />
-                                </mesh>
-                            ) : (
-                                <mesh>
-                                    <circleGeometry args={[0.04, 3]} />
-                                    <meshBasicMaterial color="#ef4444" side={THREE.DoubleSide} opacity={0.8} transparent />
-                                </mesh>
-                            )}
+                            <ScaledMarker type={snapSource.type} isActive={true} />
                         </group>
                     )}
 
@@ -396,6 +422,7 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                     <CameraControls
                         ref={cameraControlsRef}
                         makeDefault
+                        enabled={!isDragging}
                         minDistance={2}
                         maxDistance={100}
                         maxPolarAngle={viewMode === "2D" ? 0 : Math.PI / 2 + 0.1} // Restrict going below ground in 3D, strict top-down in 2D
@@ -404,11 +431,11 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                     {/* Orientation Gizmo */}
                     <GizmoHelper
                         alignment="top-right"
-                        margin={[96, 140]}
+                        margin={[96, 156]}
                         renderPriority={2}
                     >
                         <ZUpGizmoViewcube
-                            faces={['Destra', 'Sinistra', 'Fronte', 'Dietro', 'Sopra', 'Sotto']}
+                            faces={[tGizmo('right'), tGizmo('left'), tGizmo('top'), tGizmo('bottom'), tGizmo('front'), tGizmo('back')]}
                             color="#f4f4f5"
                             hoverColor="#e4e4e7"
                             textColor="#18181b"

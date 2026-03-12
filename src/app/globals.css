@@ -1312,6 +1312,7 @@
     @apply fixed pointer-events-auto flex items-center gap-2 bg-background/50 backdrop-blur-md px-3 py-2 rounded-2xl border border-border shadow-sm;
     top: calc(var(--spacing) * 4);
     right: calc(var(--spacing) * 4);
+    padding-top: 10px;
   }
 
   .ui-tools-navigator-link {
@@ -1541,7 +1542,7 @@
   }
 
   .ui-canvas-tools {
-    @apply absolute top-4 left-32 z-50 flex flex-row gap-4 pointer-events-auto items-start;
+    @apply absolute top-4 left-1/2 -translate-x-1/2 z-50 flex flex-row gap-4 pointer-events-auto items-start;
     animation: slideInFromTop 0.5s ease-out forwards;
   }
 
@@ -1574,7 +1575,7 @@
   .ui-canvas-tools-btn[data-active="true"] {
     @apply ring-2;
     background-color: hsl(var(--base-green) / 0.15);
-    color: hsl(var(--base-green-fg));
+    color: hsl(var(--base-green));
     --ring: var(--base-green);
     border-color: hsl(var(--base-green));
   }

@@ -59,8 +59,14 @@ interface CanvasState {
     transformMode: "translate" | "rotate" | "snap" | null;
     setTransformMode: (mode: "translate" | "rotate" | "snap" | null) => void;
 
+    isDragging: boolean;
+    setIsDragging: (isDragging: boolean) => void;
+
     cameraMode: "perspective" | "orthographic" | "ortho_faces";
     setCameraMode: (mode: "perspective" | "orthographic" | "ortho_faces") => void;
+
+    cameraResetTrigger: number;
+    triggerCameraReset: () => void;
 
     shadingMode: "shaded" | "shaded_edges" | "white_edges";
     setShadingMode: (mode: "shaded" | "shaded_edges" | "white_edges") => void;
@@ -98,8 +104,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     entities: {},
     selectedEntityId: null,
     playbackStep: null,
-    transformMode: "translate",
+    transformMode: null,
+    isDragging: false,
     cameraMode: "perspective",
+    cameraResetTrigger: 0,
     shadingMode: "shaded",
     activeLayer: null,
     tutorialStep: null,
@@ -111,7 +119,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     setMode: (mode) => set({ mode }),
     setViewMode: (viewMode) => set({ viewMode }),
     setTransformMode: (transformMode) => set({ transformMode }),
+    setIsDragging: (isDragging) => set({ isDragging }),
     setCameraMode: (cameraMode) => set({ cameraMode }),
+    triggerCameraReset: () => set((state) => ({ cameraResetTrigger: state.cameraResetTrigger + 1 })),
     setShadingMode: (shadingMode) => set({ shadingMode }),
     setActiveLayer: (activeLayer) => set({ activeLayer }),
     setTutorialStep: (tutorialStep) => set({ tutorialStep }),

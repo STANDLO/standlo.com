@@ -84,6 +84,8 @@ export function BaseNavigator({
 
     const IconList = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>;
 
+    if (pathname?.includes('/canvas')) return null;
+
     return (
         <div className="ui-tools-navigator">
             {variant === 'public' ? (

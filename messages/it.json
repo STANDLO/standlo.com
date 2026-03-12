@@ -161,11 +161,11 @@
             "move": "Sposta",
             "rotate": "Ruota",
             "snap": "Aggancia",
-            "view": "View",
+            "view": "REALITY",
             "view3d": "Vista 3D",
             "viewAr": "Modo AR (Pass-through)",
             "viewVr": "Modo VR (Immersiva)",
-            "manufacturing": "Manufacturing",
+            "manufacturing": "Produzione",
             "bom": "Distinta Base (BoM)",
             "bop": "Distinta di Processo (BoP)",
             "share": "Condividi",
@@ -178,7 +178,23 @@
             "play": "Gioca",
             "applyMaterial": "Applica Materiale",
             "duplicate": "Duplica",
-            "delete": "Elimina"
+            "delete": "Elimina",
+            "gizmo": {
+                "top": "Sopra",
+                "bottom": "Sotto",
+                "front": "Fronte",
+                "back": "Retro",
+                "right": "Destra",
+                "left": "Sinistra"
+            },
+            "projections": "Proiezioni",
+            "perspective": "Prospettiva",
+            "orthographic": "Ortogonale",
+            "ortho_faces": "Prospettiva Mista",
+            "account": "Account",
+            "support": "Supporto",
+            "login": "Accedi",
+            "logout": "Esci"
         }
     },
     "Brand": {
