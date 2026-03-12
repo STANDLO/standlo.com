@@ -26,14 +26,14 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t('description'),
     icons: {
       icon: [
-        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Ffavicon-16x16.png?alt=media&token=4ee37fbe-5900-4e34-a971-83b9d6ca5003", sizes: "16x16", type: "image/png" },
-        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Ffavicon-32x32.png?alt=media&token=58ecc23e-d2da-4df7-9278-54a3954828ff", sizes: "32x32", type: "image/png" },
-        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Ffavicon.ico?alt=media&token=e93c2add-25df-4287-8f9c-c767c6248c2f", sizes: "32x32", type: "image/x-icon" },
-        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Fandroid-chrome-192x192.png?alt=media&token=cf193cdd-6e33-4fc3-a481-34f40767e06e", sizes: "192x192", type: "image/png" },
-        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Fandroid-chrome-512x512.png?alt=media&token=bbc51527-a49c-4797-971b-b13268836f27", sizes: "512x512", type: "image/png" },
+        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Ffavicon-16x16.png?alt=media&token=b075b69e-d112-4ac8-a6c5-c11c3a0a7916", sizes: "16x16", type: "image/png" },
+        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Ffavicon-32x32.png?alt=media&token=5e3c56af-2cb4-4788-a9e9-c5695719c9c8", sizes: "32x32", type: "image/png" },
+        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Ffavicon.ico?alt=media&token=59d9b287-5671-4f7a-915d-9902cfdd8ebc", sizes: "32x32", type: "image/x-icon" },
+        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Fandroid-chrome-192x192.png?alt=media&token=8832045c-c2aa-47ba-ad44-5af9313362f8", sizes: "192x192", type: "image/png" },
+        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Fandroid-chrome-512x512.png?alt=media&token=e314a8bb-fea5-4f9f-bb44-a364ade58211", sizes: "512x512", type: "image/png" },
       ],
       apple: [
-        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Fapple-touch-icon.png?alt=media&token=9f73a768-67e8-4bb9-8942-8db21a54a9e0", sizes: "180x180", type: "image/png" },
+        { url: "https://firebasestorage.googleapis.com/v0/b/standlo.firebasestorage.app/o/public%2Fapple-touch-icon.png?alt=media&token=60c95948-1318-407f-8951-d6f97bc83289", sizes: "180x180", type: "image/png" },
       ],
     },
   };

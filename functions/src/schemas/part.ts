@@ -2,7 +2,6 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-import { LocalizedStringSchema } from "./primitives";
 export const PART_CATEGORIES_BY_SECTOR: Record<string, Record<string, string>> = {
     exhibition: {
         wood_panel: "Wood Panel",
@@ -41,7 +40,7 @@ export const PART_CATEGORIES_BY_SECTOR: Record<string, Record<string, string>> =
 };
 export const PartSchema = BaseSchema.extend({
     name: z.string(),
-    description: LocalizedStringSchema.optional(),
+    description: z.string().optional(),
     sector: z.string(), // e.g. construction, exhibition
     category: z.string(), // e.g. Wood Panel, Fasteners, Cables
     isRentable: z.boolean().default(true),

@@ -3,6 +3,8 @@ import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySc
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
 export const StandSchema = BaseSchema.extend({
+    name: z.string(),
+    description: z.string().optional(),
     // Financial properties
     cost: z.number().optional().describe("Internal standard cost"),
     price: z.number().optional().describe("External standard price"),

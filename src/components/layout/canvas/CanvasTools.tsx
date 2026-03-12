@@ -29,7 +29,8 @@ import {
     SwitchCamera,
     Headset,
     LogOut,
-    LogIn
+    LogIn,
+    Brain
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
@@ -50,6 +51,7 @@ import { useLocale } from "next-intl";
 
 export function CanvasTools() {
     const t = useTranslations("Canvas.tools");
+    const isProd = process.env.NODE_ENV === "production";
     const mode = useCanvasStore((state) => state.mode);
     const setMode = useCanvasStore((state) => state.setMode);
     const transformMode = useCanvasStore((state) => state.transformMode);
@@ -335,7 +337,7 @@ export function CanvasTools() {
             </div>
 
             {/* PROIEZIONI BLOCK */}
-            <div className="ui-canvas-tools-block">
+            <div className="ui-canvas-tools-block hidden">
                 <div className="ui-canvas-tools-title">{t("projections")}</div>
                 <div className="ui-canvas-tools-group">
                     <button
@@ -379,18 +381,20 @@ export function CanvasTools() {
                     <button className="ui-canvas-tools-btn h-10 w-10 px-0" data-active={true} title={t("view3d")}>
                         <Axis3D className="ui-canvas-tools-icon" />
                     </button>
-                    <button
-                        className="ui-canvas-tools-btn h-10 w-10 px-0"
-                        title={t("viewAr")}
-                        onClick={() => {
-                            xrStore.enterAR().catch((e: Error) => {
-                                console.warn("XR non supportato:", e);
-                                setXrError(e);
-                            });
-                        }}
-                    >
-                        <Glasses className="ui-canvas-tools-icon" />
-                    </button>
+                    {!isProd && (
+                        <button
+                            className="ui-canvas-tools-btn h-10 w-10 px-0 hidden"
+                            title={t("viewAr")}
+                            onClick={() => {
+                                xrStore.enterAR().catch((e: Error) => {
+                                    console.warn("XR non supportato:", e);
+                                    setXrError(e);
+                                });
+                            }}
+                        >
+                            <Glasses className="ui-canvas-tools-icon" />
+                        </button>
+                    )}
                     <button
                         className="ui-canvas-tools-btn h-10 w-10 px-0"
                         title={t("viewVr")}
@@ -416,9 +420,11 @@ export function CanvasTools() {
                     <button className="ui-canvas-tools-btn h-10 w-10 px-0" title={t("bop")}>
                         <GanttChart className="ui-canvas-tools-icon" />
                     </button>
-                    <button className="ui-canvas-tools-btn h-10 w-10 px-0" title={t("play")}>
-                        <Play className="ui-canvas-tools-icon" />
-                    </button>
+                    {!isProd && (
+                        <button className="ui-canvas-tools-btn h-10 w-10 px-0 hidden" title={t("play")}>
+                            <Play className="ui-canvas-tools-icon" />
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -426,30 +432,6 @@ export function CanvasTools() {
             <div className="ui-canvas-tools-block">
                 <div className="ui-canvas-tools-title">{t("share")}</div>
                 <div className="ui-canvas-tools-group">
-                    <button
-                        className="ui-canvas-tools-btn h-10 w-10 px-0"
-                        title="Instagram"
-                        onClick={() => {
-                            const text = `STANDLO | The Global Factory\n${currentUrl}`;
-                            navigator.clipboard.writeText(text).then(() => {
-                                window.open('https://www.instagram.com/', '_blank');
-                            }).catch(() => {
-                                window.open('https://www.instagram.com/', '_blank');
-                            });
-                        }}
-                    >
-                        <Instagram className="ui-canvas-tools-icon" />
-                    </button>
-                    <button
-                        className="ui-canvas-tools-btn h-10 w-10 px-0"
-                        title="LinkedIn"
-                        onClick={() => {
-                            const text = `STANDLO | The Global Factory\n${currentUrl}`;
-                            window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank');
-                        }}
-                    >
-                        <Linkedin className="ui-canvas-tools-icon" />
-                    </button>
                     <Popover>
                         <PopoverTrigger asChild>
                             <button className="ui-canvas-tools-btn h-10 w-10 px-0" title={t("share")}>
@@ -481,6 +463,30 @@ export function CanvasTools() {
                             )}
                         </PopoverContent>
                     </Popover>
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
+                        title="LinkedIn"
+                        onClick={() => {
+                            const text = `STANDLO | The Global Factory\n${currentUrl}`;
+                            window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank');
+                        }}
+                    >
+                        <Linkedin className="ui-canvas-tools-icon" />
+                    </button>
+                    <button
+                        className="ui-canvas-tools-btn h-10 w-10 px-0"
+                        title="Instagram"
+                        onClick={() => {
+                            const text = `STANDLO | The Global Factory\n${currentUrl}`;
+                            navigator.clipboard.writeText(text).then(() => {
+                                window.open('https://www.instagram.com/', '_blank');
+                            }).catch(() => {
+                                window.open('https://www.instagram.com/', '_blank');
+                            });
+                        }}
+                    >
+                        <Instagram className="ui-canvas-tools-icon" />
+                    </button>
                 </div>
             </div>
 
@@ -488,11 +494,15 @@ export function CanvasTools() {
             <div className="ui-canvas-tools-block">
                 <div className="ui-canvas-tools-title">{t("account", { fallback: "Account" })}</div>
                 <div className="ui-canvas-tools-group">
-                    <SwitchLocale />
-                    <SwitchTheme />
+                    <Link href="/partner/support" className="ui-canvas-tools-btn h-10 w-10 px-0 flex items-center justify-center" title={t("support", { fallback: "Support" })}>
+                        <Brain className="ui-canvas-tools-icon" />
+                    </Link>
                     <Link href="/partner/support" className="ui-canvas-tools-btn h-10 w-10 px-0 flex items-center justify-center" title={t("support", { fallback: "Support" })}>
                         <Headset className="ui-canvas-tools-icon" />
                     </Link>
+                    <SwitchLocale />
+                    <SwitchTheme />
+
                     <button
                         className="ui-canvas-tools-btn h-10 w-10 px-0"
                         title={user ? t("logout", { fallback: "Esci" }) : t("login", { fallback: "Accedi" })}

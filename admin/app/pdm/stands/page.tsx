@@ -6,13 +6,6 @@ import StandCanvasEditor from "./components/StandCanvasEditor";
 import { OrchestratorClient } from "../../lib/orchestratorClient";
 
 // Local types
-type LocalizedString = {
-    it: string;
-    en?: string;
-    es?: string;
-    de?: string;
-};
-
 type StandPartNode = {
     id: string; // uuid generated locally
     partId: string;
@@ -42,7 +35,7 @@ type StandProcessNode = {
 
 type StandEntity = {
     id?: string;
-    name: LocalizedString;
+    name: string;
     description?: string;
 
     parts?: StandPartNode[];
@@ -54,16 +47,26 @@ type StandEntity = {
     price?: number;
 };
 
+
+const normalizeString = (val: unknown): string => {
+    if (!val) return "";
+    if (typeof val === "object" && val !== null) {
+        const obj = val as Record<string, unknown>;
+        return String(obj.it || obj.en || Object.values(obj)[0] || "");
+    }
+    return String(val);
+};
+
 export default function CanvasStandsAdminPage() {
     const [stands, setStands] = useState<StandEntity[]>([]);
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState<StandEntity | null>(null);
     const [activeTab, setActiveTab] = useState<"general" | "canvas3d">("general");
 
-    const [partDict, setPartDict] = useState<Record<string, { cost?: number, price?: number, name?: LocalizedString }>>({});
-    const [assemblyDict, setAssemblyDict] = useState<Record<string, { cost?: number, price?: number, name?: LocalizedString }>>({});
-    const [bundleDict, setBundleDict] = useState<Record<string, { cost?: number, price?: number, name?: LocalizedString }>>({});
-    const [processDict, setProcessDict] = useState<Record<string, { cost?: number, price?: number, name?: LocalizedString }>>({});
+    const [partDict, setPartDict] = useState<Record<string, { cost?: number, price?: number, name?: string }>>({});
+    const [assemblyDict, setAssemblyDict] = useState<Record<string, { cost?: number, price?: number, name?: string }>>({});
+    const [bundleDict, setBundleDict] = useState<Record<string, { cost?: number, price?: number, name?: string }>>({});
+    const [processDict, setProcessDict] = useState<Record<string, { cost?: number, price?: number, name?: string }>>({});
 
     const [dragInfo, setDragInfo] = useState<{ type: "parts" | "assemblies" | "bundles" | "processes" | null, startIndex: number, overIndex: number }>({ type: null, startIndex: -1, overIndex: -1 });
 
@@ -75,6 +78,7 @@ export default function CanvasStandsAdminPage() {
 
             const enriched = resultData.map((a: StandEntity) => ({
                 ...a,
+                name: normalizeString(a.name),
                 parts: a.parts || [],
                 assemblies: a.assemblies || [],
                 bundles: a.bundles || [],
@@ -85,9 +89,9 @@ export default function CanvasStandsAdminPage() {
 
             // Fetch catalogues
             const fetchCatalog = async (entityId: string) => {
-                const data = await OrchestratorClient.list<{ id: string, cost?: number, price?: number }>(entityId, { limit: 1000 });
-                const dict: Record<string, { cost?: number, price?: number }> = {};
-                (data || []).forEach(item => { dict[item.id] = item; });
+                const data = await OrchestratorClient.list<{ id: string, name?: string, cost?: number, price?: number }>(entityId, { limit: 1000 });
+                const dict: Record<string, { name?: string, cost?: number, price?: number }> = {};
+                (data || []).forEach(item => { dict[item.id] = { ...item, name: normalizeString(item.name) }; });
                 return dict;
             };
 
@@ -145,7 +149,7 @@ export default function CanvasStandsAdminPage() {
             }
         } else {
             setEditing({
-                name: { it: "", en: "" },
+                name: "",
                 description: "",
                 parts: [],
                 assemblies: [],
@@ -275,7 +279,7 @@ export default function CanvasStandsAdminPage() {
                                             <div className="ui-canvas-form-grid">
                                                 <div className="ui-canvas-form-col-1">
                                                     <label className="ui-canvas-label">Name (EN) *</label>
-                                                    <input required value={editing.name.en || ""} onChange={e => setEditing({ ...editing, name: { ...editing.name, en: e.target.value } })} className="ui-canvas-input" />
+                                                    <input required value={editing.name || ""} onChange={e => setEditing({ ...editing, name: e.target.value })} className="ui-canvas-input" />
                                                 </div>
 
                                                 <div className="ui-canvas-form-col-1">
@@ -318,7 +322,7 @@ export default function CanvasStandsAdminPage() {
                                                                     className={`ui-canvas-subcollection-item flex justify-between items-center w-full transition-opacity ${isDragging ? "opacity-40" : ""} ${dropClass}`}
                                                                 >
                                                                     <div className="flex flex-col">
-                                                                        <span className="font-medium text-sm">Part: {partDetails?.name?.en || part.partId}</span>
+                                                                        <span className="font-medium text-sm">Part: {partDetails?.name || part.partId}</span>
                                                                         <span className="text-xs text-muted-foreground mt-1">
                                                                             <span className="text-green-600 dark:text-green-500 mr-2">Cost: €{partDetails?.cost?.toFixed(2) || "0.00"}</span>
                                                                             <span className="text-blue-600 dark:text-blue-400 mr-2">Price: €{partDetails?.price?.toFixed(2) || "0.00"}</span>
@@ -366,7 +370,7 @@ export default function CanvasStandsAdminPage() {
                                                                     className={`ui-canvas-subcollection-item flex justify-between items-center w-full transition-opacity ${isDragging ? "opacity-40" : ""} ${dropClass}`}
                                                                 >
                                                                     <div className="flex flex-col">
-                                                                        <span className="font-medium text-sm">Assembly: {details?.name?.en || assembly.assemblyId}</span>
+                                                                        <span className="font-medium text-sm">Assembly: {details?.name || assembly.assemblyId}</span>
                                                                         <span className="text-xs text-muted-foreground mt-1">
                                                                             <span className="text-green-600 dark:text-green-500 mr-2">Cost: €{details?.cost?.toFixed(2) || "0.00"}</span>
                                                                             <span className="text-blue-600 dark:text-blue-400 mr-2">Price: €{details?.price?.toFixed(2) || "0.00"}</span>
@@ -414,7 +418,7 @@ export default function CanvasStandsAdminPage() {
                                                                     className={`ui-canvas-subcollection-item flex justify-between items-center w-full transition-opacity ${isDragging ? "opacity-40" : ""} ${dropClass}`}
                                                                 >
                                                                     <div className="flex flex-col">
-                                                                        <span className="font-medium text-sm">Bundle: {details?.name?.en || bundle.bundleId}</span>
+                                                                        <span className="font-medium text-sm">Bundle: {details?.name || bundle.bundleId}</span>
                                                                         <span className="text-xs text-muted-foreground mt-1">
                                                                             <span className="text-green-600 dark:text-green-500 mr-2">Cost: €{details?.cost?.toFixed(2) || "0.00"}</span>
                                                                             <span className="text-blue-600 dark:text-blue-400 mr-2">Price: €{details?.price?.toFixed(2) || "0.00"}</span>
@@ -455,7 +459,7 @@ export default function CanvasStandsAdminPage() {
                                                     >
                                                         <option value="">+ Add Process</option>
                                                         {Object.keys(processDict).map(k => (
-                                                            <option key={k} value={k}>{processDict[k].name?.en || k}</option>
+                                                            <option key={k} value={k}>{processDict[k].name || k}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -479,7 +483,7 @@ export default function CanvasStandsAdminPage() {
                                                                     className={`ui-canvas-subcollection-item flex justify-between items-center w-full transition-opacity ${isDragging ? "opacity-40" : ""} ${dropClass}`}
                                                                 >
                                                                     <div className="flex flex-col">
-                                                                        <span className="font-medium text-sm">{procDetails?.name?.en || proc.processId}</span>
+                                                                        <span className="font-medium text-sm">{procDetails?.name || proc.processId}</span>
                                                                         <span className="text-xs text-muted-foreground mt-1">
                                                                             <span className="text-green-600 dark:text-green-500 mr-2">Cost/u: €{procDetails?.cost?.toFixed(2) || "0.00"}</span>
                                                                             <span className="text-blue-600 dark:text-blue-400 mr-2">Price/u: €{procDetails?.price?.toFixed(2) || "0.00"}</span>
@@ -553,7 +557,7 @@ export default function CanvasStandsAdminPage() {
                                             <td className="ui-table-td font-medium">
                                                 <div className="ui-canvas-flex-start">
                                                     <MapPin className="w-4 h-4 mr-2 text-primary" />
-                                                    {stand.name.en || "Unnamed"}
+                                                    {stand.name || "Unnamed"}
                                                 </div>
                                             </td>
                                             <td className="ui-table-td">{stand.parts?.length || 0}</td>

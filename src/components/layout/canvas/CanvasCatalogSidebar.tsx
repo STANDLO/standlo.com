@@ -111,6 +111,13 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
                     const augmentedList = actualList.map(item => {
                         const finalItem = { ...item };
                         
+                        // Handle legacy LocalizedStringSchema where name might be { it: "nome", en: "name" }
+                        if (typeof finalItem.name === 'object' && finalItem.name !== null) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const nameObj = finalItem.name as any;
+                            finalItem.name = nameObj.it || nameObj.en || Object.values(nameObj)[0] || "Unnamed";
+                        }
+
                         if (finalItem.meshId && meshCache.has(finalItem.meshId)) {
                             const meshDef = meshCache.get(finalItem.meshId);
                             // Merge inherited attributes if not explicitly overridden

@@ -2,10 +2,9 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema, BaseNodeSchema, BaseProcessSchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-import { LocalizedStringSchema } from "./primitives";
 export const BundleSchema = BaseSchema.extend({
-    name: LocalizedStringSchema,
-    description: LocalizedStringSchema.optional(),
+    name: z.string(),
+    description: z.string().optional(),
     // Bundles are field-assembled virtual groups, so locationType is generally site.
     locationType: z.enum(['warehouse', 'site']).default('site'),
     // Financial properties dynamically derived from parts/processes

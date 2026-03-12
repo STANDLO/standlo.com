@@ -6,13 +6,6 @@ import AssemblyCanvasEditor from "./components/AssemblyCanvasEditor";
 import { OrchestratorClient } from "../../lib/orchestratorClient";
 
 // Local types
-type LocalizedString = {
-    it: string;
-    en?: string;
-    es?: string;
-    de?: string;
-};
-
 type AssemblyPartNode = {
     id: string; // uuid generated locally
     partId: string;
@@ -29,7 +22,7 @@ type AssemblyProcessNode = {
 
 type AssemblyEntity = {
     id?: string;
-    name: LocalizedString;
+    name: string;
     locationType: "warehouse" | "site";
     parts?: AssemblyPartNode[];
     processes?: AssemblyProcessNode[];
@@ -38,14 +31,24 @@ type AssemblyEntity = {
     price?: number;
 };
 
+
+const normalizeString = (val: unknown): string => {
+    if (!val) return "";
+    if (typeof val === "object" && val !== null) {
+        const obj = val as Record<string, unknown>;
+        return String(obj.it || obj.en || Object.values(obj)[0] || "");
+    }
+    return String(val);
+};
+
 export default function CanvasAssembliesAdminPage() {
     const [assemblies, setAssemblies] = useState<AssemblyEntity[]>([]);
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState<AssemblyEntity | null>(null);
     const [activeTab, setActiveTab] = useState<"general" | "canvas3d">("general");
 
-    const [partDict, setPartDict] = useState<Record<string, { cost?: number, price?: number, name?: LocalizedString }>>({});
-    const [processDict, setProcessDict] = useState<Record<string, { cost?: number, price?: number, name?: LocalizedString }>>({});
+    const [partDict, setPartDict] = useState<Record<string, { cost?: number, price?: number, name?: string }>>({});
+    const [processDict, setProcessDict] = useState<Record<string, { cost?: number, price?: number, name?: string }>>({});
     const [dragInfo, setDragInfo] = useState<{ type: "parts" | "processes" | null, startIndex: number, overIndex: number }>({ type: null, startIndex: -1, overIndex: -1 });
 
     const loadData = async () => {
@@ -57,6 +60,7 @@ export default function CanvasAssembliesAdminPage() {
             // Assume subcollections are not returned by the base list, so we might initialize empty arrays
             const enriched = resultData.map((a: AssemblyEntity) => ({
                 ...a,
+                name: normalizeString(a.name),
                 parts: a.parts || [],
                 processes: a.processes || []
             }));
@@ -65,9 +69,9 @@ export default function CanvasAssembliesAdminPage() {
 
             // Fetch catalogues
             const fetchCatalog = async (entityId: string) => {
-                const data = await OrchestratorClient.list<{ id: string, cost?: number, price?: number }>(entityId, { limit: 1000 });
-                const dict: Record<string, { cost?: number, price?: number }> = {};
-                (data || []).forEach(item => { dict[item.id] = item; });
+                const data = await OrchestratorClient.list<{ id: string, name?: string, cost?: number, price?: number }>(entityId, { limit: 1000 });
+                const dict: Record<string, { name?: string, cost?: number, price?: number }> = {};
+                (data || []).forEach(item => { dict[item.id] = { ...item, name: normalizeString(item.name) }; });
                 return dict;
             };
 
@@ -117,7 +121,7 @@ export default function CanvasAssembliesAdminPage() {
             }
         } else {
             setEditing({
-                name: { it: "", en: "" },
+                name: "",
                 locationType: "warehouse",
                 parts: [],
                 processes: []
@@ -250,7 +254,7 @@ export default function CanvasAssembliesAdminPage() {
                                             <div className="ui-canvas-form-grid">
                                                 <div className="ui-canvas-form-col-1">
                                                     <label className="ui-canvas-label">Name (EN) *</label>
-                                                    <input required value={editing.name.en || ""} onChange={e => setEditing({ ...editing, name: { ...editing.name, en: e.target.value } })} className="ui-canvas-input" />
+                                                    <input required value={editing.name || ""} onChange={e => setEditing({ ...editing, name: e.target.value })} className="ui-canvas-input" />
                                                 </div>
 
                                                 <div className="ui-canvas-form-col-1">
@@ -296,7 +300,7 @@ export default function CanvasAssembliesAdminPage() {
                                                                     className={`ui-canvas-subcollection-item flex justify-between items-center w-full transition-opacity ${isDragging ? "opacity-40" : ""} ${dropClass}`}
                                                                 >
                                                                     <div className="flex flex-col">
-                                                                        <span className="font-medium text-sm">Part: {partDetails?.name?.en || part.partId}</span>
+                                                                        <span className="font-medium text-sm">Part: {partDetails?.name || part.partId}</span>
                                                                         <span className="text-xs text-muted-foreground mt-1">
                                                                             <span className="text-green-600 dark:text-green-500 mr-2">Cost: €{partDetails?.cost?.toFixed(2) || "0.00"}</span>
                                                                             <span className="text-blue-600 dark:text-blue-400 mr-2">Price: €{partDetails?.price?.toFixed(2) || "0.00"}</span>
@@ -337,7 +341,7 @@ export default function CanvasAssembliesAdminPage() {
                                                     >
                                                         <option value="">+ Add Process</option>
                                                         {Object.keys(processDict).map(k => (
-                                                            <option key={k} value={k}>{processDict[k].name?.en || k}</option>
+                                                            <option key={k} value={k}>{processDict[k].name || k}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -361,7 +365,7 @@ export default function CanvasAssembliesAdminPage() {
                                                                     className={`ui-canvas-subcollection-item flex justify-between items-center w-full transition-opacity ${isDragging ? "opacity-40" : ""} ${dropClass}`}
                                                                 >
                                                                     <div className="flex flex-col">
-                                                                        <span className="font-medium text-sm">{procDetails?.name?.en || proc.processId}</span>
+                                                                        <span className="font-medium text-sm">{procDetails?.name || proc.processId}</span>
                                                                         <span className="text-xs text-muted-foreground mt-1">
                                                                             <span className="text-green-600 dark:text-green-500 mr-2">Cost/u: €{procDetails?.cost?.toFixed(2) || "0.00"}</span>
                                                                             <span className="text-blue-600 dark:text-blue-400 mr-2">Price/u: €{procDetails?.price?.toFixed(2) || "0.00"}</span>
@@ -430,7 +434,7 @@ export default function CanvasAssembliesAdminPage() {
                                             <td className="ui-table-td font-medium">
                                                 <div className="ui-canvas-flex-start">
                                                     <Layers className="w-4 h-4 mr-2 ui-canvas-text-blue" />
-                                                    {assembly.name.en || "Unnamed"}
+                                                    {assembly.name || "Unnamed"}
                                                 </div>
                                             </td>
                                             <td className="ui-table-td capitalize">{assembly.locationType}</td>

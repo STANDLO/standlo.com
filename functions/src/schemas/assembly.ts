@@ -2,10 +2,9 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema, BaseNodeSchema, BaseProcessSchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-import { LocalizedStringSchema } from "./primitives";
 export const AssemblySchema = BaseSchema.extend({
-    name: LocalizedStringSchema,
-    description: LocalizedStringSchema.optional(),
+    name: z.string(),
+    description: z.string().optional(),
     locationType: z.enum(['warehouse', 'site']).default('warehouse'),
     // Financial properties
     cost: z.number().optional().describe("Internal standard cost"),

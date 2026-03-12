@@ -7,18 +7,11 @@ import { OrchestratorClient } from "../../lib/orchestratorClient";
 import { PART_CATEGORIES_BY_SECTOR } from "@standlo/functions/src/schemas/part";
 
 // Local types matching part.ts & primitives (Localized String)
-type LocalizedString = {
-    it: string;
-    en?: string;
-    es?: string;
-    de?: string;
-};
-
 type PartEntity = {
     id?: string;
     code: string;
     name: string;
-    description?: LocalizedString;
+    description?: string;
     sector: string;
     category: string;
     isRentable?: boolean;
@@ -38,6 +31,9 @@ type MeshEntity = {
     id: string;
     code: string;
 };
+
+
+
 
 export default function CanvasPartsAdminPage() {
     const [parts, setParts] = useState<PartEntity[]>([]);

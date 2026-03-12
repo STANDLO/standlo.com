@@ -2,7 +2,6 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-import { LocalizedStringSchema } from "./primitives";
 const PricingTierSchema = z.object({
     isActive: z.boolean().default(false),
     setupCost: z.number().default(0), // Costo fisso iniziale
@@ -14,8 +13,8 @@ const PricingTierSchema = z.object({
 export const ProductSchema = BaseSchema.extend({
     partId: z.string(), // Reference to global master Part
     sku: z.string().optional(),
-    name: LocalizedStringSchema.optional(), // Can override Part name if needed
-    description: LocalizedStringSchema.optional(),
+    name: z.string().optional(), // Can override Part name if needed
+    description: z.string().optional(),
     // Pricing configurations (Vendita/Noleggio a scaglioni)
     forRent: PricingTierSchema.optional(),
     forSale: PricingTierSchema.optional(),
