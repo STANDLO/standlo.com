@@ -30,7 +30,7 @@ function CanvasOverlayInner({ active = true }: { active?: boolean }) {
             active={active}
             isOverlay={true}
             entityId={entityId}
-            entityType={entityType as "part" | "assembly" | "stand" | "bundle" | "canvas" | undefined}
+            entityType={entityType as "part" | "assembly" | "design" | "bundle" | "canvas" | undefined}
         />
     );
 }

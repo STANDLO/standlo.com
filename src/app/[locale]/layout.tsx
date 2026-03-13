@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import { getMessages, getLocale, getTranslations } from "next-intl/server";
 import { AppProviders } from "@/providers/AppProviders";
-import { HomeOverlay } from "@/components/layout/HomeOverlay";
-import { CanvasOverlay } from "@/components/layout/CanvasOverlay";
-import { ToolsOverlay } from "@/components/layout/ToolsOverlay";
 import { BaseLogo } from "@/components/layout/base/BaseLogo";
 import { BaseNavigator, NavItem } from "@/components/layout/base/BaseNavigator";
+import { BaseVersion } from "@/components/layout/base/BaseVersion";
 import { getTokens } from "next-firebase-auth-edge";
 import { cookies } from "next/headers";
 import { authConfig } from "@/core/auth-edge";
 import type { RoleId } from "../../../functions/src/schemas/auth";
 import "../globals.css";
+import pkg from "../../../package.json";
 
 import { Montserrat } from "next/font/google";
 
@@ -65,10 +64,10 @@ export default async function RootLayout({
     const claims = (tokens.decodedToken || {}) as Record<string, unknown>;
     const role = (claims.role as string) || "pending";
     const isActive = claims.active === true;
-    
+
     // Determine if user has permission to use the 'tools' mode
     if (isActive && role !== "pending") {
-        hasToolsAccess = true;
+      hasToolsAccess = true;
     }
 
     userName = (claims.name as string) || (claims.email as string) || "Utente Standlo";
@@ -108,41 +107,23 @@ export default async function RootLayout({
     }
   }
 
-    const isPublic = variant === "public";
-
-    // Enforce permission checks on the cookie value
-    let resolvedUiMode = uiModeCookieRaw;
-    if (resolvedUiMode === 'tools' && !hasToolsAccess) {
-        resolvedUiMode = 'home';
-    }
-
-    const homeActive = resolvedUiMode === 'home';
-    const canvasActive = resolvedUiMode === 'canvas';
-    const toolsActive = !isPublic && resolvedUiMode === 'tools';
-
   return (
     <html lang={locale} className={uiThemeCookieRaw} suppressHydrationWarning>
-      <body className={`${montserrat.variable} font-sans antialiased layout-public-root fixed inset-0 overflow-hidden`}>
-        <AppProviders locale={locale} messages={messages} uiTheme={uiThemeCookieRaw}>
-          <HomeOverlay active={homeActive} />
-          <CanvasOverlay active={canvasActive} />
-          <ToolsOverlay active={toolsActive}>
-            {children}
-          </ToolsOverlay>
+      <body className={`${montserrat.variable} bg-dotted font-sans antialiased layout-public-root fixed inset-0 overflow-hidden`}>
+        <AppProviders locale={locale} messages={messages} uiTheme={uiThemeCookieRaw} uiMode={uiModeCookieRaw} version={pkg.version}>
+          {children}
           <BaseLogo />
-          {!canvasActive && (
-            <BaseNavigator
-              variant={variant}
-              navItems={navItems}
-              roleContext={roleContextLabel}
-              userName={userName}
-              organizationName={organizationName}
-              hasToolsAccess={hasToolsAccess}
-            />
-          )}
+          <BaseNavigator
+            variant={variant}
+            navItems={navItems}
+            roleContext={roleContextLabel}
+            userName={userName}
+            organizationName={organizationName}
+            hasToolsAccess={hasToolsAccess}
+          />
+          <BaseVersion />
         </AppProviders>
       </body>
     </html>
   );
 }
-

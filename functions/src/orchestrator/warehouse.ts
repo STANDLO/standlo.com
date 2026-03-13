@@ -1,27 +1,26 @@
-import { getFirestore } from "firebase-admin/firestore";
-import { getApp } from "firebase-admin/app";
 import { randomUUID } from "crypto";
 
-const firestore = getFirestore(getApp(), "standlo");
-
 export async function createWarehouseEntity(uid: string, payload: Record<string, unknown>) {
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
     const warehouseId = payload.id as string || randomUUID();
-    const now = new Date().toISOString();
 
     const dbData = {
         id: warehouseId,
         orgId: payload.orgId || null,
         ownId: uid,
         ...payload,
-        createdAt: now,
-        createdBy: uid,
-        updatedAt: now,
-        updatedBy: uid,
-        deletedAt: null,
         isArchived: false
     };
 
-    await firestore.collection("warehouses").doc(warehouseId).set(dbData);
+    const req = createInternalRequest({
+        actionId: "create",
+        entityId: "warehouse",
+        payload: { ...dbData, documentId: warehouseId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -31,17 +30,21 @@ export async function createWarehouseEntity(uid: string, payload: Record<string,
 }
 
 export async function updateWarehouseEntity(uid: string, warehouseId: string, payload: Record<string, unknown>) {
-    const now = new Date().toISOString();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id: _id, ...restPayload } = payload;
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
-    const updateData = {
-        ...restPayload,
-        updatedAt: now,
-        updatedBy: uid
-    };
+    const restPayload = { ...payload };
+    delete restPayload.id;
 
-    await firestore.collection("warehouses").doc(warehouseId).update(updateData);
+    const updateData = { ...restPayload };
+
+    const req = createInternalRequest({
+        actionId: "update",
+        entityId: "warehouse",
+        payload: { ...updateData, documentId: warehouseId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -51,7 +54,16 @@ export async function updateWarehouseEntity(uid: string, warehouseId: string, pa
 }
 
 export async function deleteWarehouseEntity(uid: string, warehouseId: string) {
-    await firestore.collection("warehouses").doc(warehouseId).delete();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
+    const req = createInternalRequest({
+        actionId: "delete",
+        entityId: "warehouse",
+        payload: { documentId: warehouseId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",

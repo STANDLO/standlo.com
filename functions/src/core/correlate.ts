@@ -13,7 +13,7 @@ export const FK_DICTIONARY: Record<string, string> = {
     assemblyId: "assemblies",
     bundleId: "bundles",
     processId: "processes",
-    standId: "stands",
+    designId: "designs",
     fairId: "fairs",
     projectId: "projects",
     orgId: "organizations",
@@ -80,6 +80,12 @@ export async function applyCorrelations(
         // 1. Remove from old target if it existed and is different
         if (oldTargetId) {
             const reverseDocRef = db.collection(targetCol).doc(oldTargetId).collection(rootCol).doc(rootId);
+            const usageDocRef = reverseDocRef.collection("usages").doc(usageId);
+            
+            // Delete the subcollection document
+            batch.delete(usageDocRef);
+
+            // Keep arrayRemove for backward compatibility during transition
             batch.set(reverseDocRef, {
                 usages: FieldValue.arrayRemove(usageId),
                 updatedAt: now
@@ -89,10 +95,22 @@ export async function applyCorrelations(
         // 2. Add to new target if it exists
         if (newTargetId) {
             const reverseDocRef = db.collection(targetCol).doc(newTargetId).collection(rootCol).doc(rootId);
+            const usageDocRef = reverseDocRef.collection("usages").doc(usageId);
+            
+            const subColRefName = pathSegments.length === 4 ? pathSegments[2] : rootCol;
+
+            // Set the usage subdocument
+            batch.set(usageDocRef, {
+                entityId: usageId,
+                entityCollection: subColRefName,
+                correlatedAt: now,
+                updatedAt: now
+            }, { merge: true });
+
+            // Just touch the reverseDocRef so it's discoverable by shallow queries
             batch.set(reverseDocRef, {
-                usages: FieldValue.arrayUnion(usageId),
                 updatedAt: now,
-                correlatedAt: now // Track when the correlation was first made
+                correlatedAt: now
             }, { merge: true });
         }
     }
@@ -118,16 +136,24 @@ export async function checkSafeDeletion(db: admin.firestore.Firestore, collectio
         const snap = await subcol.get();
         let subUsages = 0;
 
-        snap.docs.forEach(doc => {
+        // Use a for...of loop to perform async count aggregations
+        for (const doc of snap.docs) {
             const data = doc.data();
-            // If it's a correlation document, it contains the array `usages`
-            if (data.usages && Array.isArray(data.usages)) {
+            
+            // Check count of new usages subcollection
+            const usagesAggSnap = await doc.ref.collection("usages").count().get();
+            const count = usagesAggSnap.data().count;
+
+            if (count > 0) {
+                subUsages += count;
+            } else if (data.usages && Array.isArray(data.usages) && data.usages.length > 0) {
+                // Fallback to array length for backward compatibility
                 subUsages += data.usages.length;
-            } else {
+            } else if (!data.correlatedAt && !data.usages) {
                 // Otherwise it's a standard sub-document (e.g., composition), count as 1 usage
                 subUsages += 1;
             }
-        });
+        }
 
         if (subUsages > 0) {
             totalUsages += subUsages;

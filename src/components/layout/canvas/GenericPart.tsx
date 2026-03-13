@@ -1,10 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { CanvasEntity, useCanvasStore } from "./store";
 import { ThreeEvent, useFrame, useLoader } from "@react-three/fiber";
 import { TransformControls, Sphere, Edges } from "@react-three/drei";
-import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import * as THREE from "three";
 
 interface GenericPartProps {
@@ -13,14 +12,11 @@ interface GenericPartProps {
 
 export default function GenericPart({ entity }: GenericPartProps) {
     const groupRef = useRef<THREE.Group>(null!);
-    const rigidBodyRef = useRef<RapierRigidBody>(null);
 
     const selectedEntityId = useCanvasStore((state) => state.selectedEntityId);
     const selectEntity = useCanvasStore((state) => state.selectEntity);
     const updateEntityPosition = useCanvasStore((state) => state.updateEntityPosition);
     const updateEntityRotation = useCanvasStore((state) => state.updateEntityRotation);
-
-    const setEntityCollision = useCanvasStore((state) => state.setEntityCollision);
     const playbackStep = useCanvasStore((state) => state.playbackStep);
 
     const transformMode = useCanvasStore((state) => state.transformMode);
@@ -32,6 +28,7 @@ export default function GenericPart({ entity }: GenericPartProps) {
     const setTransformMode = useCanvasStore((state) => state.setTransformMode);
     const activeLayer = useCanvasStore((state) => state.activeLayer);
     
+    const isDragging = useCanvasStore((state) => state.isDragging);
     const setIsDragging = useCanvasStore((state) => state.setIsDragging);
 
     const isFaded = activeLayer !== null && activeLayer !== entity.layerId;
@@ -45,15 +42,56 @@ export default function GenericPart({ entity }: GenericPartProps) {
 
     const isParametricBox = entity.baseEntityId.startsWith("parametric_box");
     const isParametricCyl = entity.baseEntityId.startsWith("parametric_cylinder");
-    const isCustomMesh = ["mesh", "part", "assembly", "stand"].includes(entity.type as string) && !!entity.metadata?.geometry;
+    const isCustomMesh = ["mesh", "part", "assembly", "design"].includes(entity.type as string) && !!entity.metadata?.geometry;
 
     const dimensions = [1, 1, 1] as [number, number, number];
 
+    const materialsRegistry = useCanvasStore((state) => state.materialsRegistry) as Record<string, unknown>[];
+    const texturesRegistry = useCanvasStore((state) => state.texturesRegistry) as Record<string, unknown>[];
+    const entities = useCanvasStore((state) => state.entities);
+
+    const activeMaterial = useMemo(() => {
+        if (!entity.metadata?.materialId) return null;
+        return materialsRegistry.find(m => m.id === entity.metadata?.materialId) || null;
+    }, [entity.metadata?.materialId, materialsRegistry]);
+
+    const activeTexture = useMemo(() => {
+        if (!entity.metadata?.textureId) return null;
+        return texturesRegistry.find(t => t.id === entity.metadata?.textureId) || null;
+    }, [entity.metadata?.textureId, texturesRegistry]);
+
+    const getProp = (key: string, fallback: number): number => {
+        const overrides = entity.meshOverrides?.['$root'] as Record<string, unknown> | undefined;
+        const meta = entity.metadata as Record<string, unknown> | undefined;
+        const activeMat = activeMaterial as Record<string, unknown> | undefined;
+        
+        if (typeof overrides?.[key] === 'number') return overrides[key] as number;
+        if (typeof meta?.[key] === 'number') return meta[key] as number;
+        if (typeof activeMat?.[key] === 'number') return activeMat[key] as number;
+        return fallback;
+    };
+
+    const resolveColor = (defaultColor: string): string => {
+        const overrides = entity.meshOverrides?.['$root'] as Record<string, unknown> | undefined;
+        const meta = entity.metadata as Record<string, unknown> | undefined;
+        
+        if (shadingMode === 'white_edges') return "#ffffff";
+        if (typeof overrides?.color === 'string') return overrides.color;
+        if (typeof meta?.color === 'string') return meta.color;
+        if (activeTexture?.type === 'color' && typeof activeTexture.valueLight === 'string') return activeTexture.valueLight;
+        if (typeof activeMaterial?.baseColor === 'string') return activeMaterial.baseColor;
+        return defaultColor;
+    };
+
     // Read applied texture URL and mapping properties prioritizing overrides
-    const appliedTextureUrl = entity.meshOverrides?.['$root']?.textureUrl || entity.metadata?.textureUrl || null;
-    const appliedRepeat = entity.meshOverrides?.['$root']?.textureRepeat || entity.metadata?.textureRepeat || null;
-    const appliedWrapSStr = entity.meshOverrides?.['$root']?.textureWrapS || entity.metadata?.textureWrapS || null;
-    const appliedWrapTStr = entity.meshOverrides?.['$root']?.textureWrapT || entity.metadata?.textureWrapT || null;
+    const appliedTextureUrl = entity.meshOverrides?.['$root']?.textureUrl || entity.metadata?.textureUrl || (activeTexture?.type === 'image' ? activeTexture.url : null) || null;
+    const appliedRepeat = entity.meshOverrides?.['$root']?.textureRepeat || entity.metadata?.textureRepeat || activeTexture?.repeat || null;
+    const appliedWrapSStr = entity.meshOverrides?.['$root']?.textureWrapS || entity.metadata?.textureWrapS || activeTexture?.wrapS || null;
+    const appliedWrapTStr = entity.meshOverrides?.['$root']?.textureWrapT || entity.metadata?.textureWrapT || activeTexture?.wrapT || null;
+    const setEntityCollision = useCanvasStore((state) => state.setEntityCollision);
+    // Reuse these to avoid gc overhead
+    const myBox = useMemo(() => new THREE.Box3(), []);
+    const otherBox = useMemo(() => new THREE.Box3(), []);
 
     const textureMapOriginal = useLoader(THREE.TextureLoader, appliedTextureUrl ? [appliedTextureUrl as string] : [])[0];
     const textureMap = textureMapOriginal ? textureMapOriginal.clone() : null;
@@ -67,15 +105,55 @@ export default function GenericPart({ entity }: GenericPartProps) {
         }
         textureMap.needsUpdate = true;
     }
-
+    
     useFrame(() => {
-        if (isSelected && rigidBodyRef.current && transformMode !== 'snap' && groupRef.current) {
-            const worldPos = new THREE.Vector3();
-            const worldQuat = new THREE.Quaternion();
-            groupRef.current.getWorldPosition(worldPos);
-            groupRef.current.getWorldQuaternion(worldQuat);
-            rigidBodyRef.current.setNextKinematicTranslation(worldPos);
-            rigidBodyRef.current.setNextKinematicRotation(worldQuat);
+        if (isSelected && transformMode !== 'snap' && groupRef.current) {
+            if (isDragging) {
+                myBox.setFromObject(groupRef.current);
+                let collision = false;
+                
+                for (const [id, otherEntity] of Object.entries(entities)) {
+                    if (id === entity.id) continue;
+                    
+                    const otherIsHidden = playbackStep !== null && typeof otherEntity.order === "number" && otherEntity.order > playbackStep;
+                    if (otherIsHidden) continue;
+
+                    const otherEntityWithDims = otherEntity as CanvasEntity & { dimensions?: [number, number, number] };
+                    const otherEntityDims = (otherEntity.metadata?.dimensions as [number, number, number]) 
+                        || (otherEntity.metadata?.args as [number, number, number]) 
+                        || otherEntityWithDims.dimensions 
+                        || [1, 1, 1];
+                    
+                    const szX = otherEntityDims[0];
+                    const szY = otherEntityDims[2] ?? otherEntityDims[1];
+                    const szZ = otherEntityDims[1] ?? otherEntityDims[2];
+
+                    const min = new THREE.Vector3(
+                        otherEntity.position[0] - szX / 2,
+                        otherEntity.position[1] - szY / 2,
+                        otherEntity.position[2] - szZ / 2
+                    );
+                    const max = new THREE.Vector3(
+                        otherEntity.position[0] + szX / 2,
+                        otherEntity.position[1] + szY / 2,
+                        otherEntity.position[2] + szZ / 2
+                    );
+                    
+                    otherBox.set(min, max);
+                    
+                    if (myBox.intersectsBox(otherBox)) {
+                        collision = true;
+                        break;
+                    }
+                }
+
+                if (collision !== entity.isColliding) {
+                    setEntityCollision(entity.id, collision);
+                }
+            } else if (!isDragging && entity.isColliding) {
+                // Clear collision styling on drop
+                setEntityCollision(entity.id, false);
+            }
         }
     });
 
@@ -139,15 +217,18 @@ export default function GenericPart({ entity }: GenericPartProps) {
             }
         }
 
-        if (shouldSnap) {
+        if (shouldSnap && !Number.isNaN(snapDelta.x) && !Number.isNaN(snapDelta.y) && !Number.isNaN(snapDelta.z)) {
             finalPos.add(snapDelta);
             // Also update the visual transform immediately to avoid jitter
             groupRef.current.position.copy(finalPos);
         }
 
-        // Update Store
-        updateEntityPosition(entity.id, [finalPos.x, finalPos.y, finalPos.z]);
-        updateEntityRotation(entity.id, [finalRot.x, finalRot.y, finalRot.z, finalRot.w]);
+        // Update Store only if valid numbers
+        if (!Number.isNaN(finalPos.x) && !Number.isNaN(finalPos.y) && !Number.isNaN(finalPos.z) &&
+            !Number.isNaN(finalRot.x) && !Number.isNaN(finalRot.y) && !Number.isNaN(finalRot.z) && !Number.isNaN(finalRot.w)) {
+            updateEntityPosition(entity.id, [finalPos.x, finalPos.y, finalPos.z]);
+            updateEntityRotation(entity.id, [finalRot.x, finalRot.y, finalRot.z, finalRot.w]);
+        }
     };
 
     const handleSnapInteractionMove = (e: ThreeEvent<MouseEvent>) => {
@@ -252,7 +333,7 @@ export default function GenericPart({ entity }: GenericPartProps) {
 
     const colorBox = entity.isColliding ? "#ef4444" : (isSelected ? "#3b82f6" : "#e2e8f0");
     const colorCyl = entity.isColliding ? "#ef4444" : (isSelected ? "#3b82f6" : "#cbd5e1");
-    const colorWf = entity.isColliding ? "#ef4444" : (isSelected ? "#3b82f6" : "#a1a1aa");
+
 
     // Dynamic resolution of the visual bounds from fetched metadata (for catalog items)
     const entityDims = (entity as unknown as Record<string, unknown>).dimensions as [number, number, number] | undefined;
@@ -279,18 +360,8 @@ export default function GenericPart({ entity }: GenericPartProps) {
                         />
                     </Sphere>
                 ))}
-            </group>
 
-            {/* The Actual Physics & Visual Body */}
-            <RigidBody
-                ref={rigidBodyRef}
-                type={isSelected ? "kinematicPosition" : "fixed"}
-                colliders="cuboid"
-                onCollisionEnter={() => setEntityCollision(entity.id, true)}
-                onCollisionExit={() => setEntityCollision(entity.id, false)}
-                position={entity.position}
-                quaternion={entity.rotation}
-            >
+                {/* The Visual Body */}
                 <group
                     onClick={handleClickWrapper}
                     onPointerMove={(e) => {
@@ -322,13 +393,21 @@ export default function GenericPart({ entity }: GenericPartProps) {
                 >
                     {isParametricBox && !isCustomMesh && (
                         <mesh castShadow receiveShadow>
-                            <boxGeometry args={dimensions} />
-                            <meshStandardMaterial
-                                color={shadingMode === 'white_edges' ? "#ffffff" : (entity.meshOverrides?.['$root']?.color || colorBox)}
-                                roughness={0.8}
+                            <boxGeometry args={[renderDims[0], renderDims[2] ?? renderDims[1], renderDims[1] ?? renderDims[2]]} />
+                            <meshPhysicalMaterial
+                                color={resolveColor(colorBox)}
+                                map={textureMap || null}
+                                roughness={getProp('roughness', 0.8)}
+                                metalness={getProp('metalness', 0)}
+                                clearcoat={getProp('clearcoat', 0)}
+                                clearcoatRoughness={getProp('clearcoatRoughness', 0)}
+                                sheen={getProp('sheen', 0)}
+                                sheenRoughness={getProp('sheenRoughness', 0)}
+                                transmission={getProp('transmission', 0)}
+                                ior={getProp('ior', 1.5)}
                                 emissive={isSelected ? "#3b82f6" : "#000000"}
                                 emissiveIntensity={isSelected ? 0.3 : 0}
-                                transparent={transparent}
+                                transparent={transparent || !!getProp('transmission', 0)}
                                 opacity={opacity}
                             />
                             {shadingMode !== "shaded" && <Edges threshold={15} color={isFaded ? "gray" : "black"} />}
@@ -337,14 +416,21 @@ export default function GenericPart({ entity }: GenericPartProps) {
 
                     {isParametricCyl && !isCustomMesh && (
                         <mesh castShadow receiveShadow>
-                            <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
-                            <meshStandardMaterial
-                                color={shadingMode === 'white_edges' ? "#ffffff" : (entity.meshOverrides?.['$root']?.color || colorCyl)}
-                                metalness={0.5}
-                                roughness={0.2}
+                            <cylinderGeometry args={[renderDims[0] / 2, renderDims[0] / 2, renderDims[2] ?? renderDims[1], 32]} />
+                            <meshPhysicalMaterial
+                                color={resolveColor(colorCyl)}
+                                map={textureMap || null}
+                                roughness={getProp('roughness', 0.2)}
+                                metalness={getProp('metalness', 0.5)}
+                                clearcoat={getProp('clearcoat', 0)}
+                                clearcoatRoughness={getProp('clearcoatRoughness', 0)}
+                                sheen={getProp('sheen', 0)}
+                                sheenRoughness={getProp('sheenRoughness', 0)}
+                                transmission={getProp('transmission', 0)}
+                                ior={getProp('ior', 1.5)}
                                 emissive={isSelected ? "#3b82f6" : "#000000"}
                                 emissiveIntensity={isSelected ? 0.3 : 0}
-                                transparent={transparent}
+                                transparent={transparent || !!getProp('transmission', 0)}
                                 opacity={opacity}
                             />
                             {shadingMode !== "shaded" && <Edges threshold={15} color={isFaded ? "gray" : "black"} />}
@@ -354,7 +440,26 @@ export default function GenericPart({ entity }: GenericPartProps) {
                     {!isParametricBox && !isParametricCyl && !isCustomMesh && (
                         <mesh castShadow receiveShadow>
                             <boxGeometry args={[renderDims[0], renderDims[2] ?? renderDims[1], renderDims[1] ?? renderDims[2]]} />
-                            <meshStandardMaterial color={entity.meshOverrides?.['$root']?.color || colorWf} wireframe transparent={transparent} opacity={opacity} />
+                            <meshPhysicalMaterial 
+                                color={
+                                    entity.type === 'design' ? '#f43f5e' : // Rose for Design
+                                    entity.type === 'bundle' ? '#a855f7' : // Purple for Bundle
+                                    entity.type === 'assembly' ? '#3b82f6' : // Blue for Assembly
+                                    '#10b981' // Emerald for Part / Mesh
+                                } 
+                                transparent={entity.type === 'design' || entity.type === 'bundle' || entity.type === 'assembly' || transparent} 
+                                opacity={entity.type === 'design' || entity.type === 'bundle' || entity.type === 'assembly' ? 0.15 : opacity} 
+                                depthWrite={!transparent} 
+                                transmission={entity.type === 'design' || entity.type === 'bundle' || entity.type === 'assembly' ? 0.5 : 0}
+                                thickness={1}
+                            />
+                            <Edges 
+                                color={
+                                entity.type === 'design' ? '#be123c' : 
+                                entity.type === 'bundle' ? '#7e22ce' :
+                                entity.type === 'assembly' ? '#1d4ed8' :
+                                '#047857'
+                                } />
                         </mesh>
                     )}
 
@@ -363,21 +468,27 @@ export default function GenericPart({ entity }: GenericPartProps) {
                             {entity.metadata.geometry === "box" && <boxGeometry args={[renderDims[0], renderDims[2] ?? renderDims[1], renderDims[1] ?? renderDims[2]]} />}
                             {entity.metadata.geometry === "sphere" && <sphereGeometry args={entity.metadata.args as [number, number, number]} />}
                             {entity.metadata.geometry === "cylinder" && <cylinderGeometry args={entity.metadata.args as [number, number, number, number]} />}
-                            <meshStandardMaterial
-                                color={shadingMode === 'white_edges' ? "#ffffff" : (isSelected ? "#3b82f6" : entity.meshOverrides?.['$root']?.color || entity.metadata.color || colorBox)}
+                            <meshPhysicalMaterial
+                                color={isSelected ? "#3b82f6" : resolveColor(colorBox)}
                                 map={textureMap || null}
-                                roughness={entity.metadata.roughness ?? 0.5}
-                                metalness={entity.metadata.metalness ?? 0.1}
+                                roughness={getProp('roughness', 0.5)}
+                                metalness={getProp('metalness', 0.1)}
+                                clearcoat={getProp('clearcoat', 0)}
+                                clearcoatRoughness={getProp('clearcoatRoughness', 0)}
+                                sheen={getProp('sheen', 0)}
+                                sheenRoughness={getProp('sheenRoughness', 0)}
+                                transmission={getProp('transmission', 0)}
+                                ior={getProp('ior', 1.5)}
                                 emissive={entity.isColliding ? "#ef4444" : (isSelected ? "#3b82f6" : "#000000")}
                                 emissiveIntensity={entity.isColliding ? 0.5 : (isSelected ? 0.3 : 0)}
-                                transparent={transparent}
+                                transparent={transparent || !!getProp('transmission', 0)}
                                 opacity={opacity}
                             />
                             {shadingMode !== "shaded" && <Edges threshold={15} color={isFaded ? "gray" : "black"} />}
                         </mesh>
                     )}
                 </group>
-            </RigidBody>
+            </group>
 
             {isSelected && transformMode !== 'snap' && (
                 <TransformControls

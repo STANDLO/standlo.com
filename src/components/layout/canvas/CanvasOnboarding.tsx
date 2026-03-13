@@ -1,27 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { callGateway } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
-import { Loader2, Lock } from "lucide-react";
+import {
+  Loader2,
+  Lock,
+  Box,
+  Boxes,
+  Package,
+  Move,
+  RotateCw,
+  PaintBucket,
+  Glasses
+} from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
+import { useDictionarySync } from "./useDictionarySync";
+
+// The mock tools array matching the translations
+const TUTORIAL_TOOLS = [
+  { id: "addPart", icon: Box },
+  { id: "addAssembly", icon: Boxes },
+  { id: "addBundle", icon: Package },
+  { id: "move", icon: Move },
+  { id: "rotate", icon: RotateCw },
+  { id: "material", icon: PaintBucket },
+  { id: "arVr", icon: Glasses },
+];
 
 export function CanvasOnboarding() {
+  const { isReady, error } = useDictionarySync();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const tBrand = useTranslations("Brand");
+  const t = useTranslations("CanvasOnboarding");
 
   const handleStart = async () => {
     setLoading(true);
     try {
       const autoPassword = Math.random().toString(36).slice(2, 8).toUpperCase();
-      const data = await callGateway<Record<string, unknown>>("canvas", {
+      const data = await callGateway<Record<string, unknown>>("orchestrator", {
         actionId: "createCanvasSandbox",
         payload: {
-          canvasType: "canvas",
-          editPassword: autoPassword
+          canvasType: "design",
+          password: autoPassword
         }
       });
       if (data?.canvasId) {
@@ -36,54 +60,79 @@ export function CanvasOnboarding() {
   };
 
   return (
-    <div className="relative z-50 flex flex-col items-center justify-center w-full min-h-[100dvh] bg-background text-foreground pointer-events-auto" style={{ animation: "fadeIn 0.5s ease-in-out" }}>
-      <div className="flex flex-col items-center justify-center w-full flex-1 max-w-2xl mx-auto p-8 gap-8">
-        <div className="text-center space-y-4">
-          <div className="flex w-full items-center justify-center mb-6 text-primary">
-            <Logo size="xxl" className="!w-auto !h-auto" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight pt-8">The Global Factory</h1>
-          <p className="text-lg text-muted-foreground">
-            Sperimenta il <strong>Temporary Information Modeling</strong> in prima persona.<br />
-            Crea il tuo stand 3D in pochi secondi, senza registrazione.
-          </p>
-        </div>
+    <div className="ui-canvas-onboarding-overlay">
+      <div className="ui-canvas-onboarding-container">
 
-        <div className="w-full max-w-sm flex flex-col gap-4 p-6 bg-card border rounded-2xl shadow-sm">
-          <div className="space-y-2 text-center">
-            <p className="text-sm font-medium text-green-600 dark:text-green-500 flex items-center justify-center gap-2">
-              <Lock className="w-4 h-4" /> Spazio di Lavoro Privato
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Inizierai come Editor. Le modifiche verranno salvate automaticamente in un ambiente Sandbox sicuro e condivisibile.
-            </p>
+        <div className="ui-canvas-onboarding-left-col">
+          <div className="ui-canvas-onboarding-content">
+            <div className="ui-canvas-onboarding-logo">
+              <Logo size="xxl" />
+            </div>
+            <h1 className="ui-canvas-onboarding-title">{t("title")}</h1>
+            <div className="ui-canvas-onboarding-subtitle-container">
+              <p className="ui-canvas-onboarding-description" dangerouslySetInnerHTML={{ __html: t.raw("description").replace("<bold>", "<strong>").replace("</bold>", "</strong>") }} />
+            </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Button
-              size="lg"
-              variant="green"
-              onClick={handleStart}
-              disabled={loading}
-              className="w-full h-12 text-lg mt-2"
-            >
-              {loading && <Loader2 className="w-5 h-5 mr-3 animate-spin" />}
-              {loading ? "Avvio in corso..." : "Inizia a Progettare"}
-            </Button>
-            <p className="text-center text-[12px] mt-2">
-              {tBrand("copyright", { year: new Date().getFullYear() })}
-            </p>
+          <div className="ui-canvas-onboarding-card">
+            <div className="ui-canvas-onboarding-card-header">
+              <p className="ui-canvas-onboarding-card-badge">
+                <Lock className="w-4 h-4" /> {t("workspaceTitle")}
+              </p>
+              <p className="ui-canvas-onboarding-card-desc">
+                {t("workspaceDesc")}
+              </p>
+            </div>
+
+            <div className="ui-canvas-onboarding-card-actions">
+              <Button
+                size="lg"
+                variant="green"
+                onClick={handleStart}
+                disabled={loading || !isReady}
+                className="ui-canvas-onboarding-start-btn"
+              >
+                {(loading || !isReady) && <Loader2 className="w-5 h-5 mr-3 animate-spin" />}
+                {loading ? t("statusStarting") : (!isReady ? t("statusSyncing") : t("statusReady"))}
+              </Button>
+              {error && <p className="ui-canvas-onboarding-error-msg">{t("statusFailed")}</p>}
+
+              <div className="ui-canvas-onboarding-footer">
+                <p className="ui-canvas-onboarding-copyright">
+                  {tBrand("copyright", { year: new Date().getFullYear() })}
+                </p>
+              </div>
+            </div>
           </div>
+
+          <div className="ui-canvas-onboarding-content">
+            <div className="ui-canvas-onboarding-subtitle-container">
+              <div className="ui-canvas-onboarding-slogan-block">
+                <p>{t("subtitle1")}</p>
+                <p dangerouslySetInnerHTML={{ __html: t.raw("subtitle2_1") }} />
+                <p dangerouslySetInnerHTML={{ __html: t.raw("subtitle2_2") }} />
+              </div>
+            </div>
+          </div>
+
         </div>
+        ƒ
+        <div className="ui-canvas-onboarding-right-col">
+          {TUTORIAL_TOOLS.map((tool) => {
+            const Icon = tool.icon;
+            return (
+              <div key={tool.id} className="ui-canvas-onboarding-tool-item">
+                <Icon className="ui-canvas-onboarding-tool-icon" />
+                <div className="ui-canvas-onboarding-tool-info">
+                  <h4 className="ui-canvas-onboarding-tool-title">{t(`tutorialNames.${tool.id}`)}</h4>
+                  <p className="ui-canvas-onboarding-tool-desc">{t(`tutorials.${tool.id}`)}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
       </div>
-
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-      `}} />
     </div>
   );
 }

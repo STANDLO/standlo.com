@@ -20,6 +20,27 @@ export const MaterialSchema = BaseSchema.extend({
     metalness: z.number().min(0).max(1).default(0),
     opacity: z.number().min(0).max(1).default(1),
     transparent: z.boolean().default(false),
+    
+    // Photorealistic Tiling
+    repeatX: z.number().min(0.1).default(1),
+    repeatY: z.number().min(0.1).default(1),
+    
+    // Photorealistic Varnish / Laccatura
+    clearcoat: z.number().min(0).max(1).optional(),
+    clearcoatRoughness: z.number().min(0).max(1).optional(),
+    
+    // Photorealistic Fabric / Moquette
+    sheen: z.number().min(0).max(1).optional(),
+    sheenRoughness: z.number().min(0).max(1).optional(),
+    
+    // Photorealistic Glass / Vetro
+    transmission: z.number().min(0).max(1).optional(),
+    ior: z.number().min(1).max(2.333).optional(), // 1 to Diamond
+
+    // RigidBody Engines (Rapier)
+    friction: z.number().min(0).max(1).default(0.5),
+    restitution: z.number().min(0).max(1).default(0),
+    mass: z.number().min(0).optional(),
 });
 export type Material = z.infer<typeof MaterialSchema>;
 export const MaterialCreateSchema = createCreationSchema(MaterialSchema);

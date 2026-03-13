@@ -1,27 +1,26 @@
-import { getFirestore } from "firebase-admin/firestore";
-
-import { getApp } from "firebase-admin/app";
-const firestore = getFirestore(getApp(), "standlo");
 import { randomUUID } from "crypto";
 
 export async function createProcessEntity(uid: string, payload: Record<string, unknown>) {
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
     const processId = payload.id as string || randomUUID();
-    const now = new Date().toISOString();
 
     const processData = {
         id: processId,
         orgId: payload.orgId || null,
-        ownId: uid,
+        ownId: uid, // Preserving original ownId mapping
         ...payload,
-        createdAt: now,
-        createdBy: uid,
-        updatedAt: now,
-        updatedBy: uid,
-        deletedAt: null,
         isArchived: false
     };
 
-    await firestore.collection("processes").doc(processId).set(processData);
+    const req = createInternalRequest({
+        actionId: "create",
+        entityId: "process",
+        payload: { ...processData, documentId: processId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -31,18 +30,20 @@ export async function createProcessEntity(uid: string, payload: Record<string, u
 }
 
 export async function updateProcessEntity(uid: string, processId: string, payload: Record<string, unknown>) {
-    const now = new Date().toISOString();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...restPayload } = payload;
+    const updateData = { ...restPayload };
 
-    const updateData = {
-        ...restPayload,
-        updatedAt: now,
-        updatedBy: uid
-    };
+    const req = createInternalRequest({
+        actionId: "update",
+        entityId: "process",
+        payload: { ...updateData, documentId: processId }
+    }, uid);
 
-    await firestore.collection("processes").doc(processId).update(updateData);
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -52,7 +53,16 @@ export async function updateProcessEntity(uid: string, processId: string, payloa
 }
 
 export async function deleteProcessEntity(uid: string, processId: string) {
-    await firestore.collection("processes").doc(processId).delete();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
+    const req = createInternalRequest({
+        actionId: "delete",
+        entityId: "process",
+        payload: { documentId: processId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",

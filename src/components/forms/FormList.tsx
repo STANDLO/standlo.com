@@ -26,7 +26,6 @@ export interface FormListProps<S extends z.ZodSchema<any> = z.ZodSchema<any>> {
     schema?: S;
     onRowClick?: (item: Record<string, unknown>) => void;
     filters?: Record<string, unknown>[];
-    gatewayName?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,8 +36,7 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
     columns,
     schema,
     onRowClick,
-    filters = [],
-    gatewayName = "orchestrator"
+    filters = []
 }: FormListProps<S>) {
     const t = useTranslations("Common");
     const [data, setData] = React.useState<Record<string, unknown>[]>([]);
@@ -55,27 +53,19 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
         setIsLoading(true);
         setError(null);
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const requestData: GatewayRequest<any> = {
+            const requestData: GatewayRequest<Record<string, unknown>> = {
                 orgId,
                 roleId,
                 entityId,
                 actionId: "list",
-            };
-
-            if (gatewayName === "orchestrator") {
-                requestData.payload = {
+                payload: {
                     filters,
                     limit: 20,
                     cursor: reset ? null : cursor
-                };
-            } else {
-                requestData.filters = filters;
-                requestData.limit = 20;
-                requestData.cursor = reset ? null : cursor;
-            }
+                }
+            };
 
-            const resultData = await callGateway<Record<string, unknown>[]>(gatewayName as "orchestrator" | "choreography" | "canvas", requestData);
+            const resultData = await callGateway<Record<string, unknown>[]>("orchestrator", requestData);
             if (reset) {
                 setData(resultData);
             } else {
@@ -96,7 +86,7 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
         } finally {
             setIsLoading(false);
         }
-    }, [orgId, roleId, entityId, cursor, filters, gatewayName]); // added gatewayName
+    }, [orgId, roleId, entityId, cursor, filters]);
 
     React.useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -109,7 +99,7 @@ export function FormList<S extends z.ZodSchema<any> = z.ZodSchema<any>>({
         if (!isAuthReady) return;
         loadData(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orgId, roleId, entityId, JSON.stringify(filters), gatewayName, isAuthReady]);
+    }, [orgId, roleId, entityId, JSON.stringify(filters), isAuthReady]);
 
     const allowedKeys = schema ? extractZodKeys(schema) : null;
     const visibleColumns = columns.filter((col) => !allowedKeys || allowedKeys.includes(col.key));

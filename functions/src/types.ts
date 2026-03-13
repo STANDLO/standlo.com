@@ -1,8 +1,7 @@
 export interface GatewayFilter {
     field: string;
     op: "==" | "<" | "<=" | ">" | ">=" | "array-contains" | "in" | "array-contains-any" | "not-in" | "!=";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: any;
+    value: unknown;
 }
 
 export interface GatewayOrder {
@@ -22,8 +21,7 @@ export interface GatewayRequest {
 
     // Pagination & Search properties
     limit?: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    cursor?: any; // startAfter document snapshot ID or value
+    cursor?: unknown; // startAfter document snapshot ID or value
     orderBy?: GatewayOrder[];
     filters?: GatewayFilter[];
 }

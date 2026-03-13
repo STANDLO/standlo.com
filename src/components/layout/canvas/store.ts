@@ -13,7 +13,8 @@ export interface SocketDefinition {
 export interface CanvasEntity {
     id: string; // The specific instance ID on the canvas
     baseEntityId: string; // The reference ID from the catalog (Part ID or Assembly ID)
-    type: "part" | "assembly" | "stand" | "mesh" | "bundle";
+    type: "part" | "assembly" | "design" | "mesh" | "bundle";
+    parentId?: string | null;
     position: Vector3Tuple;
     rotation: QuaternionTuple;
     sockets: SocketDefinition[];
@@ -30,17 +31,39 @@ export interface CanvasEntity {
         textureWrapT?: string | null;
     }>;
     metadata?: {
-        geometry?: string;
-        args?: number[];
-        color?: string;
+        name?: string;
+        type?: string;
+        color?: string; // Hex color
         roughness?: number;
         metalness?: number;
-        dimensions?: number[];
+        opacity?: number;
+        transparent?: boolean;
+        
+        // Photorealistic
+        repeatX?: number;
+        repeatY?: number;
+        clearcoat?: number;
+        clearcoatRoughness?: number;
+        sheen?: number;
+        sheenRoughness?: number;
+        transmission?: number;
+        ior?: number;
+
+        // Textures
+        albedoUrl?: string;
+        normalUrl?: string;
+        roughnessUrl?: string;
+        
+        // Physics
+        friction?: number;
+        restitution?: number;
+        mass?: number;
+
         [key: string]: unknown;
     }; // Preserving metadata for edge case primitive testing
 }
 
-export type CanvasMode = "part" | "assembly" | "bundle" | "stand" | null;
+export type CanvasMode = "part" | "assembly" | "bundle" | "design" | null;
 export type ViewMode = "2D" | "3D" | "XR" | "AR";
 
 interface CanvasState {
@@ -96,6 +119,11 @@ interface CanvasState {
 
     // Utility Getters
     getNextOrder: () => number;
+
+    // Data Dictionaries
+    materialsRegistry: Record<string, unknown>[];
+    texturesRegistry: Record<string, unknown>[];
+    setDictionaries: (materials: Record<string, unknown>[], textures: Record<string, unknown>[]) => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
@@ -114,6 +142,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     hoverSnap: null,
     snapSource: null,
     editPassword: null,
+
+    materialsRegistry: [],
+    texturesRegistry: [],
+
+    setDictionaries: (materials, textures) => set({ materialsRegistry: materials, texturesRegistry: textures }),
 
     setEditPassword: (password) => set({ editPassword: password }),
     setMode: (mode) => set({ mode }),

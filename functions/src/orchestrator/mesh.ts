@@ -1,27 +1,26 @@
-import { getFirestore } from "firebase-admin/firestore";
-
-import { getApp } from "firebase-admin/app";
-const firestore = getFirestore(getApp(), "standlo");
 import { randomUUID } from "crypto";
 
 export async function createMeshEntity(uid: string, payload: Record<string, unknown>) {
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
     const meshId = payload.id as string || randomUUID();
-    const now = new Date().toISOString();
 
     const meshData = {
         id: meshId,
         orgId: payload.orgId || null,
-        ownId: uid,
+        ownId: uid, // Preserving original ownId mapping, though createInternalRequest normally handles it. We pass it through internal gateway unchanged.
         ...payload,
-        createdAt: now,
-        createdBy: uid,
-        updatedAt: now,
-        updatedBy: uid,
-        deletedAt: null,
         isArchived: false
     };
 
-    await firestore.collection("meshes").doc(meshId).set(meshData);
+    const req = createInternalRequest({
+        actionId: "create",
+        entityId: "mesh",
+        payload: { ...meshData, documentId: meshId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -31,18 +30,19 @@ export async function createMeshEntity(uid: string, payload: Record<string, unkn
 }
 
 export async function updateMeshEntity(uid: string, meshId: string, payload: Record<string, unknown>) {
-    const now = new Date().toISOString();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, ...restPayload } = payload;
+    const updateData = { ...payload };
+    delete updateData.id;
 
-    const updateData = {
-        ...restPayload,
-        updatedAt: now,
-        updatedBy: uid
-    };
+    const req = createInternalRequest({
+        actionId: "update",
+        entityId: "mesh",
+        payload: { ...updateData, documentId: meshId }
+    }, uid);
 
-    await firestore.collection("meshes").doc(meshId).update(updateData);
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -52,7 +52,16 @@ export async function updateMeshEntity(uid: string, meshId: string, payload: Rec
 }
 
 export async function deleteMeshEntity(uid: string, meshId: string) {
-    await firestore.collection("meshes").doc(meshId).delete();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
+    const req = createInternalRequest({
+        actionId: "delete",
+        entityId: "mesh",
+        payload: { documentId: meshId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",

@@ -4,13 +4,7 @@ import * as React from "react"
 import { useLocale } from "next-intl"
 import { Globe } from "lucide-react"
 
-// Array dei locali di sistema duplicato dal backend (functions/src/index.ts) per evitare 
-// di importare `firebase-admin` nel bundle Next.js Client-Side.
-const systemLocales = [
-    { code: "it", nativeLabel: "Italia", flag: "🇮🇹" },
-    { code: "es", nativeLabel: "España", flag: "🇪🇸" },
-    { code: "us", nativeLabel: "United States of America", flag: "🇺🇸" }
-]
+import { systemLocales } from "../../../functions/src/core/constants"
 
 export function SwitchLocale() {
     const locale = useLocale()

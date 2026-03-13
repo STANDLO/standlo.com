@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@custom-variant dark (&:where(.dark, .dark *));
 @theme {
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -75,11 +75,11 @@
     --base-orange-fg: 220 10% 4%;
 
     /* Default Light Theme primary logic */
-    --primary: var(--base-green);
-    --primary-foreground: var(--base-green-fg);
+    --primary: var(--foreground);
+    --primary-foreground: var(--background);
 
-    --secondary: var(--base-fucsia);
-    --secondary-foreground: var(--base-fucsia-fg);
+    --secondary: var(--muted);
+    --secondary-foreground: var(--muted-foreground);
 
     --muted: 220 14% 96%;
     --muted-foreground: 220 9% 46%;
@@ -90,7 +90,7 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: var(--base-green);
+    --ring: var(--foreground);
 
     --glue: 0 0% 0%;
 
@@ -117,6 +117,19 @@
 }
 
 /* Color Themes (Component Level Overrides) */
+.theme-default {
+  --primary: var(--card);
+  --primary-foreground: var(--card-foreground);
+  --secondary: var(--muted);
+  --secondary-foreground: var(--muted-foreground);
+  --ring: var(--border);
+  --glue: 0 0% 0%;
+}
+
+.dark .theme-default {
+  --glue: 0 0% 100%;
+}
+
 .theme-green {
   --primary: var(--base-green);
   --primary-foreground: var(--base-green-fg);
@@ -217,14 +230,50 @@
 }
 
 @layer components {
+  /* Dotted Background Utility */
+  .bg-dotted {
+    background-color: hsl(var(--background));
+    background-image: radial-gradient(hsl(var(--foreground)/0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .dark .bg-dotted {
+    background-color: hsl(var(--background));
+    background-image: radial-gradient(hsl(var(--muted-foreground)/0.2) 1px, transparent 1px);
+  }
+
 
   /* UI Card Semantic Classes */
   .ui-card {
-    @apply rounded-xl border bg-card text-card-foreground shadow-sm;
+    @apply flex flex-col m-auto max-h-[90vh] rounded-xl border bg-card text-card-foreground shadow-sm;
   }
 
+  .ui-card-layout-full {
+    @apply w-full h-full flex flex-col;
+  }
+
+  .ui-card-layout-auto {
+    @apply m-auto w-full max-w-2xl;
+  }
+
+  .ui-card-post-it {
+    @apply bg-primary text-primary-foreground rounded-br-[10%_30%] rounded-bl-[2px] shadow-md border-none relative overflow-hidden transition-transform hover:-translate-y-0.5;
+  }
+
+  .ui-card-header-post-it {
+    @apply flex flex-row items-center justify-between space-y-0 gap-4 mb-2 pb-4;
+  }
+
+  .ui-card-header-content {
+    @apply flex flex-row items-center gap-4;
+  }
+
+  .ui-card-icon-post-it {
+    @apply !mb-0;
+  }
+
+
   .ui-card-header {
-    @apply relative flex items-center justify-center h-[64px] p-0 w-full overflow-hidden;
+    @apply relative flex shrink-0 items-center justify-center h-[64px] p-0 w-full overflow-hidden;
   }
 
   .ui-card-icon {
@@ -244,11 +293,11 @@
   }
 
   .ui-card-content {
-    @apply p-8;
+    @apply p-8 overflow-y-auto;
   }
 
   .ui-card-footer {
-    @apply flex flex-col items-center gap-4 w-full p-8 pt-0;
+    @apply flex shrink-0 flex-col items-center gap-4 w-full p-8 pt-0;
   }
 
   .ui-card-auth-socials {
@@ -447,6 +496,35 @@
 
   .ui-input-secondary-muted {
     @apply border-input bg-secondary/5 px-3 py-1 focus-visible:ring-secondary opacity-70 cursor-not-allowed;
+  }
+
+  /* UI Gallery Semantic Classes */
+  .ui-gallery {
+    @apply flex flex-col gap-4 w-full;
+  }
+
+  .ui-gallery-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4;
+  }
+
+  .ui-gallery-dropzone {
+    @apply relative aspect-square flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors hover:bg-muted/50;
+  }
+
+  .ui-gallery-dropzone-dragging {
+    @apply border-primary bg-primary/5 text-primary;
+  }
+
+  .ui-gallery-item {
+    @apply relative aspect-square rounded-lg border overflow-hidden bg-background;
+  }
+
+  .ui-gallery-item-default {
+    @apply ring-2 ring-primary;
+  }
+
+  .ui-gallery-overlay {
+    @apply absolute inset-x-0 bottom-0 flex justify-between items-center p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity;
   }
 
   .ui-input-secondary-readonly {
@@ -742,6 +820,49 @@
 
   .ui-required-mark {
     @apply text-destructive ml-1;
+  }
+
+  /* Organization Onboarding Semantic Classes */
+  .ui-card-onboarding-wrapper {
+    @apply w-full;
+  }
+
+  .ui-card-onboarding-error {
+    @apply flex items-center gap-2 p-3 mb-4 text-sm text-destructive bg-destructive/10 rounded-md border border-destructive/20;
+  }
+
+  .ui-card-onboarding-alert-icon {
+    @apply h-4 w-4 shrink-0;
+  }
+
+  .ui-card-onboarding-form {
+    @apply w-full flex flex-col gap-4;
+  }
+
+  .ui-card-onboarding-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4 w-full;
+  }
+
+  .ui-card-onboarding-gallery {
+    @apply flex flex-col gap-1 w-full;
+  }
+
+  .ui-card-onboarding-label {
+    @apply text-sm font-medium leading-none text-foreground;
+  }
+
+  .ui-card-onboarding-actions {
+    @apply flex justify-end gap-3 pt-4 border-t mt-4;
+  }
+
+  .ui-card-onboarding-submit {
+    @apply w-full;
+  }
+
+  .ui-card-onboarding-footer {
+    @apply text-xs text-center w-full pt-4;
+    border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    color: color-mix(in srgb, currentColor 70%, transparent);
   }
 
   /* Lists / Table Semantic Classes */
@@ -1086,6 +1207,10 @@
     @apply mb-4 mx-auto;
   }
 
+  .ui-base-version {
+    @apply fixed bottom-1 right-1 h-4 px-2 bg-background text-foreground text-[10px] z-50 flex items-center gap-1 border rounded-md shadow-sm;
+  }
+
   .layout-onboarding-header-wrapper {
     @apply text-center;
   }
@@ -1326,11 +1451,11 @@
 
 
   .ui-tools-navigator-menu {
-    @apply relative fixed top-8 right-8;
+    @apply relative;
   }
 
   .ui-tools-navigator-user-group {
-    @apply flex items-center gap-3 bg-background/50 backdrop-blur-md px-3 py-2 rounded-2xl border border-border shadow-sm pointer-events-auto;
+    @apply flex items-center gap-3 pointer-events-auto;
   }
 
   .ui-tools-navigator-user-info {
@@ -1582,6 +1707,124 @@
 
   .ui-canvas-tools-icon {
     @apply w-5 h-5;
+  }
+
+  /* Canvas Onboarding Classes */
+  .ui-canvas-onboarding-overlay {
+    @apply fixed inset-0 z-[999] flex flex-col w-full min-h-[100dvh] text-foreground pointer-events-auto bg-background/60 backdrop-blur-md;
+  }
+
+  .ui-canvas-onboarding-container {
+    @apply flex flex-col lg:flex-row w-full min-h-[100dvh] m-0 p-0;
+  }
+
+  .ui-canvas-onboarding-left-col {
+    @apply flex-1 flex flex-col justify-center items-center lg:items-end p-8 lg:p-16 lg:pr-16 w-full;
+    background-color: hsl(var(--background));
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
+  }
+
+  .dark .ui-canvas-onboarding-left-col, .dark-mode .ui-canvas-onboarding-left-col {
+    background-color: hsl(var(--background));
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1.5px, transparent 1.5px);
+  }
+
+  .ui-canvas-onboarding-right-col {
+    @apply flex-1 flex flex-col justify-center items-center lg:items-start p-8 lg:p-16 lg:pl-16 w-full;
+    background-color: hsl(var(--foreground));
+    color: hsl(var(--background));
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
+  }
+
+  .dark .ui-canvas-onboarding-right-col, .dark-mode .ui-canvas-onboarding-right-col {
+    background-color: hsl(var(--foreground));
+    color: hsl(var(--background));
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1.5px, transparent 1.5px);
+  }
+
+  .ui-canvas-onboarding-tool-item {
+    @apply flex flex-col items-start gap-2 p-4 text-left rounded-xl border border-background/20 bg-background/10 text-background shadow-sm transition-all hover:shadow-md hover:bg-background/20 backdrop-blur-sm;
+  }
+
+  .ui-canvas-onboarding-tool-icon {
+    @apply w-8 h-8 opacity-90 mb-1;
+  }
+
+  .ui-canvas-onboarding-tool-info {
+    @apply flex flex-col gap-1;
+  }
+
+  .ui-canvas-onboarding-tool-title {
+    @apply text-sm font-semibold;
+  }
+
+  .ui-canvas-onboarding-tool-desc {
+    @apply text-xs opacity-75 leading-relaxed;
+  }
+
+  .ui-canvas-onboarding-header {
+    @apply text-center lg:text-left space-y-4;
+  }
+
+  .ui-canvas-onboarding-content {
+    @apply flex flex-col items-center justify-center w-full text-center mx-auto;
+  }
+
+  .ui-canvas-onboarding-logo-wrapper {
+    @apply flex w-full items-center justify-center lg:justify-start mb-6 text-primary;
+  }
+
+  .ui-canvas-onboarding-logo {
+    @apply flex flex-col items-center justify-center w-full my-4 mx-auto;
+  }
+  .ui-canvas-onboarding-logo .ui-link {
+    @apply block w-auto h-auto mx-auto;
+  }
+
+  .ui-canvas-onboarding-title {
+    @apply text-4xl md:text-5xl font-extrabold tracking-tight pt-4 pb-4 text-center w-full;
+  }
+
+  .ui-canvas-onboarding-subtitle-container {
+    @apply space-y-6 text-lg text-muted-foreground pt-4 max-w-3xl mx-auto text-center;
+  }
+
+  .ui-canvas-onboarding-card {
+    @apply w-full max-w-sm flex flex-col gap-4 p-6 bg-card border rounded-2xl shadow-sm mt-8 mx-auto;
+  }
+
+  .ui-canvas-onboarding-card-header {
+    @apply space-y-2 text-center;
+  }
+
+  .ui-canvas-onboarding-card-title {
+    @apply text-sm font-medium text-green-600 dark:text-green-500 flex items-center justify-center gap-2;
+  }
+
+  .ui-canvas-onboarding-card-desc {
+    @apply text-xs text-muted-foreground text-center;
+  }
+
+  .ui-canvas-onboarding-btn {
+    @apply w-full h-12 text-lg mt-2 transition-all;
+  }
+
+  .ui-canvas-onboarding-slogan-block {
+    @apply space-y-2 text-foreground/90;
+  }
+
+  .ui-canvas-onboarding-slogan-block strong {
+    @apply font-bold text-primary;
+  }
+
+  .ui-canvas-onboarding-description {
+    @apply text-muted-foreground;
+  }
+  
+  .ui-canvas-onboarding-description strong {
+    @apply font-bold text-foreground;
   }
 }
 

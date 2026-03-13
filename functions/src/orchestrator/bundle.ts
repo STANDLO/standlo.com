@@ -1,113 +1,118 @@
-import { getFirestore } from "firebase-admin/firestore";
-
-import { getApp } from "firebase-admin/app";
-const firestore = getFirestore(getApp(), "standlo");
 import { randomUUID } from "crypto";
 
 export async function getBundleDetailsEntity(uid: string, bundleId: string) {
-    const docRef = firestore.collection("bundles").doc(bundleId);
-    const docSnap = await docRef.get();
-    if (!docSnap.exists) {
-        throw new Error("Bundle not found");
-    }
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
-    const data = docSnap.data();
-    const partsSnap = await docRef.collection("parts").get();
-    const parts = partsSnap.docs.map(d => d.data());
+    const req = createInternalRequest({
+        actionId: "read",
+        entityId: "bundle",
+        payload: { documentId: bundleId }
+    }, uid);
+    
+    const docResult = await firestore.run(req);
+    const data = (docResult as { data: Record<string, unknown> }).data;
 
-    const processesSnap = await docRef.collection("processes").get();
-    const processes = processesSnap.docs.map(d => d.data());
+    const partsReq = createInternalRequest({
+        actionId: "list",
+        entityId: `bundle/${bundleId}/parts`,
+    }, uid);
+    const partsResult = await firestore.run(partsReq);
+
+    const procReq = createInternalRequest({
+        actionId: "list",
+        entityId: `bundle/${bundleId}/processes`,
+    }, uid);
+    const procResult = await firestore.run(procReq);
 
     return {
         status: "success",
         data: {
             ...data,
-            parts,
-            processes
+            parts: (partsResult as { data: Record<string, unknown>[] }).data,
+            processes: (procResult as { data: Record<string, unknown>[] }).data
         }
     };
 }
 
-// Helper per sincronizzare una sotto-collezione con una batch Firestore
-async function syncSubcollection(
-    batch: FirebaseFirestore.WriteBatch,
-    parentRef: FirebaseFirestore.DocumentReference,
-    collectionName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    items: Record<string, any>[],
-    uid: string,
-    now: string
+// Helper per calcolare le modifiche su sotto-collezioni ed elaborare payload in array Batch Operations
+async function generateSyncSubcollectionOperations(
+    operations: Record<string, unknown>[],
+    entityIdStr: string,
+    items: Record<string, unknown>[],
+    uid: string
 ) {
     if (!items) return;
-    const existingDocs = await parentRef.collection(collectionName).get();
-    const existingIds = new Set(existingDocs.docs.map(d => d.id));
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
+    const listReq = createInternalRequest({ actionId: "list", entityId: entityIdStr }, uid);
+    const existingDocsRes = await firestore.run(listReq);
+    const existingDocs = (existingDocsRes as { data: Record<string, unknown>[] }).data || [];
+    const existingIds = new Set(existingDocs.map(d => d.id as string));
 
     for (const item of items) {
-        const itemId = item.id || randomUUID();
-        const docRef = parentRef.collection(collectionName).doc(itemId);
+        const itemId = (item.id as string) || randomUUID();
+        const isUpdate = existingIds.has(itemId);
 
-        const itemData = { ...item };
-        // Clean undefined properties to prevent firestore exceptions
-        Object.keys(itemData).forEach(key => itemData[key] === undefined && delete itemData[key]);
+        operations.push({
+            actionId: isUpdate ? "update" : "create",
+            entityId: entityIdStr,
+            payload: { ...item, id: itemId, documentId: itemId }
+        });
 
-        if (existingIds.has(itemId)) {
-            batch.update(docRef, { ...itemData, updatedAt: now, updatedBy: uid });
-            existingIds.delete(itemId);
-        } else {
-            batch.set(docRef, { ...itemData, id: itemId, createdAt: now, createdBy: uid, updatedAt: now, updatedBy: uid });
-        }
+        if (isUpdate) existingIds.delete(itemId);
     }
 
     for (const idToDelete of existingIds) {
-        batch.delete(parentRef.collection(collectionName).doc(idToDelete));
+        operations.push({
+            actionId: "delete",
+            entityId: entityIdStr,
+            payload: { documentId: idToDelete }
+        });
     }
 }
 
 export async function createBundleEntity(uid: string, payload: Record<string, unknown>) {
-    const bundleId = payload.id as string || randomUUID();
-    const now = new Date().toISOString();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
+    const bundleId = payload.id as string || randomUUID();
     const { parts, processes, ...corePayload } = payload;
 
     const bundleData = {
         id: bundleId,
         orgId: payload.orgId || null,
-        ownId: uid,
         ...corePayload,
-        createdAt: now,
-        createdBy: uid,
-        updatedAt: now,
-        updatedBy: uid,
-        deletedAt: null,
         isArchived: false
     };
 
     const canvasData = {
         id: bundleId,
         orgId: payload.orgId || null,
-        ownId: uid,
         name: payload.name || "Untitled Bundle",
         type: "bundle",
-        createdAt: now,
-        createdBy: uid,
-        updatedAt: now,
-        updatedBy: uid
     };
 
-    const batch = firestore.batch();
-    const parentRef = firestore.collection("bundles").doc(bundleId);
-
-    batch.set(parentRef, bundleData);
-    batch.set(firestore.collection("canvas").doc(bundleId), canvasData);
+    const operations: Record<string, unknown>[] = [
+        { actionId: "create", entityId: "bundle", payload: { ...bundleData, documentId: bundleId } },
+        { actionId: "create", entityId: "canvas", payload: { ...canvasData, documentId: bundleId } }
+    ];
 
     if (Array.isArray(parts)) {
-        await syncSubcollection(batch, parentRef, "parts", parts, uid, now);
+        await generateSyncSubcollectionOperations(operations, `bundle/${bundleId}/parts`, parts, uid);
     }
     if (Array.isArray(processes)) {
-        await syncSubcollection(batch, parentRef, "processes", processes, uid, now);
+        await generateSyncSubcollectionOperations(operations, `bundle/${bundleId}/processes`, processes, uid);
     }
 
-    await batch.commit();
+    const batchReq = createInternalRequest({
+        actionId: "batch",
+        entityId: "bundle",
+        payload: { operations }
+    }, uid);
+
+    await firestore.run(batchReq);
 
     return {
         status: "success",
@@ -117,42 +122,36 @@ export async function createBundleEntity(uid: string, payload: Record<string, un
 }
 
 export async function updateBundleEntity(uid: string, bundleId: string, payload: Record<string, unknown>) {
-    const now = new Date().toISOString();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, parts, processes, ...restPayload } = payload;
+    const { parts, processes, ...restPayload } = payload;
+    delete restPayload.id;
 
-    const updateData = {
-        ...restPayload,
-        updatedAt: now,
-        updatedBy: uid
-    };
+    const updateData = { ...restPayload };
 
-    const canvasUpdateData: Record<string, unknown> = {
-        updatedAt: now,
-        updatedBy: uid
-    };
+    const canvasUpdateData: Record<string, unknown> = {};
     if (payload.name) canvasUpdateData.name = payload.name;
 
-    const batch = firestore.batch();
-    const parentRef = firestore.collection("bundles").doc(bundleId);
-
-    // Clean undefined to avoid update issues
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Object.keys(updateData).forEach(key => (updateData as Record<string, any>)[key] === undefined && delete (updateData as Record<string, any>)[key]);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    batch.update(parentRef, updateData as Record<string, any>);
-    batch.update(firestore.collection("canvas").doc(bundleId), canvasUpdateData);
+    const operations: Record<string, unknown>[] = [
+        { actionId: "update", entityId: "bundle", payload: { ...updateData, documentId: bundleId } },
+        { actionId: "update", entityId: "canvas", payload: { ...canvasUpdateData, documentId: bundleId } }
+    ];
 
     if (Array.isArray(parts)) {
-        await syncSubcollection(batch, parentRef, "parts", parts, uid, now);
+        await generateSyncSubcollectionOperations(operations, `bundle/${bundleId}/parts`, parts, uid);
     }
     if (Array.isArray(processes)) {
-        await syncSubcollection(batch, parentRef, "processes", processes, uid, now);
+        await generateSyncSubcollectionOperations(operations, `bundle/${bundleId}/processes`, processes, uid);
     }
 
-    await batch.commit();
+    const batchReq = createInternalRequest({
+        actionId: "batch",
+        entityId: "bundle",
+        payload: { operations }
+    }, uid);
+
+    await firestore.run(batchReq);
 
     return {
         status: "success",
@@ -162,11 +161,21 @@ export async function updateBundleEntity(uid: string, bundleId: string, payload:
 }
 
 export async function deleteBundleEntity(uid: string, bundleId: string) {
-    // Note: deleting subcollections recursively should ideally be done by a background function or looping
-    await Promise.all([
-        firestore.collection("bundles").doc(bundleId).delete(),
-        firestore.collection("canvas").doc(bundleId).delete()
-    ]);
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
+    const operations: Record<string, unknown>[] = [
+        { actionId: "delete", entityId: "bundle", payload: { documentId: bundleId } },
+        { actionId: "delete", entityId: "canvas", payload: { documentId: bundleId } }
+    ];
+
+    const batchReq = createInternalRequest({
+        actionId: "batch",
+        entityId: "bundle",
+        payload: { operations }
+    }, uid);
+
+    await firestore.run(batchReq);
 
     return {
         status: "success",

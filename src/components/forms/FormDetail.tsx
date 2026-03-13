@@ -174,6 +174,7 @@ export function FormDetail<T extends z.ZodSchema<any>>({
                                         placeholder={fieldMeta.placeholder}
                                         disabled={disabledOrReadonly}
                                         readOnly={fieldMeta.readOnly}
+                                        required={!readOnlyMode && fieldMeta.required}
                                         className="ui-textarea"
                                     />
                                 ) : fieldMeta.type === "lookup" && fieldMeta.lookupTarget ? (
@@ -184,6 +185,7 @@ export function FormDetail<T extends z.ZodSchema<any>>({
                                         placeholder={fieldMeta.placeholder}
                                         disabled={disabledOrReadonly}
                                         readOnly={fieldMeta.readOnly}
+                                        required={!readOnlyMode && fieldMeta.required}
                                     />
                                 ) : (
                                     <Input
@@ -193,6 +195,7 @@ export function FormDetail<T extends z.ZodSchema<any>>({
                                         placeholder={fieldMeta.placeholder}
                                         disabled={disabledOrReadonly}
                                         readOnly={fieldMeta.readOnly}
+                                        required={!readOnlyMode && fieldMeta.required}
                                     />
                                 )}
 

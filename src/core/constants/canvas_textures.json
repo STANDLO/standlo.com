@@ -1,72 +1,53 @@
 [
     {
+        "_comment": "WARNING: All 'id' fields in this dictionary MUST be valid UUID v4 strings.",
+        "id": "c69c2394-f75d-400a-834e-b5e447e879b9",
         "name": "WHITE",
         "type": "color",
-        "valueLight": "#ffffff",
-        "wrapS": "RepeatWrapping",
-        "wrapT": "RepeatWrapping",
-        "repeat": [
-            1,
-            1
-        ],
-        "id": "c69c2394-f75d-400a-834e-b5e447e879b9",
-        "createdAt": "2026-03-04T08:57:10.727Z",
-        "updatedAt": "2026-03-04T08:57:10.727Z"
+        "valueLight": "#ffffff"
     },
     {
+        "id": "3b0b2d70-cd57-4cd6-b811-f4c45e7fe5e4",
         "name": "BLACK",
         "type": "color",
-        "valueLight": "#000000",
-        "wrapS": "RepeatWrapping",
-        "wrapT": "RepeatWrapping",
-        "repeat": [
-            1,
-            1
-        ],
-        "id": "3b0b2d70-cd57-4cd6-b811-f4c45e7fe5e4",
-        "createdAt": "2026-03-04T08:57:23.836Z",
-        "updatedAt": "2026-03-04T08:57:23.836Z"
+        "valueLight": "#000000"
     },
     {
-        "name": "RED",
+        "id": "cf246ae8-cde8-4af8-aced-fafffb27e7f1",
+        "name": "RAL 5022 (Night Blue)",
         "type": "color",
-        "valueLight": "#ff0000",
-        "wrapS": "RepeatWrapping",
-        "wrapT": "RepeatWrapping",
-        "repeat": [
-            1,
-            1
-        ],
-        "id": "9a9fe3e9-396e-4fd3-b2ec-d111dba23e14",
-        "createdAt": "2026-03-04T08:57:37.907Z",
-        "updatedAt": "2026-03-04T08:57:37.907Z"
+        "valueLight": "#211f4d",
+        "compatibleMaterials": ["3c859d9c-fde2-40f4-90aa-688fc214ca58", "6b1d1ba0-bc10-44be-acfc-338b005feae7", "19511f20-48b1-4ac9-a762-65cdb9a81dad", "81488052-8603-4bc1-b51c-7a37e6db89b3", "fd975ffc-ae38-4f0e-b944-d5f5592d77d6", "a918cdfb-eaec-4be6-a14a-5553e4b787b2"]
     },
     {
-        "name": "GREEN",
+        "id": "d8edab2d-37fb-4fb2-a270-bc4dfbcc8baf",
+        "name": "RAL 3020 (Traffic Red)",
         "type": "color",
-        "valueLight": "#00ff00",
-        "wrapS": "RepeatWrapping",
-        "wrapT": "RepeatWrapping",
-        "repeat": [
-            1,
-            1
-        ],
-        "id": "caff21c4-55a3-4541-9d62-738f6b76b6f1",
-        "createdAt": "2026-03-04T08:57:55.158Z",
-        "updatedAt": "2026-03-04T08:57:55.158Z"
+        "valueLight": "#cc0605",
+        "compatibleMaterials": ["3c859d9c-fde2-40f4-90aa-688fc214ca58", "6b1d1ba0-bc10-44be-acfc-338b005feae7", "19511f20-48b1-4ac9-a762-65cdb9a81dad", "81488052-8603-4bc1-b51c-7a37e6db89b3", "fd975ffc-ae38-4f0e-b944-d5f5592d77d6", "a918cdfb-eaec-4be6-a14a-5553e4b787b2", "766a31c5-8495-46c5-a6e5-4b0d0c3ab85c"]
     },
     {
-        "name": "BLUE",
+        "id": "a8d1d0f5-ddf3-4e4b-b0b9-482d3e4334f5",
+        "name": "RAL 1023 (Traffic Yellow)",
         "type": "color",
-        "valueLight": "#0000ff",
-        "wrapS": "RepeatWrapping",
-        "wrapT": "RepeatWrapping",
-        "repeat": [
-            1,
-            1
-        ],
-        "id": "72c20677-95d5-43ac-be61-5b07dedb4f8d",
-        "createdAt": "2026-03-04T08:58:21.056Z",
-        "updatedAt": "2026-03-04T08:58:21.056Z"
+        "valueLight": "#f3a505"
+    },
+    {
+        "id": "b06c05a1-7786-4e00-bc7e-5b1287c6f05f",
+        "name": "RAL 6018 (Yellow Green)",
+        "type": "color",
+        "valueLight": "#4b9c2b"
+    },
+    {
+        "id": "f90263f1-4de2-4467-b5b9-18baebff2dd5",
+        "name": "RAL 7016 (Anthracite Grey)",
+        "type": "color",
+        "valueLight": "#373f43"
+    },
+    {
+        "id": "1c3eb7df-2f73-4f96-b072-dd580e071853",
+        "name": "RAL 9003 (Signal White)",
+        "type": "color",
+        "valueLight": "#f4f4f4"
     }
 ]

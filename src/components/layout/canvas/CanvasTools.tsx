@@ -29,13 +29,11 @@ import {
     SwitchCamera,
     Headset,
     LogOut,
-    LogIn,
-    Brain
+    LogIn
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
-import canvasMaterials from "@/core/constants/canvas_materials.json";
-import canvasTextures from "@/core/constants/canvas_textures.json";
+
 import {
     Popover,
     PopoverContent,
@@ -43,6 +41,7 @@ import {
 } from "@/components/ui/Popover";
 import { useState, useEffect } from "react";
 import { ErrorGuard } from "@/components/ui/ErrorGuard";
+import { CanvasDebug } from "./CanvasDebug";
 import { SwitchLocale } from "@/components/ui/SwitchLocale";
 import { SwitchTheme } from "@/components/ui/SwitchTheme";
 import { Link } from "@/i18n/routing";
@@ -60,9 +59,19 @@ export function CanvasTools() {
     const setCameraMode = useCanvasStore((state) => state.setCameraMode);
     const triggerCameraReset = useCanvasStore((state) => state.triggerCameraReset);
     const editPassword = useCanvasStore((state) => state.editPassword);
+    const canvasMaterials = useCanvasStore((state) => state.materialsRegistry);
+    const canvasTextures = useCanvasStore((state) => state.texturesRegistry);
 
     const selectedEntityId = useCanvasStore((state) => state.selectedEntityId);
     const entities = useCanvasStore((state) => state.entities);
+    const selectedEntity = selectedEntityId ? entities[selectedEntityId] : null;
+    const currentMaterialId = selectedEntity?.metadata?.materialId as string | undefined;
+
+    const typedCanvasTextures = canvasTextures as (Record<string, unknown> & { id: string, name?: string, compatibleMaterials?: string[], valueLight?: string, valueDark?: string })[];
+    const typedCanvasMaterials = canvasMaterials as (Record<string, unknown> & { id: string, name?: string, baseColor?: string })[];
+    const filteredTextures = currentMaterialId
+        ? typedCanvasTextures.filter(t => !t.compatibleMaterials || t.compatibleMaterials.length === 0 || t.compatibleMaterials.includes(currentMaterialId))
+        : typedCanvasTextures;
     const removeEntity = useCanvasStore((state) => state.removeEntity);
     const addEntity = useCanvasStore((state) => state.addEntity);
     const updateEntityMetadata = useCanvasStore((state) => state.updateEntityMetadata);
@@ -99,11 +108,33 @@ export function CanvasTools() {
 
         if (matId !== undefined) {
             newMeta.materialId = matId;
-            const matObj = canvasMaterials.find(m => m.id === matId);
+            const matObj = canvasMaterials.find(m => m.id === matId) as Record<string, unknown> & {
+                baseColor: string;
+                roughness: number;
+                metalness: number;
+                clearcoat?: number;
+                clearcoatRoughness?: number;
+                sheen?: number;
+                sheenRoughness?: number;
+                transmission?: number;
+                ior?: number;
+                repeatX?: number;
+                repeatY?: number;
+            } | undefined;
             if (matObj) {
                 newMeta.color = matObj.baseColor;
                 newMeta.roughness = matObj.roughness;
                 newMeta.metalness = matObj.metalness;
+                
+                // Advanced PBR Properties
+                if (matObj.clearcoat !== undefined) newMeta.clearcoat = matObj.clearcoat;
+                if (matObj.clearcoatRoughness !== undefined) newMeta.clearcoatRoughness = matObj.clearcoatRoughness;
+                if (matObj.sheen !== undefined) newMeta.sheen = matObj.sheen;
+                if (matObj.sheenRoughness !== undefined) newMeta.sheenRoughness = matObj.sheenRoughness;
+                if (matObj.transmission !== undefined) newMeta.transmission = matObj.transmission;
+                if (matObj.ior !== undefined) newMeta.ior = matObj.ior;
+                if (matObj.repeatX !== undefined) newMeta.repeatX = matObj.repeatX;
+                if (matObj.repeatY !== undefined) newMeta.repeatY = matObj.repeatY;
             }
         }
 
@@ -124,14 +155,13 @@ export function CanvasTools() {
                 const { callGateway } = await import("@/lib/api");
 
                 const clamp = (v: number) => Number(v.toFixed(3));
-                callGateway("canvas", {
+                callGateway("orchestrator", {
                     actionId: "updateNode",
                     payload: {
                         canvasId,
                         nodeId: selectedEntityId,
                         position: entity.position.map(clamp) as [number, number, number],
                         rotation: entity.rotation.map(clamp) as [number, number, number, number] | [number, number, number],
-                        scale: entity.metadata?.dimensions?.map(clamp) || [1, 1, 1],
                         metadata: newMeta
                     }
                 }).catch(e => console.error("Async texture apply failed", e));
@@ -173,9 +203,9 @@ export function CanvasTools() {
                     </button>
                     <button
                         className="ui-canvas-tools-btn h-10 w-10 px-0"
-                        data-active={mode === "stand"}
-                        onClick={() => setMode("stand")}
-                        title={t("addStand")}
+                        data-active={mode === "design"}
+                        onClick={() => setMode("design")}
+                        title={t("addDesign")}
                     >
                         <House className="ui-canvas-tools-icon" />
                     </button>
@@ -229,7 +259,7 @@ export function CanvasTools() {
                                         <div>
                                             <div className="text-xs text-muted-foreground mb-1">Materiale Base</div>
                                             <div className="flex gap-1 flex-wrap">
-                                                {canvasMaterials.map(m => (
+                                                {typedCanvasMaterials.map((m) => (
                                                     <button
                                                         key={m.id}
                                                         className="w-6 h-6 rounded-full border border-black/10 dark:border-white/10 hover:scale-110 transition-transform"
@@ -250,7 +280,7 @@ export function CanvasTools() {
                                                 >
                                                     <X className="w-3 h-3" />
                                                 </button>
-                                                {canvasTextures.map((t: Record<string, unknown> & { id: string; name: string; valueLight?: string; valueDark?: string }) => (
+                                                {filteredTextures.map((t) => (
                                                     <button
                                                         key={t.id}
                                                         className="w-6 h-6 rounded border border-black/10 dark:border-white/10 hover:scale-110 transition-transform"
@@ -290,8 +320,8 @@ export function CanvasTools() {
                                     if (canvasId) {
                                         try {
                                             const { callGateway } = await import("@/lib/api");
-                                            callGateway("canvas", {
-                                                actionId: "insertNode",
+                                            callGateway("orchestrator", {
+                                                actionId: "createNode",
                                                 payload: {
                                                     canvasId,
                                                     nodeId: newNodeId,
@@ -300,11 +330,10 @@ export function CanvasTools() {
                                                     layerId: clonedEntity.layerId,
                                                     position: newPos,
                                                     rotation: clonedEntity.rotation.map(clamp) as [number, number, number, number] | [number, number, number],
-                                                    scale: clonedEntity.metadata?.dimensions?.map(clamp) || [1, 1, 1],
                                                     metadata: clonedEntity.metadata,
                                                     name: `${clonedEntity.metadata?.name || 'Copia'} (Copia)`
                                                 }
-                                            }).catch(e => console.error("Async insertNode failed", e));
+                                            }).catch(e => console.error("Async createNode failed", e));
                                         } catch (e) { console.error(e); }
                                     }
                                 }}
@@ -320,7 +349,7 @@ export function CanvasTools() {
                                     if (canvasId) {
                                         try {
                                             const { callGateway } = await import("@/lib/api");
-                                            callGateway("canvas", {
+                                            callGateway("orchestrator", {
                                                 actionId: "deleteNode",
                                                 payload: { canvasId, nodeId: activeId }
                                             }).catch(e => console.error("Async deleteNode failed", e));
@@ -494,9 +523,7 @@ export function CanvasTools() {
             <div className="ui-canvas-tools-block">
                 <div className="ui-canvas-tools-title">{t("account", { fallback: "Account" })}</div>
                 <div className="ui-canvas-tools-group">
-                    <Link href="/partner/support" className="ui-canvas-tools-btn h-10 w-10 px-0 flex items-center justify-center" title={t("support", { fallback: "Support" })}>
-                        <Brain className="ui-canvas-tools-icon" />
-                    </Link>
+                    <CanvasDebug />
                     <Link href="/partner/support" className="ui-canvas-tools-btn h-10 w-10 px-0 flex items-center justify-center" title={t("support", { fallback: "Support" })}>
                         <Headset className="ui-canvas-tools-icon" />
                     </Link>

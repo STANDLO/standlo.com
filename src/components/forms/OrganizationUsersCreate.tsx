@@ -29,7 +29,7 @@ export default function OrganizationUsersCreate({ currentOrgId }: { currentOrgId
                 throw new Error("Missing orgId in properties.");
             }
 
-            // Sync Firebase Client Auth before making httpsCallable request
+            // Sync Firebase Client Auth
             await auth.authStateReady();
             if (!auth.currentUser) {
                 throw new Error("UNAUTHENTICATED: Impossibile sincronizzare la sessione client. Ricarica la pagina.");
@@ -184,7 +184,6 @@ export default function OrganizationUsersCreate({ currentOrgId }: { currentOrgId
                     orgId={currentOrgId}
                     roleId="manager" // Using standard layout rules or any roleId since auth token provides org scope
                     entityId="organizationUser"
-                    gatewayName="orchestrator"
                     columns={[
                         {
                             key: "displayName",

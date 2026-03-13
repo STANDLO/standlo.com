@@ -15,7 +15,7 @@ interface WizardProps {
 
 export function CanvasCreationWizard({ roleId, locale }: WizardProps) {
     const router = useRouter();
-    const [selectedType, setSelectedType] = useState<"part" | "assembly" | "stand" | null>(null);
+    const [selectedType, setSelectedType] = useState<"part" | "assembly" | "design" | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleCreateSubmit = async (data: Record<string, unknown>) => {
@@ -25,7 +25,7 @@ export function CanvasCreationWizard({ roleId, locale }: WizardProps) {
 
             const resultPayload = await callGateway<{ id: string }>("orchestrator", {
                 actionId: "create_entity",
-                entityId: selectedType || "stand", // Acts as context for the orchestrator
+                entityId: selectedType || "design", // Acts as context for the orchestrator
                 payload: {
                     ...data,
                     type: selectedType,
@@ -64,7 +64,7 @@ export function CanvasCreationWizard({ roleId, locale }: WizardProps) {
             key: "code",
             type: "text",
             label: "Unique Code",
-            placeholder: `${selectedType === 'part' ? 'PAR' : selectedType === 'assembly' ? 'ASS' : 'STA'}-${Date.now()}`,
+            placeholder: `${selectedType === 'part' ? 'PAR' : selectedType === 'assembly' ? 'ASS' : 'DES'}-${Date.now()}`,
             gridSpan: "col-span-1 md:col-span-2"
         }
     ];
@@ -144,22 +144,22 @@ export function CanvasCreationWizard({ roleId, locale }: WizardProps) {
                         </Button>
                     </div>
 
-                    {/* STAND COLUMN */}
+                    {/* DESIGN COLUMN */}
                     <div className="bg-card border rounded-xl p-6 flex flex-col items-center text-center hover:border-primary/50 transition-colors">
                         <div className="w-16 h-16 rounded-full bg-teal-500/10 flex items-center justify-center mb-4">
                             <Building2 className="w-8 h-8 text-teal-500" />
                         </div>
-                        <h3 className="text-xl font-bold mb-2">Exhibition Stand</h3>
+                        <h3 className="text-xl font-bold mb-2">Space Design</h3>
                         <p className="text-sm text-muted-foreground flex-1 mb-6">
-                            The final layout composed of multiple Assemblies and Parts, forming the complete architectural environment for a client.
+                            The final layout composed of multiple Assemblies and Parts, forming the complete architectural environment (Stands, Bedrooms, Offices).
                         </p>
                         <Button
                             disabled={roleId !== "standlo_design"}
-                            onClick={() => setSelectedType("stand")}
+                            onClick={() => setSelectedType("design")}
                             className="w-full bg-teal-600 hover:bg-teal-700 text-white"
                         >
                             <Plus className="w-4 h-4 mr-2" />
-                            Create Stand
+                            Create Design
                         </Button>
                     </div>
                 </div>
@@ -171,7 +171,7 @@ export function CanvasCreationWizard({ roleId, locale }: WizardProps) {
                         fields={fields}
                         defaultValues={{
                             name: "",
-                            code: `${selectedType === 'part' ? 'PAR' : selectedType === 'assembly' ? 'ASS' : 'STA'}-${Date.now().toString().slice(-6)}`
+                            code: `${selectedType === 'part' ? 'PAR' : selectedType === 'assembly' ? 'ASS' : 'DES'}-${Date.now().toString().slice(-6)}`
                         }}
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onSubmit={handleCreateSubmit as any}

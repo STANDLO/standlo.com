@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/Button";
 import { Link } from "@/i18n/routing";
 import { usePathname } from "next/navigation";
 import { SwitchLocale } from "@/components/ui/SwitchLocale";
-import { SwitchMode } from "@/components/ui/SwitchMode";
 import { SwitchTheme } from "@/components/ui/SwitchTheme";
 
 export interface NavItem {
@@ -32,8 +31,7 @@ export function BaseNavigator({
     navItems = [],
     roleContext,
     userName,
-    organizationName,
-    hasToolsAccess = false
+    organizationName
 }: BaseNavigatorProps) {
     const t = useTranslations("components");
     const authT = useTranslations("Auth");
@@ -90,7 +88,6 @@ export function BaseNavigator({
         <div className="ui-tools-navigator">
             {variant === 'public' ? (
                 <>
-                    <SwitchMode authVariant="public" hasToolsAccess={hasToolsAccess} />
                     <SwitchLocale />
                     <SwitchTheme />
                     <Link href="/auth/login" className="ui-tools-navigator-link">
@@ -152,9 +149,6 @@ export function BaseNavigator({
                             </nav>
 
                             <div className="ui-tools-navigator-actions">
-                                <div className="ui-tools-navigator-action-slot">
-                                    <SwitchMode authVariant="protected" hasToolsAccess={hasToolsAccess} />
-                                </div>
                                 <div className="ui-tools-navigator-action-slot">
                                     <SwitchLocale />
                                 </div>

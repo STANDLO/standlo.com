@@ -104,6 +104,7 @@ export function FormVerifyEmail() {
             title={t("VerifyEmail.title")}
             footer={footer}
         >
+            <div id="recaptcha-container"></div>
             <div className="layout-auth-form mt-4">
                 {message && (
                     <div className={`layout-auth-error ${message.type === 'success' ? 'bg-green-500/10 text-green-500 border-green-500/20' : ''}`}>

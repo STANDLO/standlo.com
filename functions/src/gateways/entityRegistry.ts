@@ -6,8 +6,7 @@ export type PathScope = "global" | "tenant";
 export interface EntityConfig {
     scope: PathScope;
     name: string; // Custom firestore collection name
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    schema: z.ZodSchema<any>;
+    schema: z.ZodSchema<unknown>;
 }
 
 export const Registry: Record<string, EntityConfig> = {
@@ -27,7 +26,7 @@ export const Registry: Record<string, EntityConfig> = {
     workcenter: { scope: "tenant", name: "workcenters", schema: schemas.WorkcenterSchema },
     shelve: { scope: "tenant", name: "shelves", schema: schemas.ShelveSchema },
     tool: { scope: "global", name: "tools", schema: schemas.ToolSchema },
-    stand: { scope: "global", name: "stands", schema: schemas.StandSchema },
+    design: { scope: "global", name: "designs", schema: schemas.DesignSchema },
     build: { scope: "global", name: "builds", schema: schemas.BuildSchema },
     emergency: { scope: "global", name: "emergencies", schema: schemas.EmergencySchema },
     assembly: { scope: "global", name: "assemblies", schema: schemas.AssemblySchema },
@@ -46,6 +45,7 @@ export const Registry: Record<string, EntityConfig> = {
     alert: { scope: "global", name: "admin/security/alerts", schema: schemas.AlertSchema },
     product: { scope: "tenant", name: "products", schema: schemas.ProductSchema },
     canvas: { scope: "global", name: "canvases", schema: schemas.CanvasSchema },
+    canvas_object: { scope: "global", name: "canvases", schema: schemas.CanvasObjectSchema },
     material: { scope: "global", name: "materials", schema: schemas.MaterialSchema },
     texture: { scope: "global", name: "textures", schema: schemas.TextureSchema },
     mesh: { scope: "global", name: "meshes", schema: schemas.MeshSchema },
@@ -53,12 +53,38 @@ export const Registry: Record<string, EntityConfig> = {
     pipeline: { scope: "global", name: "pipelines", schema: schemas.PipelineSchema },
     pipeline_execution: { scope: "global", name: "pipelines_executions", schema: schemas.PipelineExecutionSchema },
     ai_skill: { scope: "global", name: "ai_skills", schema: schemas.AISkillSchema },
+
+    // Subcollection Elements for Hierarchical PDM (Parts, Processes, Assemblies, Bundles)
+    bundle_part: { scope: "global", name: "bundles", schema: schemas.PartSchema },
+    bundle_process: { scope: "global", name: "bundles", schema: schemas.ProcessSchema },
+    assembly_part: { scope: "global", name: "assemblies", schema: schemas.PartSchema },
+    assembly_process: { scope: "global", name: "assemblies", schema: schemas.ProcessSchema },
+    design_part: { scope: "global", name: "designs", schema: schemas.PartSchema },
+    design_process: { scope: "global", name: "designs", schema: schemas.ProcessSchema },
+    design_assembly: { scope: "global", name: "designs", schema: schemas.AssemblySchema },
+    design_bundle: { scope: "global", name: "designs", schema: schemas.BundleSchema },
 };
 
 export function getEntityConfig(entityId: string): EntityConfig {
-    const config = Registry[entityId];
+    const parts = entityId.split("/");
+    let rootEntity = parts[0];
+    
+    // Special routing for canvas objects subcollection to use CanvasObjectSchema
+    if (parts.length === 3 && parts[0] === "canvas" && (parts[2] === "objects" || parts[2] === "parts" || parts[2] === "assemblies" || parts[2] === "bundles" || parts[2] === "designs" || parts[2] === "meshes")) {
+        rootEntity = "canvas_object";
+    }
+
+    // Special routing for PDM subcollections (parts, processes, assemblies, bundles)
+    if (parts.length === 3 && (parts[0] === "bundle" || parts[0] === "assembly" || parts[0] === "design")) {
+        if (parts[2] === "parts") rootEntity = `${parts[0]}_part`;
+        if (parts[2] === "processes") rootEntity = `${parts[0]}_process`;
+        if (parts[2] === "assemblies") rootEntity = `${parts[0]}_assembly`;
+        if (parts[2] === "bundles") rootEntity = `${parts[0]}_bundle`;
+    }
+
+    const config = Registry[rootEntity];
     if (!config) {
-        throw new Error(`[EntityRegistry] Entity ID '${entityId}' not found.`);
+        throw new Error(`[EntityRegistry] Entity ID '${entityId}' not found (root: ${rootEntity}).`);
     }
     return config;
 }
@@ -66,11 +92,11 @@ export function getEntityConfig(entityId: string): EntityConfig {
 export function buildCollectionPath(entityId: string, orgId?: string): string {
     const parts = entityId.split("/");
     const rootEntity = parts[0];
-    const config = getEntityConfig(rootEntity);
+    const config = getEntityConfig(entityId); // IMPORTANT: passed full entityId
 
     let basePath = "";
     if (config.scope === "global") {
-        basePath = config.name;
+        basePath = config.name; // config.name is 'canvases'
     } else if (config.scope === "tenant") {
         if (!orgId) {
             throw new Error(`[EntityRegistry] orgId is REQUIRED to access tenant-scoped entity '${rootEntity}'.`);
@@ -81,7 +107,7 @@ export function buildCollectionPath(entityId: string, orgId?: string): string {
     }
 
     if (parts.length === 3) {
-        // e.g., "canvas/id/objects" -> "canvases/id/objects"
+        // e.g., "canvas/id/objects" -> "canvases/id/objects" // config.name is "canvases"
         return `${basePath}/${parts[1]}/${parts[2]}`;
     }
 

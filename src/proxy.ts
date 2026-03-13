@@ -7,7 +7,7 @@ import { authConfig } from "./core/auth-edge";
 const intlMiddleware = createMiddleware(routing);
 
 // I file public che non richiedono login (es. /auth/login, landing, etc.)
-const PUBLIC_PATHS = ['/auth/login', '/auth/create', '/auth/action', '/privacy', '/terms', '/canvas/public'];
+const PUBLIC_PATHS = ['/auth/login', '/auth/create', '/auth/action', '/privacy', '/terms', '/canvas'];
 
 export async function proxy(request: NextRequest) {
     // 1. JWT Parsing & Role Redirection

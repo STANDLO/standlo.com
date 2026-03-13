@@ -1,43 +1,37 @@
-import { getFirestore } from "firebase-admin/firestore";
-
-import { getApp } from "firebase-admin/app";
-const firestore = getFirestore(getApp(), "standlo");
 import { randomUUID } from "crypto";
 
 export async function createPartEntity(uid: string, payload: Record<string, unknown>) {
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
     const partId = payload.id as string || randomUUID();
-    const now = new Date().toISOString();
 
     const partData = {
         id: partId,
         orgId: payload.orgId || null,
-        ownId: uid,
         ...payload,
-        createdAt: now,
-        createdBy: uid,
-        updatedAt: now,
-        updatedBy: uid,
-        deletedAt: null,
         isArchived: false
     };
 
     const canvasData = {
         id: partId,
         orgId: payload.orgId || null,
-        ownId: uid,
         name: payload.name || "Untitled Part",
-        type: "part",
-        createdAt: now,
-        createdBy: uid,
-        updatedAt: now,
-        updatedBy: uid
+        type: "part"
     };
 
-    // Dual creation in parallel
-    await Promise.all([
-        firestore.collection("parts").doc(partId).set(partData),
-        firestore.collection("canvas").doc(partId).set(canvasData)
-    ]);
+    const operations: Record<string, unknown>[] = [
+        { actionId: "create", entityId: "part", payload: { ...partData, documentId: partId } },
+        { actionId: "create", entityId: "canvas", payload: { ...canvasData, documentId: partId } }
+    ];
+
+    const batchReq = createInternalRequest({
+        actionId: "batch",
+        entityId: "part",
+        payload: { operations }
+    }, uid);
+
+    await firestore.run(batchReq);
 
     return {
         status: "success",
@@ -47,29 +41,30 @@ export async function createPartEntity(uid: string, payload: Record<string, unkn
 }
 
 export async function updatePartEntity(uid: string, partId: string, payload: Record<string, unknown>) {
-    const now = new Date().toISOString();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
     // Remove id from payload so we don't accidentally overwrite it
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, ...restPayload } = payload;
+    const updateData = { ...payload };
+    delete updateData.id;
 
-    const updateData = {
-        ...restPayload,
-        updatedAt: now,
-        updatedBy: uid
-    };
-
-    const canvasUpdateData: Record<string, unknown> = {
-        updatedAt: now,
-        updatedBy: uid
-    };
+    const canvasUpdateData: Record<string, unknown> = {};
     if (payload.name) canvasUpdateData.name = payload.name;
-    // Don't override id or type
 
-    await Promise.all([
-        firestore.collection("parts").doc(partId).update(updateData),
-        firestore.collection("canvas").doc(partId).update(canvasUpdateData)
-    ]);
+    const operations: Record<string, unknown>[] = [
+        { actionId: "update", entityId: "part", payload: { ...updateData, documentId: partId } }
+    ];
+    if (Object.keys(canvasUpdateData).length > 0) {
+        operations.push({ actionId: "update", entityId: "canvas", payload: { ...canvasUpdateData, documentId: partId } });
+    }
+
+    const batchReq = createInternalRequest({
+        actionId: "batch",
+        entityId: "part",
+        payload: { operations }
+    }, uid);
+
+    await firestore.run(batchReq);
 
     return {
         status: "success",
@@ -79,10 +74,21 @@ export async function updatePartEntity(uid: string, partId: string, payload: Rec
 }
 
 export async function deletePartEntity(uid: string, partId: string) {
-    await Promise.all([
-        firestore.collection("parts").doc(partId).delete(),
-        firestore.collection("canvas").doc(partId).delete()
-    ]);
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
+    const operations: Record<string, unknown>[] = [
+        { actionId: "delete", entityId: "part", payload: { documentId: partId } },
+        { actionId: "delete", entityId: "canvas", payload: { documentId: partId } }
+    ];
+
+    const batchReq = createInternalRequest({
+        actionId: "batch",
+        entityId: "part",
+        payload: { operations }
+    }, uid);
+
+    await firestore.run(batchReq);
 
     return {
         status: "success",
@@ -90,4 +96,3 @@ export async function deletePartEntity(uid: string, partId: string) {
         data: { id: partId }
     };
 }
-

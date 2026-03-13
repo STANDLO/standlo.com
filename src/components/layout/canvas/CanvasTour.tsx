@@ -27,7 +27,7 @@ export function CanvasTour() {
         case 1:
             positionClass = "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2";
             title = "Benvenuto in Standlo 3D!";
-            text = "Trascina un elemento dal catalogo a sinistra per iniziare a progettare il tuo stand.";
+            text = "Trascina un elemento dal catalogo a sinistra per iniziare a progettare il tuo design.";
             break;
         case 2:
             positionClass = "top-20 right-20";

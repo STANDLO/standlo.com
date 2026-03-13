@@ -3,35 +3,28 @@
 import * as React from "react"
 import { Button, type ButtonProps } from "@/components/ui/Button"
 import { Box, LayoutDashboard, Settings, Home } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { useRouter } from "@/i18n/routing"
 
-// Array dei mode di sistema duplicato dal backend (functions/src/index.ts) per evitare
-// di importare `firebase-admin` nel bundle Next.js Client-Side.
-export const systemUiModes = [
-    { code: "home", nativeLabel: "Home Page", icon: "Home", color: "transparent" },
-    { code: "tools", nativeLabel: "Tools Dashboard", icon: "LayoutDashboard", color: "blue" },
-    { code: "canvas", nativeLabel: "3D Canvas", icon: "Box", color: "green" },
-]
+import { systemUiModes } from "../../../functions/src/core/constants"
 
 const setUiModeCookie = (newMode: string) => {
     document.cookie = `ui_mode=${newMode}; path=/; max-age=31536000`
-    window.location.reload()
 }
 
 export function SwitchMode({ authVariant = "protected", hasToolsAccess = false }: { authVariant?: "public" | "protected", hasToolsAccess?: boolean }) {
     const [isOpen, setIsOpen] = React.useState(false)
     const [dropdownPosition, setDropdownPosition] = React.useState<{ top: string; left?: string; right?: string }>({ top: "100%", right: "0" })
-    const [mode, setMode] = React.useState("canvas") // Default
+
+    const pathname = usePathname();
+    const router = useRouter();
+
+    const isCanvas = pathname?.includes('/canvas');
+    const isTools = pathname?.includes('/partner');
+    const mode = isCanvas ? "canvas" : isTools ? "tools" : "home";
 
     const containerRef = React.useRef<HTMLDivElement>(null)
     const buttonRef = React.useRef<HTMLButtonElement>(null)
-
-    React.useEffect(() => {
-        // Hydrate from client cookie
-        const match = document.cookie.match(new RegExp('(^| )ui_mode=([^;]+)'));
-        if (match) {
-            setMode(match[2]);
-        }
-    }, [])
 
     const currentModeObj = authVariant === "public"
         ? systemUiModes.find(m => m.code === "canvas")
@@ -67,6 +60,14 @@ export function SwitchMode({ authVariant = "protected", hasToolsAccess = false }
     const switchMode = (newMode: string) => {
         setIsOpen(false)
         setUiModeCookie(newMode)
+        
+        if (newMode === 'canvas') {
+            router.push('/canvas');
+        } else if (newMode === 'tools') {
+            router.push('/partner');
+        } else {
+            router.push('/');
+        }
     }
 
     const getIcon = (iconName: string, className: string) => {

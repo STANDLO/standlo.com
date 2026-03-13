@@ -19,7 +19,7 @@ const TreeNode = ({ node, level = 0 }: { node: TreeNodeType, level?: number }) =
 
     const getIcon = (type: string) => {
         switch (type) {
-            case "stand": return <Box className="w-4 h-4 text-teal-500 shrink-0" />;
+            case "design": return <Box className="w-4 h-4 text-teal-500 shrink-0" />;
             case "assembly": return <Layers className="w-4 h-4 text-purple-500 shrink-0" />;
             case "part": return <Cuboid className="w-4 h-4 text-blue-500 shrink-0" />;
             default: return <Cuboid className="w-3 h-3 text-muted-foreground shrink-0" />;

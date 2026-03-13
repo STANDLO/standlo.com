@@ -1,5 +1,4 @@
 import * as admin from "firebase-admin";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { HttpsError } from "firebase-functions/v2/https";
 import { OrganizationSchema } from "../schemas";
 
@@ -19,7 +18,10 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         // Recursively remove empty strings and nulls from the payload so Zod treats them as undefined/optional
         const sanitizePayload = (obj: unknown): unknown => {
             if (obj === null || obj === undefined || obj === "") return undefined;
-            if (Array.isArray(obj)) return obj.map(sanitizePayload).filter(x => x !== undefined);
+            if (Array.isArray(obj)) {
+                const arr = obj.map(sanitizePayload).filter(x => x !== undefined);
+                return arr.length > 0 ? arr : undefined;
+            }
             if (typeof obj === "object") {
                 const cleaned: Record<string, unknown> = {};
                 for (const [key, val] of Object.entries(obj)) {
@@ -70,13 +72,10 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         // 3. Define the actual active status
         const role = parsedData.roleId as string;
         const isActive = role === "customer";
-
-        // 4. Initialize Firestore Batch Transaction (Using Named DB "standlo")
-        const db = getFirestore(admin.app(), "standlo");
-        const batch = db.batch();
+        
         const orgRootId = uid;
 
-        // Estrapolazione Country Code dalla P.IVA (es. "IT123456789" -> "IT")
+        // Extract Country Code from VAT (e.g. "IT123456789" -> "IT")
         const countryCode = parsedData.vatNumber && parsedData.vatNumber.length >= 2
             ? parsedData.vatNumber.substring(0, 2).toUpperCase()
             : null;
@@ -84,29 +83,6 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
         let locationString: string | null = null;
         if (countryCode && parsedData.place?.zipCode) {
             locationString = `${countryCode}-${parsedData.place.zipCode}`;
-        }
-
-        // Organization Document
-        const orgRef = db.collection("organizations").doc(orgRootId);
-        batch.set(orgRef, {
-            ...sanitizedData,
-            active: isActive,
-            createdAt: FieldValue.serverTimestamp(),
-            createdBy: uid,
-            updatedAt: FieldValue.serverTimestamp(),
-            updatedBy: uid,
-            location: locationString,
-        }, { merge: true });
-
-        // Update User Document
-        const userRef = db.collection("users").doc(uid);
-        const userUpdatePayload: Record<string, unknown> = {
-            active: isActive,
-            type: "ADMIN",
-            updatedAt: FieldValue.serverTimestamp(),
-        };
-        if (birthdayValue) {
-            userUpdatePayload.birthday = birthdayValue;
         }
 
         const organizationType = parsedData.type && parsedData.type.length > 0 ? parsedData.type[0] : null;
@@ -126,7 +102,6 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             logoUrl: parsedData.logoUrl || null,
         };
 
-        // Note: countryCode is evaluated earlier in this method
         if (locationString) {
             newClaims.location = locationString;
         }
@@ -140,11 +115,47 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
             Object.entries(newClaims).filter(([, v]) => v !== undefined)
         );
 
-        userUpdatePayload.userType = "ADMIN";
-        userUpdatePayload.claims = sanitizedClaims;
-        batch.set(userRef, userUpdatePayload, { merge: true });
+        // Prepare User Operations
+        const userUpdatePayload: Record<string, unknown> = {
+            documentId: uid,
+            active: isActive,
+            type: "ADMIN",
+            userType: "ADMIN",
+            claims: sanitizedClaims
+        };
+        if (birthdayValue) {
+            userUpdatePayload.birthday = birthdayValue;
+        }
 
-        await batch.commit();
+        // Initialize Internal Request to firestore.run
+        const { firestore } = await import("../gateways/firestore");
+        const { createInternalRequest } = await import("../gateways/internal");
+
+        const operations: Record<string, unknown>[] = [
+            {
+                actionId: "create",
+                entityId: "organization",
+                payload: {
+                    ...sanitizedData,
+                    documentId: orgRootId,
+                    active: isActive,
+                    location: locationString
+                }
+            },
+            {
+                actionId: "update",
+                entityId: "user",
+                payload: userUpdatePayload
+            }
+        ];
+
+        const batchReq = createInternalRequest({
+            actionId: "batch",
+            entityId: "organization",
+            payload: { operations }
+        }, uid);
+
+        await firestore.run(batchReq);
 
         await admin.auth().setCustomUserClaims(uid, sanitizedClaims);
 
@@ -171,18 +182,21 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
 }
 
 export async function updateOrganizationEntity(uid: string, orgId: string, payload: Record<string, unknown>) {
-    const db = getFirestore(admin.app(), "standlo");
-    const now = new Date().toISOString();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
     const restPayload = { ...payload };
     delete restPayload.id;
 
-    const updateData = {
-        ...restPayload,
-        updatedAt: now,
-        updatedBy: uid
-    };
+    const updateData = { ...restPayload };
 
-    await db.collection("organizations").doc(orgId).update(updateData);
+    const req = createInternalRequest({
+        actionId: "update",
+        entityId: "organization",
+        payload: { ...updateData, documentId: orgId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",

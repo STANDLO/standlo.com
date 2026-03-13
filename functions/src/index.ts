@@ -1,10 +1,4 @@
-import * as fs from 'fs';
-process.on('uncaughtException', (err) => {
-    fs.appendFileSync('/Users/cristiankalexai/Progetti/standlo.com/worker-error.log', 'UNCAUGHT: ' + err.stack + '\n');
-});
-process.on('unhandledRejection', (reason) => {
-    fs.appendFileSync('/Users/cristiankalexai/Progetti/standlo.com/worker-error.log', 'UNHANDLED: ' + (reason instanceof Error ? reason.stack : reason) + '\n');
-});
+
 import { beforeUserCreated, beforeUserSignedIn } from "firebase-functions/v2/identity";
 import * as admin from "firebase-admin";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
@@ -18,18 +12,6 @@ const REGION = "europe-west4";
 
 // Configure all v2 functions to have at least 1 minimum instance
 setGlobalOptions({ region: REGION, minInstances: 1 });
-
-export const systemLocales = [
-    { code: "us", nativeLabel: "United States of America", flag: "🇺🇸" },
-    { code: "it", nativeLabel: "Italia", flag: "🇮🇹" },
-    { code: "es", nativeLabel: "España", flag: "🇪🇸" },
-];
-
-export const systemUiModes = [
-    { code: "home", nativeLabel: "Home Page", icon: "Home", color: "transparent" },
-    { code: "tools", nativeLabel: "Tools Dashboard", icon: "LayoutDashboard", color: "blue" },
-    { code: "canvas", nativeLabel: "3D Canvas", icon: "Box", color: "green" },
-];
 
 /**
  * Triggered before a new user account is created.
@@ -124,11 +106,21 @@ export { orchestrator } from "./gateways/orchestrator";
 export { choreography } from "./gateways/choreography";
 export { firestore as firestoreGateway } from "./gateways/firestore"; // Prevent naming collisions with 'firebase-admin/firestore' export
 export { brain } from "./gateways/brain";
-export { canvas } from "./gateways/canvas";
 export { webhooks } from "./gateways/webhooks";
 export { pipelineTriggers } from "./gateways/firestoreTriggers";
+export { schemaExporter } from "./gateways/schemaExporter";
 
 // ============================================================================
 // GENERATIVE CORRELATION (CORE)
 // ============================================================================
 export { correlateRoot, correlateSub } from "./choreography/correlator";
+
+// ============================================================================
+// BACKGROUND TASK QUEUES
+// ============================================================================
+export {
+    choreographyCanvasCreateSandbox,
+    choreographyCanvasCreateNode,
+    choreographyCanvasUpdateNode,
+    choreographyCanvasDeleteNode
+} from "./choreography/canvas";

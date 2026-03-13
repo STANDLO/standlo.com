@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { BaseSchema } from "./base";
-export const CANVAS_TYPES = ["part", "assembly", "stand"] as const;
+export const CANVAS_TYPES = ["part", "assembly", "design"] as const;
 export const CANVAS_LAYERS = [
     "appendimento",
     "pavimento",
@@ -30,13 +30,12 @@ export const MeshOverrideSchema = z.object({
  */
 export const CanvasObjectSchema = BaseSchema.extend({
     id: z.string().uuid(), // Enforce crypto.randomUUID()
-    type: z.enum(["part", "assembly", "stand", "mesh"]), // "mesh" is allowed here if they drop a raw mesh
+    type: z.enum(["part", "assembly", "design", "mesh"]), // "mesh" is allowed here if they drop a raw mesh
     baseEntityId: z.string().uuid(), // ID pointing to the Master Catalog (e.g. partId, assemblyId)
     name: z.string(), // Custom name for the instance
     layerId: z.enum(CANVAS_LAYERS).default("strutture"), // Enforces layers array
     position: Vector3Schema.default([0, 0, 0]),
     rotation: Vector3Schema.default([0, 0, 0]),
-    scale: Vector3Schema.default([1, 1, 1]),
     order: z.number().int().default(0), // Mounting order
     // Key-Value map where key is the original meshId inside the Part, and value is the override
     meshOverrides: z.record(z.string().uuid(), MeshOverrideSchema).optional(),

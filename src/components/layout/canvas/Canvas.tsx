@@ -14,16 +14,27 @@ import { Physics } from "@react-three/rapier";
 import { XR } from "@react-three/xr";
 import { EffectComposer, N8AO, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
+import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from "three-mesh-bvh";
+
+// Global prototype extensions for three-mesh-bvh
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree as any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree as any;
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 import { partsTunnel } from "./tunnel";
 import { useCanvasStore, CanvasEntity } from "./store";
 import GenericPart from "./GenericPart";
+import InstancedPartGroup from "./InstancedPartGroup";
 import { ZUpGizmoViewcube } from "./ZUpGizmoViewcube";
 import { useTheme } from "@/providers/ThemeProvider";
 import { xrStore } from "./xrStore";
 import { CanvasCatalogSidebar } from "./CanvasCatalogSidebar";
 import { CanvasTour } from "./CanvasTour";
 import { CanvasTools } from "./CanvasTools";
+import { CanvasAI } from "./CanvasAI";
+import { useDictionarySync } from "./useDictionarySync";
 
 function ScaledMarker({ type, isActive }: { type: 'corner' | 'origin' | 'midpoint', isActive: boolean }) {
     const ref = useRef<THREE.Mesh>(null!);
@@ -61,11 +72,46 @@ function ScaledMarker({ type, isActive }: { type: 'corner' | 'origin' | 'midpoin
 
 const CanvasEntitiesRenderer = () => {
     const ObjectValues = Object.values(useCanvasStore((state) => state.entities));
+    const selectedEntityId = useCanvasStore((state) => state.selectedEntityId);
+
+    const renderGroups: Record<string, CanvasEntity[]> = {};
+    const solitaryEntities: CanvasEntity[] = [];
+
+    ObjectValues.forEach((entity) => {
+        // Exclude the selected entity so it stays solitary (needed for TransformControls)
+        if (entity.id === selectedEntityId) {
+            solitaryEntities.push(entity);
+            return;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const dims = entity.metadata?.dimensions || entity.metadata?.args || (entity as any).dimensions;
+        const dimKey = Array.isArray(dims) ? dims.join("-") : "default";
+
+        // Create a visual hash for grouping
+        const visualHash = `${entity.baseEntityId}_${entity.metadata?.materialId || 'none'}_${entity.metadata?.textureId || 'none'}_${dimKey}`;
+        
+        if (!renderGroups[visualHash]) {
+            renderGroups[visualHash] = [];
+        }
+        renderGroups[visualHash].push(entity);
+    });
+
     return (
         <>
-            {ObjectValues.map((entity) => (
-                <GenericPart key={entity.id} entity={entity} />
+            {/* Render Solitary Elements (e.g. Selected) */}
+            {solitaryEntities.map((entity) => (
+                <GenericPart key={`solitary-${entity.id}`} entity={entity} />
             ))}
+
+            {/* Render grouped InstancedMeshes */}
+            {Object.entries(renderGroups).map(([hash, group]) => {
+                if (group.length === 1) {
+                    // Optimization: If only 1 object, use GenericPart to avoid InstancedMesh overhead
+                    return <GenericPart key={group[0].id} entity={group[0]} />;
+                }
+                return <InstancedPartGroup key={hash} entities={group} />;
+            })}
         </>
     );
 };
@@ -93,6 +139,7 @@ interface StandloCanvasProps {
 }
 
 export default function StandloCanvas({ entityId, entityType, active = true, isOverlay = false }: StandloCanvasProps) {
+    useDictionarySync();
     const { theme: resolvedTheme } = useTheme();
     const tGizmo = useTranslations("Canvas.tools.gizmo");
     const viewMode = useCanvasStore((state) => state.viewMode);
@@ -184,7 +231,7 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                         let targetSchema = entityType === "canvas" ? "canvas" : "mesh";
                         if (entityType === "part" || entityId.startsWith("PAR-")) targetSchema = "part";
                         else if (entityType === "assembly" || entityId.startsWith("ASS-")) targetSchema = "assembly";
-                        else if (entityType === "stand" || entityId.startsWith("STA-")) targetSchema = "stand";
+                        else if (entityType === "design" || entityId.startsWith("DES-")) targetSchema = "design";
 
 
 
@@ -255,7 +302,8 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                                                 addEntity({
                                                     id: obj.id as string,
                                                     baseEntityId: obj.baseEntityId as string,
-                                                    type: obj.type as "part" | "assembly" | "stand",
+                                                    type: obj.type as "mesh" | "part" | "assembly" | "bundle" | "design",
+                                                    parentId: obj.parentId as string | undefined, // Restore hierarchical parent
                                                     position: (obj.position as [number, number, number]) || [0, 0, 0],
                                                     rotation: (obj.rotation as [number, number, number, number]) || [0, 0, 0, 1],
                                                     sockets: [],
@@ -314,14 +362,13 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                             try {
                                 const { callGateway } = await import("@/lib/api");
                                 const clamp = (v: number) => Number(v.toFixed(3));
-                                callGateway("canvas", {
+                                callGateway("orchestrator", {
                                     actionId: "updateNode",
                                     payload: {
                                         canvasId: entityId,
                                         nodeId: activeId,
                                         position: activeEntity.position.map(clamp) as [number, number, number],
                                         rotation: activeEntity.rotation.map(clamp) as [number, number, number, number] | [number, number, number],
-                                        scale: activeEntity.metadata?.dimensions?.map(clamp) || [1, 1, 1],
                                         metadata: activeEntity.metadata
                                     }
                                 }).catch((e) => console.error("Async updateNode failed on deselect", e));
@@ -464,6 +511,7 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
             <CanvasCatalogSidebar entityId={entityId} entityType={entityType} />
             <CanvasTour />
             <CanvasTools />
+            <CanvasAI />
         </div>
     );
 }

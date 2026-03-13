@@ -7,6 +7,7 @@ export type CardColor = "default" | "green" | "blue" | "yellow" | "fucsia" | "vi
 export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
     color?: CardColor;
     layout?: 'full' | 'auto';
+    variant?: 'post-it' | 'standard';
     title?: React.ReactNode;
     icon?: React.ReactNode | boolean;
     action?: React.ReactNode;
@@ -14,21 +15,25 @@ export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "t
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-    ({ className, color = "default", layout = "auto", title, icon, action, footer, children, ...props }, ref) => {
-        const isPostIt = color !== "default";
+    ({ className, color = "default", layout = "auto", variant, title, icon, action, footer, children, ...props }, ref) => {
+        // If variant is explicitly post-it, or if color is provided and not default (legacy support)
+        const isPostIt = variant === 'post-it' || (!variant && color !== "default");
+        const effectiveColor = color;
         const hasStructuredProps = title || footer || action || icon !== undefined;
 
         const content = hasStructuredProps ? (
             <>
-                <CardHeader>
-                    {icon !== false && (
-                        (typeof icon === 'boolean' && icon === true) || (icon === undefined && isPostIt) ? (
-                            <CardIcon color={color} />
-                        ) : icon ? (
-                            <div className="ui-card-icon">{icon}</div>
-                        ) : null
-                    )}
-                    {title && <CardTitle>{title}</CardTitle>}
+                <CardHeader className={cn(isPostIt && "ui-card-header-post-it")}>
+                    <div className="ui-card-header-content">
+                        {icon !== false && (
+                            (typeof icon === 'boolean' && icon === true) || (icon === undefined) ? (
+                                <CardIcon color={effectiveColor} className={cn(isPostIt && "ui-card-icon-post-it")} />
+                            ) : icon ? (
+                                <div className={cn("ui-card-icon", isPostIt && "ui-card-icon-post-it")}>{icon}</div>
+                            ) : null
+                        )}
+                        {title && <CardTitle>{title}</CardTitle>}
+                    </div>
                     {action && <div className="ui-card-action">{action}</div>}
                 </CardHeader>
                 <CardContent>
@@ -43,10 +48,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
                 ref={ref}
                 className={cn(
                     "ui-card",
-                    isPostIt
-                        ? `card-post-it theme-${color} bg-primary text-primary-foreground rounded-br-[10%_30%] rounded-bl-[2px] shadow-md border-none relative overflow-hidden transition-transform hover:-translate-y-0.5`
-                        : "",
-                    layout === "full" ? "w-full h-full flex flex-col" : "m-auto",
+                    isPostIt ? `ui-card-post-it card-post-it ${effectiveColor} theme-${effectiveColor}` : "",
+                    layout === "full" ? "ui-card-layout-full" : "ui-card-layout-auto",
                     className
                 )}
                 {...props}
@@ -88,6 +91,15 @@ export interface CardIconProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const CardIcon = React.forwardRef<HTMLDivElement, CardIconProps>(
     ({ className, color = "default", ...props }, ref) => {
+        if (color === "default") {
+            return (
+                <div ref={ref} className={cn("ui-card-icon", className)} {...props}>
+                    <Icon size="m" icon="black" className="!flex dark:!hidden" />
+                    <Icon size="m" icon="white" className="!hidden dark:!flex" />
+                </div>
+            );
+        }
+
         const iconColor = (color === "green" || color === "yellow" || color === "light") ? "black" : "white";
 
         return (

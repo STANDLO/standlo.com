@@ -25,6 +25,7 @@ type PartEntity = {
     sockets?: Record<string, unknown>[];
     cost?: number;
     price?: number;
+    defaultTextureId?: string;
 };
 
 type MeshEntity = {
@@ -38,19 +39,25 @@ type MeshEntity = {
 export default function CanvasPartsAdminPage() {
     const [parts, setParts] = useState<PartEntity[]>([]);
     const [meshes, setMeshes] = useState<MeshEntity[]>([]);
+    const [textures, setTextures] = useState<Array<{ id: string; name: string }>>([]);
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState<PartEntity | null>(null);
 
     const loadData = async () => {
         setLoading(true);
         try {
-            // Fetch Meshes for the dropdown
-            const meshesData = await OrchestratorClient.list<MeshEntity>("mesh", { limit: 1000 });
+            // Fetch Meshes, Parts, and Textures
+            const [meshesData, partsData, resTex] = await Promise.all([
+                OrchestratorClient.list<MeshEntity>("mesh", { limit: 1000 }),
+                OrchestratorClient.list<PartEntity>("part", { limit: 100 }),
+                fetch("/admin/api/registry/textures")
+            ]);
+            
             setMeshes(meshesData || []);
-
-            // Fetch Parts
-            const partsData = await OrchestratorClient.list<PartEntity>("part", { limit: 100 });
             setParts(partsData || []);
+            
+            const jsonTex = await resTex.json();
+            setTextures(jsonTex.data || []);
         } catch (e) {
             console.error("Failed to load data", e);
         } finally {
@@ -79,10 +86,38 @@ export default function CanvasPartsAdminPage() {
                 position: [0, 0, 0],
                 rotation: [0, 0, 0],
                 meshId: "",
+                defaultTextureId: "",
                 gltfUrl: "",
                 sockets: []
             });
         }
+    };
+
+    const updateGeneratedFields = (currentEditing: PartEntity, newMeshId: string, newTextureId: string) => {
+        const selectedMesh = meshes.find(m => m.id === newMeshId);
+        const selectedTexture = textures.find(t => t.id === newTextureId);
+        
+        let generatedName = currentEditing.name;
+        if (selectedMesh && selectedMesh.code.includes("-")) {
+            const parts = selectedMesh.code.split('-');
+            if (parts.length >= 2) {
+                const dimensions = parts[0];
+                const materialInfo = parts.slice(1).join("-");
+                generatedName = `${materialInfo} - ${dimensions} cm`;
+            }
+        }
+        
+        if (selectedTexture) {
+            generatedName += ` - ${selectedTexture.name}`;
+        }
+
+        setEditing({
+            ...currentEditing,
+            meshId: newMeshId,
+            defaultTextureId: newTextureId,
+            code: selectedMesh ? selectedMesh.code : currentEditing.code,
+            name: generatedName
+        });
     };
 
     const handleSave = async (e: React.FormEvent) => {
@@ -94,6 +129,7 @@ export default function CanvasPartsAdminPage() {
 
             // Clean up empty optional relationships
             if (!payload.meshId) delete payload.meshId;
+            if (!payload.defaultTextureId) delete payload.defaultTextureId;
             if (!payload.gltfUrl) delete payload.gltfUrl;
 
             if (payload.id) {
@@ -224,33 +260,25 @@ export default function CanvasPartsAdminPage() {
                                                 <label className="text-xs text-blue-500 font-bold mb-1 block">Mesh ID (Inheritance)</label>
                                                 <select
                                                     value={editing.meshId || ""}
-                                                    onChange={e => {
-                                                        const val = e.target.value;
-                                                        const selectedMesh = meshes.find(m => m.id === val);
-
-                                                        let generatedName = editing.name;
-                                                        if (selectedMesh && selectedMesh.code.includes("-")) {
-                                                            const parts = selectedMesh.code.split('-');
-                                                            if (parts.length >= 2) {
-                                                                const dimensions = parts[0];
-                                                                const materialInfo = parts.slice(1).join("-");
-                                                                generatedName = `${materialInfo} - ${dimensions} cm`;
-                                                            }
-                                                        }
-
-                                                        setEditing({
-                                                            ...editing,
-                                                            meshId: val,
-                                                            code: selectedMesh ? selectedMesh.code : editing.code,
-                                                            name: generatedName
-                                                        });
-                                                    }}
+                                                    onChange={e => updateGeneratedFields(editing, e.target.value, editing.defaultTextureId || "")}
                                                     className="ui-canvas-select border-blue-200 dark:border-blue-900 focus:outline-blue-500"
                                                 >
                                                     <option value="">-- No pure mesh inheritance --</option>
                                                     {meshes.map(m => <option key={m.id} value={m.id}>{m.code}</option>)}
                                                 </select>
                                                 <p className="text-[10px] text-muted-foreground mt-1">Select a core mesh to inherit dimension and base logic.</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs text-indigo-500 font-bold mb-1 block">Default Texture Variant</label>
+                                                <select
+                                                    value={editing.defaultTextureId || ""}
+                                                    onChange={e => updateGeneratedFields(editing, editing.meshId || "", e.target.value)}
+                                                    className="ui-canvas-select border-indigo-200 dark:border-indigo-900 focus:outline-indigo-500"
+                                                >
+                                                    <option value="">-- No texture --</option>
+                                                    {textures.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                                </select>
+                                                <p className="text-[10px] text-muted-foreground mt-1">Select an optional default texture variant for this part.</p>
                                             </div>
                                             <div>
                                                 <label className="text-xs text-purple-500 font-bold mb-1 block">GLTF/GLB URL (Override)</label>
@@ -281,6 +309,7 @@ export default function CanvasPartsAdminPage() {
                                                     <div className="ui-canvas-list-item-title">
                                                         [{item.code}] {item.name || "Unnamed"}
                                                         {item.meshId && <span className="ui-canvas-subcollection-badge ui-canvas-bg-blue ui-canvas-text-blue border border-blue-200 dark:border-blue-800">Mesh: {m?.code}</span>}
+                                                        {item.defaultTextureId && <span className="ui-canvas-subcollection-badge ui-canvas-bg-indigo ui-canvas-text-indigo border border-indigo-200 dark:border-indigo-800">Tex: {item.defaultTextureId.substring(0, 6)}...</span>}
                                                     </div>
                                                     <div className="ui-canvas-list-item-subtitle">
                                                         Category: {PART_CATEGORIES_BY_SECTOR[item.sector]?.[item.category] || item.category} • Sector: {item.sector} • Cost: €{item.cost?.toFixed(2) ?? "0.00"} / Price: €{item.price?.toFixed(2) ?? "0.00"}

@@ -2,6 +2,9 @@
   "buckets": [
     {
       "id": "standlo.firebasestorage.app"
+    },
+    {
+      "id": "demo-standlo.appspot.com"
     }
   ]
 }

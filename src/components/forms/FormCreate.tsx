@@ -113,6 +113,7 @@ export function FormCreate<T extends z.ZodSchema<any>>({
                                         placeholder={fieldMeta.placeholder}
                                         disabled={fieldMeta.disabled || isSubmitting}
                                         readOnly={fieldMeta.readOnly}
+                                        required={fieldMeta.required}
                                         className="ui-textarea"
                                     />
                                 ) : fieldMeta.type === "lookup" && fieldMeta.lookupTarget ? (
@@ -125,6 +126,7 @@ export function FormCreate<T extends z.ZodSchema<any>>({
                                         placeholder={fieldMeta.placeholder}
                                         disabled={fieldMeta.disabled || isSubmitting}
                                         readOnly={fieldMeta.readOnly}
+                                        required={fieldMeta.required}
                                     />
                                 ) : (
                                     <Input
@@ -133,6 +135,7 @@ export function FormCreate<T extends z.ZodSchema<any>>({
                                         placeholder={fieldMeta.placeholder}
                                         disabled={fieldMeta.disabled || isSubmitting}
                                         readOnly={fieldMeta.readOnly}
+                                        required={fieldMeta.required}
                                     />
                                 )}
 

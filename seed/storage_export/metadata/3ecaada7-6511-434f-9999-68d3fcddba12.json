@@ -1,0 +1,19 @@
+{
+  "name": "public/logos/test-upload.txt",
+  "bucket": "standlo.firebasestorage.app",
+  "metageneration": 1,
+  "generation": 1773385761323,
+  "contentType": "application/octet-stream",
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "downloadTokens": [
+    "e1d46967-1d76-4666-b21e-77b47ed1a8f8"
+  ],
+  "etag": "p8lIjOck8KKjnP95kn6PJcNXroE",
+  "customMetadata": {},
+  "timeCreated": "2026-03-13T07:09:21.324Z",
+  "updated": "2026-03-13T07:09:21.324Z",
+  "size": 11,
+  "md5Hash": "PiWWCnnbxptnTNTsZ6csYg==",
+  "crc32c": "1924472696"
+}

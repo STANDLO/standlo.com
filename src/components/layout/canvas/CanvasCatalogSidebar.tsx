@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useCanvasStore } from "./store";
 import { X, Search } from "lucide-react";
 import { Input } from "@/components/ui/Input";
-import canvasMaterials from "@/core/constants/canvas_materials.json";
 import { v4 as uuidv4 } from "uuid";
 
 interface CatalogItem {
@@ -15,6 +14,7 @@ interface CatalogItem {
     geometryType?: string;
     materialId?: string;
     textureId?: string;
+    defaultTextureId?: string;
     meshId?: string;
 }
 
@@ -23,6 +23,7 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
     const setMode = useCanvasStore((state) => state.setMode);
     const addEntity = useCanvasStore((state) => state.addEntity);
     const getNextOrder = useCanvasStore((state) => state.getNextOrder);
+    const canvasMaterials = useCanvasStore((state) => state.materialsRegistry);
     
     const [items, setItems] = useState<CatalogItem[]>([]);
     const [loading, setLoading] = useState(false);
@@ -50,7 +51,7 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
 
                 const reqBody = {
                     actionId: "list",
-                    entityId: mode, // 'part', 'assembly', 'stand'
+                    entityId: mode, // 'part', 'assembly', 'design'
                     payload: {
                         filters: search ? [
                             { field: "name", op: ">=", value: search },
@@ -71,9 +72,9 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
                     console.warn(`[CanvasCatalogSidebar] Fetch failed, falling back to mock...`, err);
                     if (isMounted) {
                         setItems([
-                            { id: "mock-1", name: "Struttura Base", useCases: [{ canvasType: entityType || "stand", canvasLayer: "strutture" }], dimensions: [1, 2, 1], geometryType: "box" },
-                            { id: "mock-2", name: "Tavolo Standard", useCases: [{ canvasType: entityType || "stand", canvasLayer: "arredo" }], dimensions: [2, 0.8, 1], geometryType: "box" },
-                            { id: "mock-3", name: "Pannello Grafico", useCases: [{ canvasType: entityType || "stand", canvasLayer: "grafiche" }], dimensions: [1, 2, 0.1], geometryType: "box" }
+                            { id: "mock-1", name: "Struttura Base", useCases: [{ canvasType: entityType || "design", canvasLayer: "strutture" }], dimensions: [1, 2, 1], geometryType: "box" },
+                            { id: "mock-2", name: "Tavolo Standard", useCases: [{ canvasType: entityType || "design", canvasLayer: "arredo" }], dimensions: [2, 0.8, 1], geometryType: "box" },
+                            { id: "mock-3", name: "Pannello Grafico", useCases: [{ canvasType: entityType || "design", canvasLayer: "grafiche" }], dimensions: [1, 2, 0.1], geometryType: "box" }
                         ]);
                     }
                     return;
@@ -124,12 +125,28 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
                             finalItem.dimensions = finalItem.dimensions || meshDef.dimensions;
                             finalItem.geometryType = finalItem.geometryType || meshDef.geometryType || meshDef.geometry;
                             finalItem.materialId = finalItem.materialId || meshDef.materialId;
-                            finalItem.textureId = finalItem.textureId || meshDef.textureId;
+                            finalItem.textureId = finalItem.defaultTextureId || finalItem.textureId || meshDef.textureId;
+                        } else {
+                            // Even without mesh, apply defaultTextureId if present
+                            finalItem.textureId = finalItem.defaultTextureId || finalItem.textureId;
                         }
 
                         if (finalItem.materialId && materialsMap.has(finalItem.materialId)) {
                             const mat = materialsMap.get(finalItem.materialId);
-                            return { ...finalItem, color: mat.baseColor, roughness: mat.roughness, metalness: mat.metalness };
+                            return {
+                                ...finalItem,
+                                color: mat.baseColor,
+                                roughness: mat.roughness,
+                                metalness: mat.metalness,
+                                clearcoat: mat.clearcoat,
+                                clearcoatRoughness: mat.clearcoatRoughness,
+                                sheen: mat.sheen,
+                                sheenRoughness: mat.sheenRoughness,
+                                transmission: mat.transmission,
+                                ior: mat.ior,
+                                repeatX: mat.repeatX,
+                                repeatY: mat.repeatY
+                            };
                         }
                         return finalItem;
                     });
@@ -147,16 +164,16 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
             isMounted = false;
             clearTimeout(timeoutId);
         };
-    }, [mode, search, entityType]);
+    }, [mode, search, entityType, canvasMaterials]);
 
     if (!mode) return null;
 
-    const handleInsert = async (item: CatalogItem & { color?: string; roughness?: number; metalness?: number }) => {
+    const handleInsert = async (item: CatalogItem & { color?: string; roughness?: number; metalness?: number; clearcoat?: number; clearcoatRoughness?: number; sheen?: number; sheenRoughness?: number; transmission?: number; ior?: number; repeatX?: number; repeatY?: number }) => {
         const nodeId = uuidv4();
         
         // Determina il layer tramite auto-routing
         let layerId = "strutture"; // fallback
-        const currentCanvasType = entityType || "stand";
+        const currentCanvasType = entityType || "design";
         if (item.useCases && item.useCases.length > 0) {
             const match = item.useCases.find(u => u.canvasType === currentCanvasType);
             if (match && match.canvasLayer) {
@@ -187,7 +204,15 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
                 name: item.name,
                 color: item.color,
                 roughness: item.roughness,
-                metalness: item.metalness
+                metalness: item.metalness,
+                clearcoat: item.clearcoat,
+                clearcoatRoughness: item.clearcoatRoughness,
+                sheen: item.sheen,
+                sheenRoughness: item.sheenRoughness,
+                transmission: item.transmission,
+                ior: item.ior,
+                repeatX: item.repeatX,
+                repeatY: item.repeatY
             }
         });
 
@@ -196,8 +221,8 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
             try {
                 const { callGateway } = await import("@/lib/api");
                 
-                callGateway("canvas", {
-                    actionId: "insertNode",
+                callGateway("orchestrator", {
+                    actionId: "createNode",
                     payload: {
                         canvasId: entityId,
                         nodeId,
@@ -206,7 +231,6 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
                         layerId,
                         position: newPos,
                         rotation: [0, 0, 0],
-                        scale: dims,
                         metadata: {
                             geometry: item.geometryType || "box",
                             dimensions: dims,
@@ -215,11 +239,19 @@ export function CanvasCatalogSidebar({ entityId, entityType }: { entityId?: stri
                             name: item.name,
                             color: item.color,
                             roughness: item.roughness,
-                            metalness: item.metalness
+                            metalness: item.metalness,
+                            clearcoat: item.clearcoat,
+                            clearcoatRoughness: item.clearcoatRoughness,
+                            sheen: item.sheen,
+                            sheenRoughness: item.sheenRoughness,
+                            transmission: item.transmission,
+                            ior: item.ior,
+                            repeatX: item.repeatX,
+                            repeatY: item.repeatY
                         },
                         name: item.name
                     }
-                }).catch(e => console.error("Async insertNode failed", e));
+                }).catch(e => console.error("Async createNode failed", e));
             } catch (err) {
                 console.error("Failed to trigger orchestrator", err);
             }

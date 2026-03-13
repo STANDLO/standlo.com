@@ -1,75 +1,68 @@
 import { getFirestore } from "firebase-admin/firestore";
-import { getApp } from "firebase-admin/app";
-import { AISkillSchema } from "../schemas/aiSkill";
-
-// Get specific DB reference
+import { getApp } from "firebase-admin/app";// Get specific DB reference
 const getDb = () => getFirestore(getApp(), "standlo");
 
 export async function createAISkillEntity(userId: string, payload: Record<string, unknown>) {
-    const db = getDb();
-
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+    
     // Auto-generate ID if missing
-    if (!payload.id) {
-        payload.id = db.collection('ai_skills').doc().id;
+    let newId = payload.id as string;
+    if (!newId) {
+        const { randomUUID } = await import("crypto");
+        newId = randomUUID();
     }
 
     const dataWithoutType = { ...payload };
     delete dataWithoutType.type;
 
-    // Add base fields
-    const enrichedData = {
-        ...dataWithoutType,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: userId,
-        isActive: payload.isActive !== undefined ? payload.isActive : true,
-        isArchived: false,
-    };
+    const req = createInternalRequest({
+        actionId: "create",
+        entityId: "ai_skill",
+        payload: {
+            ...dataWithoutType,
+            documentId: newId,
+            id: newId,
+            isActive: payload.isActive !== undefined ? payload.isActive : true,
+        }
+    }, userId);
 
-    const parsed = AISkillSchema.parse(enrichedData);
-
-    await db.collection("ai_skills").doc(parsed.id as string).set(parsed, { merge: true });
-    return parsed;
+    const result = await firestore.run(req);
+    return result.data;
 }
 
 export async function updateAISkillEntity(userId: string, id: string, payload: Record<string, unknown>) {
-    const db = getDb();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
     const dataWithoutType = { ...payload };
     delete dataWithoutType.type;
 
-    const enrichment = {
-        ...dataWithoutType,
-        id,
-        updatedAt: new Date().toISOString(),
-        updatedBy: userId,
-    };
+    const req = createInternalRequest({
+        actionId: "update",
+        entityId: "ai_skill",
+        payload: {
+            ...dataWithoutType,
+            documentId: id,
+            id: id,
+        }
+    }, userId);
 
-    // We fetch current entity to merge it safely before zod parse
-    const snap = await db.collection("ai_skills").doc(id).get();
-    if (!snap.exists) throw new Error("Entity not found");
-
-    const mergedData = {
-        ...snap.data(),
-        ...enrichment
-    };
-
-    const parsed = AISkillSchema.parse(mergedData);
-
-    await db.collection("ai_skills").doc(id).set(parsed, { merge: true });
-    return parsed;
+    const result = await firestore.run(req);
+    return result.data;
 }
 
 export async function deleteAISkillEntity(userId: string, id: string) {
-    const db = getDb();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
-    // Soft delete
-    await db.collection("ai_skills").doc(id).update({
-        isArchived: true,
-        updatedAt: new Date().toISOString(),
-        updatedBy: userId
-    });
+    const req = createInternalRequest({
+        actionId: "delete",
+        entityId: "ai_skill",
+        payload: { documentId: id }
+    }, userId);
 
+    await firestore.run(req);
     return { success: true };
 }
 

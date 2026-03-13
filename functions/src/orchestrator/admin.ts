@@ -1,6 +1,5 @@
 import * as admin from "firebase-admin";
 import { HttpsError } from "firebase-functions/v2/https";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 /**
  * Activates a pending user.
@@ -21,8 +20,6 @@ export async function activateUser(callerUid: string, payload: Record<string, un
             throw new HttpsError("permission-denied", "Only administrators can activate users.");
         }
 
-        const db = getFirestore(admin.app(), "standlo");
-
         // 2. Grant "active: true" to Custom Claims in Firebase Auth
         const targetRecord = await admin.auth().getUser(targetUserId);
         const newClaims = {
@@ -32,29 +29,52 @@ export async function activateUser(callerUid: string, payload: Record<string, un
         };
         await admin.auth().setCustomUserClaims(targetUserId, newClaims);
 
-        // 3. Update the users collection
-        const userRef = db.collection("users").doc(targetUserId);
-        await userRef.update({
-            active: true,
-            "claims.active": true,
-            updatedAt: FieldValue.serverTimestamp(),
-            updatedBy: callerUid
-        });
+        // 3. Update the users and organization collections via firestore.run batch
+        const { firestore } = await import("../gateways/firestore");
+        const { createInternalRequest } = await import("../gateways/internal");
 
-        // 4. Update the organization collection (if necessary, though active is also tied to user)
-        // Usually, the organization has active: true. Let's find the org associated with this user.
-        const targetUserSnap = await userRef.get();
-        if (targetUserSnap.exists) {
-            const userData = targetUserSnap.data();
-            if (userData?.orgId) {
-                const orgRef = db.collection("organizations").doc(userData.orgId);
-                await orgRef.update({
+        // Wait, to know the orgId, we need to read the user first.
+        const readUserReq = createInternalRequest({
+            actionId: "read",
+            entityId: "user",
+            payload: { id: targetUserId }
+        }, callerUid, "standlo");
+        
+        const readUserRes = await firestore.run(readUserReq);
+        const userData = readUserRes.data as Record<string, unknown> | undefined;
+
+        const operations: Record<string, unknown>[] = [
+            {
+                type: "update",
+                entityId: "user",
+                id: targetUserId,
+                data: {
+                    id: targetUserId,
                     active: true,
-                    updatedAt: FieldValue.serverTimestamp(),
-                    updatedBy: callerUid
-                });
+                    "claims.active": true
+                }
             }
+        ];
+
+        if (userData?.orgId) {
+            operations.push({
+                type: "update",
+                entityId: "organization",
+                id: userData.orgId,
+                data: {
+                    id: userData.orgId,
+                    active: true
+                }
+            });
         }
+
+        const batchReq = createInternalRequest({
+            actionId: "batch",
+            entityId: "user",
+            payload: { operations }
+        }, callerUid, (userData?.orgId as string) || "standlo");
+
+        await firestore.run(batchReq);
 
         console.log(`[Admin Orchestrator] User ${targetUserId} successfully activated by admin ${callerUid}.`);
         return {
@@ -79,23 +99,40 @@ export async function getAdminKpis(callerUid: string) {
             throw new HttpsError("permission-denied", "Only administrators can view KPIs.");
         }
 
-        const db = getFirestore(admin.app(), "standlo");
+        const { firestore } = await import("../gateways/firestore");
+        const { createInternalRequest } = await import("../gateways/internal");
 
         // 1. Pending Users
-        const usersSnapshot = await db.collection("users").get();
-        let pendingUsers = 0;
-        let totalUsers = 0;
+        // We need to list users where active === false
+        const pendingUsersReq = createInternalRequest({
+            actionId: "list",
+            entityId: "user",
+            filters: [{ field: "active", op: "==", value: false }],
+            limit: 500 // Assuming not more than 500 pending users
+        }, callerUid, "standlo");
 
-        usersSnapshot.forEach(doc => {
-            totalUsers++;
-            if (doc.data().active === false) {
-                pendingUsers++;
-            }
-        });
+        const pendingUsersRes = await firestore.run(pendingUsersReq);
+        const pendingUsers = (pendingUsersRes.data as unknown[])?.length || 0;
+        
+        // Let's get total users count by reading users with no filters
+        // Wait, for KPIs, we might just use the pending users count, as total users via list might be inefficient if > 500.
+        // We'll list up to 500 for total.
+        const totalUsersReq = createInternalRequest({
+            actionId: "list",
+            entityId: "user",
+            limit: 500
+        }, callerUid, "standlo");
+        const totalUsersRes = await firestore.run(totalUsersReq);
+        const totalUsers = (totalUsersRes.data as unknown[])?.length || 0;
 
         // 2. Recent Alerts (unresolved or total)
-        const alertsSnapshot = await db.collection("admin/security/alerts").limit(100).get();
-        const recentAlerts = alertsSnapshot.size;
+        const recentAlertsReq = createInternalRequest({
+            actionId: "list",
+            entityId: "alert",
+            limit: 100
+        }, callerUid, "standlo");
+        const recentAlertsRes = await firestore.run(recentAlertsReq);
+        const recentAlerts = (recentAlertsRes.data as unknown[])?.length || 0;
 
         return {
             status: "success",

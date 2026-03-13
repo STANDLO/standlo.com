@@ -134,6 +134,7 @@ export function FormAuthAction({ locale }: { locale: string }) {
             title={t("Action.title", { fallback: "Processing Request" })}
             footer={footer}
         >
+            <div id="recaptcha-container"></div>
             <div className="layout-auth-form mt-4 flex flex-col items-center justify-center p-6 text-center">
                 {status === "loading" && (
                     <div className="flex flex-col items-center text-slate-400">

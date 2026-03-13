@@ -2,7 +2,8 @@
     "name": "functions",
     "scripts": {
         "build": "tsc",
-        "build:watch": "tsc --watch"
+        "build:watch": "tsc --watch",
+        "validate": "tsc --noEmit && eslint \"src/**/*.{ts,tsx}\" --quiet"
     },
     "engines": {
         "node": "22"

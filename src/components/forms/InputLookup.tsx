@@ -13,6 +13,7 @@ export interface InputLookupProps {
     placeholder?: string;
     disabled?: boolean;
     readOnly?: boolean;
+    required?: boolean;
 }
 
 export function InputLookup({
@@ -21,7 +22,8 @@ export function InputLookup({
     target,
     placeholder,
     disabled,
-    readOnly
+    readOnly,
+    required
 }: InputLookupProps) {
     const t = useTranslations("Common");
     const [isOpen, setIsOpen] = React.useState(false);
@@ -50,6 +52,7 @@ export function InputLookup({
                     readOnly
                     placeholder={placeholder || t("search", { fallback: "Cerca..." })}
                     disabled={disabled}
+                    required={required}
                     className="ui-lookup-input"
                     onClick={() => {
                         if (!disabled && !readOnly) setIsOpen(true);

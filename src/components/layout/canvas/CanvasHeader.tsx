@@ -24,7 +24,7 @@ export function CanvasHeader({ roleId, entityId, onEnterXR, onExport }: CanvasHe
         let targetSchema = "mesh";
         if (entityId.startsWith("PAR-")) targetSchema = "part";
         else if (entityId.startsWith("ASS-")) targetSchema = "assembly";
-        else if (entityId.startsWith("STA-")) targetSchema = "stand";
+        else if (entityId.startsWith("DES-")) targetSchema = "design";
 
 
 
@@ -61,7 +61,7 @@ export function CanvasHeader({ roleId, entityId, onEnterXR, onExport }: CanvasHe
             const { callGateway } = await import("@/lib/api");
 
             // Fire and forget (no await blocking UI)
-            callGateway("choreography", {
+            callGateway("orchestrator", {
                 actionId: "save_canvas",
                 entityId: targetSchema,
                 payload: {

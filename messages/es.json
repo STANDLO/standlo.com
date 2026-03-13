@@ -1,267 +1,299 @@
 {
-    "Roles": {
-        "customer": "Cliente",
-        "provider": "Proveedor de Materiales",
-        "manager": "Project Manager",
-        "architect": "Arquitecto",
-        "engineer": "Ingeniero",
-        "designer": "Diseñador",
-        "electrician": "Electricista",
-        "plumber": "Fontanero",
-        "carpenter": "Carpintero",
-        "cabinetmaker": "Ebanista",
-        "dryliner": "Instalador de Yeso",
-        "ironworker": "Herrero",
-        "windowfitter": "Instalador de Ventanas",
-        "glazier": "Cristalero",
-        "riggers": "Aparejador (Estructuras Suspendidas)",
-        "standbuilder": "Montador de Stands",
-        "plasterer": "Yesero",
-        "painter": "Pintor",
-        "tiler": "Alicatador",
-        "driver": "Conductor",
-        "forkliftdriver": "Conductor de Carretilla",
-        "promoter": "Promotor",
-        "standlo_design": "STANDLO - Design System"
+  "Roles": {
+    "customer": "Cliente",
+    "provider": "Proveedor de Materiales",
+    "manager": "Project Manager",
+    "architect": "Arquitecto",
+    "engineer": "Ingeniero",
+    "designer": "Diseñador",
+    "electrician": "Electricista",
+    "plumber": "Fontanero",
+    "carpenter": "Carpintero",
+    "cabinetmaker": "Ebanista",
+    "dryliner": "Instalador de Yeso",
+    "ironworker": "Herrero",
+    "windowfitter": "Instalador de Ventanas",
+    "glazier": "Cristalero",
+    "riggers": "Aparejador (Estructuras Suspendidas)",
+    "standbuilder": "Montador de Stands",
+    "plasterer": "Yesero",
+    "painter": "Pintor",
+    "tiler": "Alicatador",
+    "driver": "Conductor",
+    "forkliftdriver": "Conductor de Carretilla",
+    "promoter": "Promotor",
+    "standlo_design": "STANDLO - Design System"
+  },
+  "Brand": {
+    "name": "STANDLO",
+    "slogan": "The Global Factory",
+    "description": "STANDLO presenta TIM (Temporary Information Modeling): el sistema operativo que transforma datos en estructuras físicas. Gestiona stands de ferias y módulos de emergencia con sincronía milimétrica, pagos instantáneos y logística predictiva. Bienvenidos al Temporary Flow.",
+    "copyright": "© {year} Kalex AI Inc. Todos los derechos reservados."
+  },
+  "Dashboard": {
+    "Designer": {
+      "title": "Estudio de Diseño",
+      "subtitle": "Ver solicitudes de diseño y briefs de clientes de Standlo.",
+      "card1Title": "Nuevos Briefs"
     },
-    "Brand": {
-        "name": "STANDLO",
-        "slogan": "The Global Factory",
-        "description": "STANDLO presenta TIM (Temporary Information Modeling): el sistema operativo que transforma datos en estructuras físicas. Gestiona stands de ferias y módulos de emergencia con sincronía milimétrica, pagos instantáneos y logística predictiva. Bienvenidos al Temporary Flow.",
-        "copyright": "© {year} Kalex AI Inc. Todos los derechos reservados."
+    "Customer": {
+      "title": "Dashboard del Cliente",
+      "subtitle": "Bienvenido a tu portal operativo STANDLO. Desde aquí puedes gestionar tus eventos, pedidos y equipo.",
+      "card1Title": "Pedidos Activos",
+      "card2Title": "Miembros del Equipo"
     },
-    "Dashboard": {
-        "Designer": {
-            "title": "Estudio de Diseño",
-            "subtitle": "Ver solicitudes de diseño y briefs de clientes de Standlo.",
-            "card1Title": "Nuevos Briefs"
-        },
-        "Customer": {
-            "title": "Dashboard del Cliente",
-            "subtitle": "Bienvenido a tu portal operativo STANDLO. Desde aquí puedes gestionar tus eventos, pedidos y equipo.",
-            "card1Title": "Pedidos Activos",
-            "card2Title": "Miembros del Equipo"
-        },
-        "Manager": {
-            "title": "Manager de Operaciones",
-            "subtitle": "Supervisa operaciones, gestiona proyectos complejos y monitoriza los flujos de trabajo de los socios.",
-            "card1Title": "Proyectos Activos",
-            "card2Title": "Por Facturar"
-        }
-    },
-    "Common": {
-        "noResults": "No se encontraron resultados.",
-        "loadMore": "Cargar Más",
-        "genericError": "Se produjo un problema al procesar su solicitud.",
-        "logout": "Cerrar sesión"
-    },
-    "Auth": {
-        "Register": {
-            "title": "Crea tu Cuenta",
-            "description": "Únete a STANDLO para gestionar tus operaciones.",
-            "yesAccountText": "¿Ya tienes una cuenta?",
-            "loginAction": "Inicia sesión",
-            "nameLabel": "Nombre Completo",
-            "namePlaceholder": "Juan Pérez",
-            "submitButton": "Regístrate",
-            "acceptTerms": "Acepto la <privacyLink>Política de Privacidad</privacyLink> y<br></br>los <termsLink>Términos de Servicio</termsLink>.",
-            "termsDivider": "Acepta Privacidad y Términos",
-            "registerDivider": "Completar Registro"
-        },
-        "Login": {
-            "title": "Inicia sesión en STANDLO",
-            "subtitle": "Ingresa tus credenciales para acceder a tu cuenta.",
-            "submitButton": "Iniciar sesión",
-            "footerNote": "Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad."
-        },
-        "continueGoogle": "Continuar con Google",
-        "continueGithub": "Continuar con GitHub",
-        "CardAuth": {
-            "copyright": "© {year} STANDLO. Todos los derechos reservados."
-        },
-        "title": "Inicia sesión en STANDLO",
-        "description": "Ingresa tus credenciales para acceder al portal operativo.",
-        "emailLabel": "Correo electrónico",
-        "emailPlaceholder": "mario.rossi@empresa.es",
-        "passwordLabel": "Contraseña",
-        "submitButton": "Ingresar",
-        "dividerText": "O continuar con",
-        "orDivider": "O (SE REQUIERE TELÉFONO para MFA)",
-        "socialDivider": "Usa redes sociales (Recomendado)",
-        "loginDividerText": "Haz clic para acceder",
-        "footerNote": "* El acceso requiere verificación en dos pasos",
-        "noAccountText": "¿No tienes cuenta?",
-        "registerAction": "Regístrate",
-        "Errors": {
-            "auth/email-already-in-use": "Este correo electrónico ya está asociado a una cuenta.",
-            "auth/invalid-credential": "Las credenciales introducidas no son correctas.",
-            "auth/user-not-found": "No se encontró ninguna cuenta para este correo electrónico.",
-            "auth/wrong-password": "La contraseña que ingresaste es incorrecta.",
-            "auth/weak-password": "La contraseña es demasiado débil (mínimo 6 caracteres).",
-            "auth/invalid-email": "La dirección de correo electrónico no es válida.",
-            "auth/too-many-requests": "Demasiados intentos fallidos. Por favor, inténtalo de nuevo más tarde.",
-            "auth/user-disabled": "Esta cuenta ha sido deshabilitada por el administrador.",
-            "auth/network-request-failed": "Error de red. Por favor, comprueba tu conexión.",
-            "auth/popup-closed-by-user": "La ventana de inicio de sesión se cerró antes de completar.",
-            "auth/account-exists-with-different-credential": "Ya tienes una cuenta con este correo vinculada a otro proveedor.",
-            "default": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
-            "auth-missing-terms": "Debe aceptar la Política de Privacidad y los Términos y Condiciones antes de continuar."
-        },
-        "VerifyEmail": {
-            "title": "Verifica tu dirección de Correo",
-            "description": "Hemos enviado un correo a la dirección asociada a tu cuenta. Haz clic en el enlace de confirmación para continuar.",
-            "successMessage": "¡Correo electrónico verificado con éxito! Redirigiendo...",
-            "alreadyVerified": "¡Correo ya verificado! Redirigiendo...",
-            "checkStatusButton": "Ya he verificado, continuar",
-            "resendButton": "Enviar correo de nuevo",
-            "emailSentMessage": "¡Correo de verificación enviado correctamente!",
-            "errorMessage": "No pudimos confirmar tu correo. Por favor, inténtalo de nuevo más tarde.",
-            "notVerifiedMessage": "Tu correo aún no está verificado. Revisa tu bandeja de entrada o espera un momento."
-        },
-        "Action": {
-            "title": "Procesando Solicitud",
-            "description": "Por favor espera mientras verificamos tu enlace seguro.",
-            "loading": "Verificando el código...",
-            "invalidLink": "Código de acción no válido o ausente.",
-            "invalidMode": "Modo de acción desconocido.",
-            "errorMessage": "Ocurrió un error al procesar tu solicitud."
-        },
-        "mfaVerifyMessage": "Hemos enviado un código SMS para confirmar tu acceso.",
-        "mfaEnrollMessage": "Por razones de seguridad, el acceso requiere verificación en dos pasos. Por favor agrega tu número de teléfono.",
-        "mfaEnrollVerifyMessage": "Ingresa el código recibido por SMS para confirmar.",
-        "otpLabel": "Código OTP",
-        "phoneNumberLabel": "Número de Teléfono",
-        "verifyAccessButton": "Verificar Acceso",
-        "sendVerificationSmsButton": "Enviar SMS",
-        "completeRegistrationButton": "Iniciar sesión",
-        "registrationSuccess": "Registro exitoso. Inicie sesión para completar la configuración de seguridad MFA."
-    },
-    "Register": {
-        "title": "Crear Cuenta de Cliente",
-        "description": "El registro abierto está reservado exclusivamente para clientes. Los socios y proveedores son invitados.",
-        "nameLabel": "Nombre de Empresa o Contacto",
-        "namePlaceholder": "Fiera Milano Spa",
-        "emailLabel": "Correo Empresarial",
-        "emailPlaceholder": "contacto@empresa.es",
-        "passwordLabel": "Contraseña",
-        "submitButton": "Registrarse como Cliente",
-        "dividerText": "O",
-        "continueGoogle": "Continuar con Google",
-        "yesAccountText": "¿Ya tienes una cuenta?",
-        "loginAction": "Inicia sesión"
-    },
-    "Onboarding": {
-        "title": "Completa tu Perfil B2B",
-        "subtitle": "Para continuar usando Standlo, necesitamos cierta información obligatoria para facturación.",
-        "orgTypeLabel": "Tipo de Organización",
-        "orgTypeOptions": {
-            "EDUCATIONAL": "Educativo (Gratis)",
-            "PROFESSIONAL": "Profesional",
-            "BUSINESS": "Empresarial"
-        },
-        "birthdayLabel": "Fecha de Nacimiento",
-        "orgNameLabel": "Razón Social / Denominación",
-        "logoLabel": "Logotipo de la Empresa",
-        "roleLabel": "Selecciona tu rol",
-        "vatLabel": "Número de IVA",
-        "sdiLabel": "Código SDI",
-        "ibanLabel": "IBAN",
-        "addressLabel": "Dirección Sede Legal",
-        "submitButton": "Completar Perfil"
-    },
-    "Components": {
-        "InputPlace": {
-            "placeholder": "Busca una dirección con Google..."
-        }
-    },
-    "Canvas": {
-        "title": "Editor 3D Canvas",
-        "tools": {
-            "inserimento": "Insertar",
-            "addPart": "Añadir Pieza",
-            "addAssembly": "Añadir Ensamblaje",
-            "addBundle": "Añadir Bundle",
-            "addStand": "Añadir Stand",
-            "azioni": "Acciones",
-            "move": "Mover",
-            "rotate": "Rotar",
-            "snap": "Ajustar",
-            "view": "REALITY",
-            "view3d": "Vista 3D",
-            "viewAr": "Modo AR (Pass-through)",
-            "viewVr": "Modo VR (Inmersiva)",
-            "manufacturing": "Fabricación",
-            "bom": "Lista de Materiales (BoM)",
-            "bop": "Lista de Procesos (BoP)",
-            "share": "Compartir",
-            "shareDialogTitle": "Enlace de Compartir (Solo Lectura)",
-            "shareDialogDesc": "Cualquiera con este enlace puede ver el modelo 3D sin poder editarlo.",
-            "adminCredentials": "Credenciales de Administrador (Edición)",
-            "adminDesc": "Envía la URL completa o la contraseña por separado para permitir ediciones.",
-            "urlLabel": "URL:",
-            "passwordLabel": "Contraseña:",
-            "play": "Jugar",
-            "applyMaterial": "Aplicar Material",
-            "duplicate": "Duplicar",
-            "delete": "Eliminar",
-            "gizmo": {
-                "top": "Arriba",
-                "bottom": "Abajo",
-                "front": "Frente",
-                "back": "Atrás",
-                "right": "Derecha",
-                "left": "Izquierda"
-            },
-            "projections": "Proyecciones",
-            "perspective": "Perspectiva",
-            "orthographic": "Ortogonal",
-            "ortho_faces": "Perspectiva Mixta",
-            "account": "Cuenta",
-            "support": "Soporte",
-            "login": "Iniciar Sesión",
-            "logout": "Cerrar Sesión"
-        }
-    },
-    "components": {
-        "dashboard": "Panel de Control",
-        "orders": "Pedidos",
-        "catalog": "Catálogo",
-        "organization": "Organización",
-        "organizations": "Organizaciones",
-        "settings": "Ajustes",
-        "projects": "Proyectos",
-        "production": "Producción",
-        "customers": "Clientes",
-        "team": "Equipo",
-        "tasks": "Tareas",
-        "reviews": "Revisiones",
-        "auth": {
-            "logout": "Cerrar sesión"
-        },
-        "header": {
-            "organization_fallback": "Organización",
-            "user_fallback": "Usuario"
-        },
-        "footer": {
-            "copyright": "© {year} STANDLO. Plataforma para el montaje de ferias europeas.",
-            "terms": "Términos",
-            "privacy": "Privacidad"
-        },
-        "roles": {
-            "customer": "Expositor",
-            "provider": "Proveedor de Partes",
-            "manager": "Account Manager",
-            "designer": "Diseñador",
-            "carpenter": "Carpintero",
-            "builder": "Ensamblador",
-            "painter": "Pintor",
-            "technician": "Técnico",
-            "driver": "Transportista",
-            "promoter": "Promotor"
-        },
-        "devMode": {
-            "title": "Trabajo en progreso",
-            "description": "El entorno dedicado a este rol está actualmente en desarrollo. Estamos creando herramientas a medida para optimizar tu flujo de trabajo. ¡Vuelve pronto!"
-        }
+    "Manager": {
+      "title": "Manager de Operaciones",
+      "subtitle": "Supervisa operaciones, gestiona proyectos complejos y monitoriza los flujos de trabajo de los socios.",
+      "card1Title": "Proyectos Activos",
+      "card2Title": "Por Facturar"
     }
+  },
+  "Common": {
+    "noResults": "No se encontraron resultados.",
+    "loadMore": "Cargar Más",
+    "genericError": "Se produjo un problema al procesar su solicitud.",
+    "logout": "Cerrar sesión"
+  },
+  "Auth": {
+    "Register": {
+      "title": "Crea tu Cuenta",
+      "description": "Únete a STANDLO para gestionar tus operaciones.",
+      "yesAccountText": "¿Ya tienes una cuenta?",
+      "loginAction": "Inicia sesión",
+      "nameLabel": "Nombre Completo",
+      "namePlaceholder": "Juan Pérez",
+      "submitButton": "Regístrate",
+      "acceptTerms": "Acepto la <privacyLink>Política de Privacidad</privacyLink> y<br></br>los <termsLink>Términos de Servicio</termsLink>.",
+      "termsDivider": "Acepta Privacidad y Términos",
+      "registerDivider": "Completar Registro"
+    },
+    "Login": {
+      "title": "Inicia sesión en STANDLO",
+      "subtitle": "Ingresa tus credenciales para acceder a tu cuenta.",
+      "submitButton": "Iniciar sesión",
+      "footerNote": "Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad."
+    },
+    "continueGoogle": "Continuar con Google",
+    "continueGithub": "Continuar con GitHub",
+    "CardAuth": {
+      "copyright": "© {year} STANDLO. Todos los derechos reservados."
+    },
+    "title": "Inicia sesión en STANDLO",
+    "description": "Ingresa tus credenciales para acceder al portal operativo.",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "mario.rossi@empresa.es",
+    "passwordLabel": "Contraseña",
+    "submitButton": "Ingresar",
+    "dividerText": "O continuar con",
+    "orDivider": "O (SE REQUIERE TELÉFONO para MFA)",
+    "socialDivider": "Usa redes sociales (Recomendado)",
+    "loginDividerText": "Haz clic para acceder",
+    "footerNote": "* El acceso requiere verificación en dos pasos",
+    "noAccountText": "¿No tienes cuenta?",
+    "registerAction": "Regístrate",
+    "Errors": {
+      "auth/email-already-in-use": "Este correo electrónico ya está asociado a una cuenta.",
+      "auth/invalid-credential": "Las credenciales introducidas no son correctas.",
+      "auth/user-not-found": "No se encontró ninguna cuenta para este correo electrónico.",
+      "auth/wrong-password": "La contraseña que ingresaste es incorrecta.",
+      "auth/weak-password": "La contraseña es demasiado débil (mínimo 6 caracteres).",
+      "auth/invalid-email": "La dirección de correo electrónico no es válida.",
+      "auth/too-many-requests": "Demasiados intentos fallidos. Por favor, inténtalo de nuevo más tarde.",
+      "auth/user-disabled": "Esta cuenta ha sido deshabilitada por el administrador.",
+      "auth/network-request-failed": "Error de red. Por favor, comprueba tu conexión.",
+      "auth/popup-closed-by-user": "La ventana de inicio de sesión se cerró antes de completar.",
+      "auth/account-exists-with-different-credential": "Ya tienes una cuenta con este correo vinculada a otro proveedor.",
+      "default": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+      "auth-missing-terms": "Debe aceptar la Política de Privacidad y los Términos y Condiciones antes de continuar."
+    },
+    "VerifyEmail": {
+      "title": "Verifica tu dirección de Correo",
+      "description": "Hemos enviado un correo a la dirección asociada a tu cuenta. Haz clic en el enlace de confirmación para continuar.",
+      "successMessage": "¡Correo electrónico verificado con éxito! Redirigiendo...",
+      "alreadyVerified": "¡Correo ya verificado! Redirigiendo...",
+      "checkStatusButton": "Ya he verificado, continuar",
+      "resendButton": "Enviar correo de nuevo",
+      "emailSentMessage": "¡Correo de verificación enviado correctamente!",
+      "errorMessage": "No pudimos confirmar tu correo. Por favor, inténtalo de nuevo más tarde.",
+      "notVerifiedMessage": "Tu correo aún no está verificado. Revisa tu bandeja de entrada o espera un momento."
+    },
+    "Action": {
+      "title": "Procesando Solicitud",
+      "description": "Por favor espera mientras verificamos tu enlace seguro.",
+      "loading": "Verificando el código...",
+      "invalidLink": "Código de acción no válido o ausente.",
+      "invalidMode": "Modo de acción desconocido.",
+      "errorMessage": "Ocurrió un error al procesar tu solicitud."
+    },
+    "mfaVerifyMessage": "Hemos enviado un código SMS para confirmar tu acceso.",
+    "mfaEnrollMessage": "Por razones de seguridad, el acceso requiere verificación en dos pasos. Por favor agrega tu número de teléfono.",
+    "mfaEnrollVerifyMessage": "Ingresa el código recibido por SMS para confirmar.",
+    "otpLabel": "Código OTP",
+    "phoneNumberLabel": "Número de Teléfono",
+    "verifyAccessButton": "Verificar Acceso",
+    "sendVerificationSmsButton": "Enviar SMS",
+    "completeRegistrationButton": "Iniciar sesión",
+    "registrationSuccess": "Registro exitoso. Inicie sesión para completar la configuración de seguridad MFA."
+  },
+  "Register": {
+    "title": "Crear Cuenta de Cliente",
+    "description": "El registro abierto está reservado exclusivamente para clientes. Los socios y proveedores son invitados.",
+    "nameLabel": "Nombre de Empresa o Contacto",
+    "namePlaceholder": "Fiera Milano Spa",
+    "emailLabel": "Correo Empresarial",
+    "emailPlaceholder": "contacto@empresa.es",
+    "passwordLabel": "Contraseña",
+    "submitButton": "Registrarse como Cliente",
+    "dividerText": "O",
+    "continueGoogle": "Continuar con Google",
+    "yesAccountText": "¿Ya tienes una cuenta?",
+    "loginAction": "Inicia sesión"
+  },
+  "Onboarding": {
+    "title": "Completa tu Perfil B2B",
+    "subtitle": "Para continuar usando Standlo, necesitamos cierta información obligatoria para facturación.",
+    "orgTypeLabel": "Tipo de Organización",
+    "orgTypeOptions": {
+      "EDUCATIONAL": "Educativo (Gratis)",
+      "PROFESSIONAL": "Profesional",
+      "BUSINESS": "Empresarial"
+    },
+    "birthdayLabel": "Fecha de Nacimiento",
+    "orgNameLabel": "Nombre Legal",
+    "logoLabel": "Logotipo de la Empresa",
+    "roleLabel": "Selecciona tu rol",
+    "vatLabel": "Número de IVA",
+    "sdiLabel": "Código SDI",
+    "ibanLabel": "IBAN",
+    "addressLabel": "Dirección Sede Legal",
+    "submitButton": "Completar Perfil"
+  },
+  "Components": {
+    "InputPlace": {
+      "placeholder": "Busca una dirección con Google..."
+    }
+  },
+  "Canvas": {
+    "title": "Editor 3D Canvas",
+    "tools": {
+      "inserimento": "Insertar",
+      "addPart": "Añadir Pieza",
+      "addAssembly": "Añadir Ensamblaje",
+      "addBundle": "Añadir Bundle",
+      "addDesign": "Añadir Design",
+      "azioni": "Acciones",
+      "move": "Mover",
+      "rotate": "Rotar",
+      "snap": "Ajustar",
+      "view": "REALITY",
+      "view3d": "Vista 3D",
+      "viewAr": "Modo AR (Pass-through)",
+      "viewVr": "Modo VR (Inmersiva)",
+      "manufacturing": "Fabricación",
+      "bom": "Lista de Materiales (BoM)",
+      "bop": "Lista de Procesos (BoP)",
+      "share": "Compartir",
+      "shareDialogTitle": "Enlace de Compartir (Solo Lectura)",
+      "shareDialogDesc": "Cualquiera con este enlace puede ver el modelo 3D sin poder editarlo.",
+      "adminCredentials": "Credenciales de Administrador (Edición)",
+      "adminDesc": "Envía la URL completa o la contraseña por separado para permitir ediciones.",
+      "urlLabel": "URL:",
+      "passwordLabel": "Contraseña:",
+      "play": "Jugar",
+      "applyMaterial": "Aplicar Material",
+      "duplicate": "Duplicar",
+      "delete": "Eliminar",
+      "gizmo": {
+        "top": "Arriba",
+        "bottom": "Abajo",
+        "front": "Frente",
+        "back": "Atrás",
+        "right": "Derecha",
+        "left": "Izquierda"
+      },
+      "projections": "Proyecciones",
+      "perspective": "Perspectiva",
+      "orthographic": "Ortogonal",
+      "ortho_faces": "Perspectiva Mixta",
+      "account": "Cuenta",
+      "support": "Soporte",
+      "login": "Iniciar Sesión",
+      "logout": "Cerrar Sesión"
+    }
+  },
+  "components": {
+    "dashboard": "Panel de Control",
+    "orders": "Pedidos",
+    "catalog": "Catálogo",
+    "organization": "Organización",
+    "organizations": "Organizaciones",
+    "settings": "Ajustes",
+    "projects": "Proyectos",
+    "production": "Producción",
+    "customers": "Clientes",
+    "team": "Equipo",
+    "tasks": "Tareas",
+    "reviews": "Revisiones",
+    "auth": {
+      "logout": "Cerrar sesión"
+    },
+    "header": {
+      "organization_fallback": "Organización",
+      "user_fallback": "Usuario"
+    },
+    "footer": {
+      "copyright": "© {year} STANDLO. Plataforma para el montaje de ferias europeas.",
+      "terms": "Términos",
+      "privacy": "Privacidad",
+      "support": "Soporte"
+    },
+    "roles": {
+      "customer": "Expositor",
+      "provider": "Proveedor de Partes",
+      "manager": "Account Manager",
+      "designer": "Diseñador",
+      "carpenter": "Carpintero",
+      "builder": "Ensamblador",
+      "painter": "Pintor",
+      "technician": "Técnico",
+      "driver": "Transportista",
+      "promoter": "Promotor"
+    },
+    "devMode": {
+      "title": "Trabajo en progreso",
+      "description": "El entorno dedicado a este rol está actualmente en desarrollo. Estamos creando herramientas a medida para optimizar tu flujo de trabajo. ¡Vuelve pronto!"
+    }
+  },
+  "CanvasOnboarding": {
+    "title": "The Global Factory",
+    "subtitle1": "Designed by Cristian Mazzetti Mazzetti.",
+    "description": "<bold>Experimenta el Temporary Information Modeling</bold>. Crea tu diseño 3D en segundos. Modifica en tiempo real, comparte y explora espacios infinitos con Inteligencia Artificial.",
+    "workspaceTitle": "Espacio de Trabajo Privado",
+    "workspaceDesc": "Comenzarás como Editor. Los cambios solo serán visibles para ti hasta que decidas crear un equipo o compartir el proyecto.",
+    "statusStarting": "Iniciando...",
+    "statusSyncing": "Sincronizando bibliotecas...",
+    "statusReady": "Empezar a Diseñar",
+    "statusFailed": "Sincronización fallida, usando modo sin conexión local.",
+    "tutorials": {
+      "addPart": "Añade partes individuales a tu Canvas.",
+      "addAssembly": "Inserta ensamblajes complejos preconfigurados.",
+      "addBundle": "Explora y añade bundles o soluciones completas.",
+      "move": "Selecciona y mueve elementos en el espacio 3D.",
+      "rotate": "Rota elementos a lo largo de los ejes 3D (X, Y, Z).",
+      "material": "Aplica colores, materiales y texturas avanzadas.",
+      "arVr": "Explora tu Canvas en Realidad Aumentada o Virtual inmersiva."
+    },
+    "subtitle2_1": "<strong>Augmented</strong> with Google Gemini & Cloud • <strong>Inspired</strong> with Apple Design Philosophy • <strong>Architected</strong> with Meta (React & XR) • <strong>Connected</strong> with Starlink Space Network • <strong>Guided</strong> with United Nations SDGs • <strong>Empowered</strong> with Open Source",
+    "subtitle2_2": "<strong>Realized</strong> for Human Beings.",
+    "tutorialNames": {
+      "addPart": "Añadir Pieza",
+      "addAssembly": "Añadir Ensamblaje",
+      "addBundle": "Añadir Paquete",
+      "move": "Mover",
+      "rotate": "Rotar",
+      "material": "Material",
+      "arVr": "AR/VR"
+    }
+  }
 }

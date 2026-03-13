@@ -9,7 +9,7 @@ import { xrStore } from "@/components/layout/canvas/xrStore";
 import { CanvasCreationWizard } from "@/components/layout/canvas/CanvasCreationWizard";
 import { CanvasPart } from "@/components/layout/canvas/CanvasPart";
 import { CanvasAssembly } from "@/components/layout/canvas/CanvasAssembly";
-import { CanvasStand } from "@/components/layout/canvas/CanvasStand";
+import { CanvasDesign } from "@/components/layout/canvas/CanvasDesign";
 import { CanvasHierarchyTree } from "@/components/layout/canvas/CanvasHierarchyTree";
 import { use } from "react";
 
@@ -76,7 +76,7 @@ export default function Canvas3DEditorPage({ params }: { params: Promise<{ roleI
                         {/* Depending on mode, we show tool palettes */}
                         {mode === "part" && <CanvasPart />}
                         {mode === "assembly" && <CanvasAssembly />}
-                        {mode === "stand" && <CanvasStand />}
+                        {mode === "design" && <CanvasDesign />}
                         {/* The Hierarchy Tree is always visible when editing an entity */}
                         <CanvasHierarchyTree entityId={entityId} />
                     </>

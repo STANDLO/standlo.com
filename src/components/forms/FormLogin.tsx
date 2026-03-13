@@ -139,7 +139,7 @@ export function FormLogin() {
             if (savedCanvasId) {
                 try {
                     const { callGateway } = await import("@/lib/api");
-                    await callGateway("canvas", { actionId: "claimCanvasSandbox", payload: { canvasId: savedCanvasId } });
+                    await callGateway("orchestrator", { actionId: "claimCanvasSandbox", payload: { canvasId: savedCanvasId } });
                     localStorage.removeItem("standlo_active_sandbox_canvas");
                 } catch (err) {
                     console.error("Failed to claim canvas", err);
@@ -304,7 +304,7 @@ export function FormLogin() {
         <Card
             color={activeColor as CardColor}
             layout="auto"
-            title={t("title")}
+            title="The Global Factory"
             footer={footer}
         >
             <div id="recaptcha-container"></div>

@@ -183,7 +183,7 @@
     }
 
     .ui-canvas-form {
-        @apply bg-muted p-4 rounded-lg space-y-4 border border-border shadow-lg flex flex-col h-full;
+        @apply bg-muted p-4 rounded-lg space-y-4 border border-border shadow-lg flex flex-col;
     }
 
     .ui-canvas-form-header {

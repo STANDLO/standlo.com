@@ -1,27 +1,26 @@
-import { getFirestore } from "firebase-admin/firestore";
-import { getApp } from "firebase-admin/app";
 import { randomUUID } from "crypto";
 
-const firestore = getFirestore(getApp(), "standlo");
-
 export async function createPlaceEntity(uid: string, payload: Record<string, unknown>) {
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
     const placeId = payload.id as string || randomUUID();
-    const now = new Date().toISOString();
 
     const dbData = {
         id: placeId,
         orgId: payload.orgId || null,
         ownId: uid,
         ...payload,
-        createdAt: now,
-        createdBy: uid,
-        updatedAt: now,
-        updatedBy: uid,
-        deletedAt: null,
         isArchived: false
     };
 
-    await firestore.collection("places").doc(placeId).set(dbData);
+    const req = createInternalRequest({
+        actionId: "create",
+        entityId: "place",
+        payload: { ...dbData, documentId: placeId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -31,17 +30,21 @@ export async function createPlaceEntity(uid: string, payload: Record<string, unk
 }
 
 export async function updatePlaceEntity(uid: string, placeId: string, payload: Record<string, unknown>) {
-    const now = new Date().toISOString();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id: _id, ...restPayload } = payload;
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
-    const updateData = {
-        ...restPayload,
-        updatedAt: now,
-        updatedBy: uid
-    };
+    const restPayload = { ...payload };
+    delete restPayload.id;
 
-    await firestore.collection("places").doc(placeId).update(updateData);
+    const updateData = { ...restPayload };
+
+    const req = createInternalRequest({
+        actionId: "update",
+        entityId: "place",
+        payload: { ...updateData, documentId: placeId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -51,7 +54,16 @@ export async function updatePlaceEntity(uid: string, placeId: string, payload: R
 }
 
 export async function deletePlaceEntity(uid: string, placeId: string) {
-    await firestore.collection("places").doc(placeId).delete();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
+    const req = createInternalRequest({
+        actionId: "delete",
+        entityId: "place",
+        payload: { documentId: placeId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",

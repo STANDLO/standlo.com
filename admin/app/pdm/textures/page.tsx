@@ -13,19 +13,26 @@ type Texture = {
     wrapT?: string;
     repeat?: [number, number];
     storageUrl?: string;
+    compatibleMaterials?: string[];
 };
 
 export default function CanvasTexturesAdminPage() {
     const [items, setItems] = useState<Texture[]>([]);
+    const [materials, setMaterials] = useState<Array<{ id: string; name: string; baseColor: string }>>([]);
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState<Texture | null>(null);
 
     const loadData = async () => {
         setLoading(true);
         try {
-            const res = await fetch("/admin/api/registry/textures");
-            const json = await res.json();
-            setItems(json.data || []);
+            const [resTex, resMat] = await Promise.all([
+                fetch("/admin/api/registry/textures"),
+                fetch("/admin/api/registry/materials")
+            ]);
+            const jsonTex = await resTex.json();
+            const jsonMat = await resMat.json();
+            setItems(jsonTex.data || []);
+            setMaterials(jsonMat.data || []);
         } finally { setLoading(false); }
     };
 
@@ -72,7 +79,7 @@ export default function CanvasTexturesAdminPage() {
                         <h2 className="ui-canvas-panel-title">Textures (Maps)</h2>
                         <p className="ui-canvas-panel-subtitle">Static config: constants/canvas_textures.json</p>
                     </div>
-                    <button onClick={() => setEditing({ name: "", type: "color", valueLight: "#ffffff", wrapS: "RepeatWrapping", wrapT: "RepeatWrapping", repeat: [1, 1] })} className="ui-canvas-btn-primary">
+                    <button onClick={() => setEditing({ name: "", type: "color", valueLight: "#ffffff", wrapS: "RepeatWrapping", wrapT: "RepeatWrapping", repeat: [1, 1], compatibleMaterials: [] })} className="ui-canvas-btn-primary">
                         <Plus className="w-4 h-4 mr-2" /> Add Texture
                     </button>
                 </div>
@@ -123,6 +130,27 @@ export default function CanvasTexturesAdminPage() {
                                 <div className="ui-canvas-form-col-1"><label className="ui-canvas-label">Repeat X</label><input type="number" step="0.1" value={editing.repeat?.[0] || 1} onChange={e => setEditing({ ...editing, repeat: [parseFloat(e.target.value), editing.repeat?.[1] || 1] })} className="ui-canvas-input focus:outline-purple-500" /></div>
                                 <div className="ui-canvas-form-col-1"><label className="ui-canvas-label">Repeat Y</label><input type="number" step="0.1" value={editing.repeat?.[1] || 1} onChange={e => setEditing({ ...editing, repeat: [editing.repeat?.[0] || 1, parseFloat(e.target.value)] })} className="ui-canvas-input focus:outline-purple-500" /></div>
                             </div>
+                            <div className="ui-canvas-form-col-2 mt-4">
+                                <label className="ui-canvas-label mb-2">Compatible Materials</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {materials.map(mat => (
+                                        <label key={mat.id} className="flex items-center space-x-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 px-3 py-1.5 rounded-md cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20">
+                                            <input
+                                                type="checkbox"
+                                                checked={editing.compatibleMaterials?.includes(mat.id) || false}
+                                                onChange={(e) => {
+                                                    const current = editing.compatibleMaterials || [];
+                                                    if (e.target.checked) setEditing({ ...editing, compatibleMaterials: [...current, mat.id] });
+                                                    else setEditing({ ...editing, compatibleMaterials: current.filter(id => id !== mat.id) });
+                                                }}
+                                                className="rounded border-slate-300 dark:border-white/10 text-purple-600 focus:ring-purple-500"
+                                            />
+                                            <div className="w-3 h-3 rounded-full border border-black/10 dark:border-white/10" style={{ backgroundColor: mat.baseColor }}></div>
+                                            <span className="text-sm">{mat.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
                             <div className="ui-canvas-form-actions"><button type="submit" className="ui-canvas-btn-primary"><Save className="w-4 h-4 mr-2" /> Save Texture</button></div>
                         </form>
                     ) : loading ? (
@@ -152,6 +180,7 @@ export default function CanvasTexturesAdminPage() {
                                             <div className="ui-canvas-list-item-subtitle flex gap-2 mt-0.5">
                                                 {item.type !== "color" && <span>Wrap: {item.wrapS}</span>}
                                                 <span>Repeat: [{item.repeat?.[0]}, {item.repeat?.[1]}]</span>
+                                                {item.compatibleMaterials && item.compatibleMaterials.length > 0 && <span>• {item.compatibleMaterials.length} Compatible Materials</span>}
                                             </div>
                                             <div className="text-[10px] text-muted-foreground mt-1 opacity-50 select-all font-mono">ID: {item.id}</div>
                                         </div>

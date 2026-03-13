@@ -6,6 +6,7 @@ import { NextIntlClientProvider, AbstractIntlMessages } from "next-intl";
 import { appCheck } from "@/core/firebase";
 import { getToken } from "firebase/app-check";
 import { APIProvider, useApiIsLoaded } from "@vis.gl/react-google-maps";
+import { set } from "idb-keyval";
 
 // Helper component to synchronize Firebase AppCheck token with Google Maps API
 function GoogleAppCheckSync() {
@@ -76,22 +77,37 @@ function SessionTrackerSync() {
     return null;
 }
 
+// Helper component to synchronize system variables to IndexedDB
+function SystemTrackerSync({ locale, theme, mode, version }: { locale: string; theme: string; mode: string; version: string }) {
+    React.useEffect(() => {
+        if (typeof window === "undefined") return;
+        set("system", { locale, theme, mode, version }).catch(console.error);
+    }, [locale, theme, mode, version]);
+
+    return null;
+}
+
 export function AppProviders({
     children,
     messages,
     locale,
-    uiTheme
+    uiTheme,
+    uiMode,
+    version
 }: {
     children: React.ReactNode;
     messages: AbstractIntlMessages;
     locale: string;
     uiTheme: "light" | "dark";
+    uiMode: string;
+    version: string;
 }) {
     return (
         <NextIntlClientProvider locale={locale} messages={messages} timeZone="Europe/Rome">
             <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""} libraries={['places']}>
                 <GoogleAppCheckSync />
                 <SessionTrackerSync />
+                <SystemTrackerSync locale={locale} theme={uiTheme} mode={uiMode} version={version} />
                 <ThemeProvider initialTheme={uiTheme}>
                     {children}
                 </ThemeProvider>

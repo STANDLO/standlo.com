@@ -18,6 +18,7 @@ export const TextureSchema = BaseSchema.extend({
     wrapT: z.enum(["RepeatWrapping", "ClampToEdgeWrapping", "MirroredRepeatWrapping"]).default("RepeatWrapping"),
     repeat: z.tuple([z.number(), z.number()]).default([1, 1]),
     storageUrl: z.string().optional().describe("URL to the image in Firebase Storage"),
+    compatibleMaterials: z.array(z.string()).default([]),
 });
 export type Texture = z.infer<typeof TextureSchema>;
 export const TextureCreateSchema = createCreationSchema(TextureSchema);

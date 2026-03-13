@@ -2,35 +2,36 @@ import { z } from "zod";
 import { BaseSchema, createCreationSchema, createUpdateSchema, PaginationQuerySchema, BaseNodeSchema, BaseProcessSchema } from "./base";
 import { RoleId } from "./auth";
 import { EntityPolicy } from "../rbac/core";
-export const StandSchema = BaseSchema.extend({
+export const DesignSchema = BaseSchema.extend({
     name: z.string(),
     description: z.string().optional(),
+    type: z.enum(["stand", "bedroom", "bathroom", "kitchen", "office"]).default("stand"),
     // Financial properties
     cost: z.number().optional().describe("Internal standard cost"),
     price: z.number().optional().describe("External standard price"),
 });
-export type Stand = z.infer<typeof StandSchema>;
+export type Design = z.infer<typeof DesignSchema>;
 // --- SUBCOLLECTION SCHEMAS ---
-export const StandAssemblyNodeSchema = BaseNodeSchema.extend({
+export const DesignAssemblyNodeSchema = BaseNodeSchema.extend({
     assemblyId: z.string()
 });
-export type StandAssemblyNode = z.infer<typeof StandAssemblyNodeSchema>;
-export const StandBundleNodeSchema = BaseNodeSchema.extend({
+export type DesignAssemblyNode = z.infer<typeof DesignAssemblyNodeSchema>;
+export const DesignBundleNodeSchema = BaseNodeSchema.extend({
     bundleId: z.string()
 });
-export type StandBundleNode = z.infer<typeof StandBundleNodeSchema>;
-export const StandPartNodeSchema = BaseNodeSchema.extend({
+export type DesignBundleNode = z.infer<typeof DesignBundleNodeSchema>;
+export const DesignPartNodeSchema = BaseNodeSchema.extend({
     partId: z.string()
 });
-export type StandPartNode = z.infer<typeof StandPartNodeSchema>;
-export const StandProcessNodeSchema = BaseProcessSchema.extend({});
-export type StandProcessNode = z.infer<typeof StandProcessNodeSchema>;
-export const StandCreateSchema = createCreationSchema(StandSchema);
-export const StandUpdateSchema = createUpdateSchema(StandSchema);
-export const StandSearchSchema = PaginationQuerySchema.extend({
+export type DesignPartNode = z.infer<typeof DesignPartNodeSchema>;
+export const DesignProcessNodeSchema = BaseProcessSchema.extend({});
+export type DesignProcessNode = z.infer<typeof DesignProcessNodeSchema>;
+export const DesignCreateSchema = createCreationSchema(DesignSchema);
+export const DesignUpdateSchema = createUpdateSchema(DesignSchema);
+export const DesignSearchSchema = PaginationQuerySchema.extend({
     name: z.string().optional(),
 });
-export const StandPolicyMatrix: Record<RoleId, EntityPolicy> = {
+export const DesignPolicyMatrix: Record<RoleId, EntityPolicy> = {
     guest: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: { id: { read: true, write: false }, orgId: { read: true, write: false }, name: { read: true, write: false }, code: { read: true, write: false }, ownId: { read: true, write: false }, active: { read: true, write: false }, version: { read: true, write: false }, users: { read: true, write: false }, updates: { read: true, write: false }, meta: { read: true, write: false }, createdAt: { read: true, write: false }, createdBy: { read: true, write: false }, updatedAt: { read: true, write: false }, updatedBy: { read: true, write: false }, deletedAt: { read: true, write: false }, deletedBy: { read: true, write: false }, isArchived: { read: true, write: false }, endLifeTime: { read: true, write: false }, cost: { read: true, write: false }, price: { read: true, write: false } } },
     pending: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },
     customer: { canCreate: false, canRead: true, canUpdate: false, canDelete: false, fieldPermissions: {} },

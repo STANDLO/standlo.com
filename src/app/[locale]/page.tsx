@@ -1,5 +1,6 @@
-import { CanvasOnboarding } from "@/components/layout/canvas/CanvasOnboarding";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return <CanvasOnboarding />;
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    redirect(`/${locale}/canvas`);
 }

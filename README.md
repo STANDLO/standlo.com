@@ -53,6 +53,11 @@ Interfaccia verso gli LLMs (es. Vertex AI Reasoning Engine).
 Infrastruttura NoSQL per la gestione di Foreign Keys e l'integrità referenziale.
 - **Logica**: Una utility centrale (`correlate.ts`) reagisce agli onDocumentWritten di Firestore gestiti dal **Choreography Gateway**. Analizza gli schemi alla ricerca di naming standardizzati (`[entity]Id` come `meshId`, `partId`) e popola o pulisce automaticamente le relative sotto-collezioni reverse (es. `/meshes/{meshId}/parts/{partId}`) sfruttando aggregazioni batch (`arrayUnion`/`arrayRemove`) per prevenire collisioni e override manuali da parte degli handler transazionali primari.
 
+### 2.7. Cloud Tasks & Regional Infrastructure Limitations
+A causa di limitazioni fisiche dei Datacenter di Google Cloud (GCP), il servizio **Cloud Tasks non è attualmente disponibile nella regione `europe-west4` (Eemshaven)**. Pertanto:
+- Tutte le infrastrutture web, Firestore e le interfacce utente risiedono stabilmente in `europe-west4`.
+- **Tutte le code background basate su `onTaskDispatched` (es. Orchestrazione Canvas / Choreography) DEVONO essere forzate ad utilizzare `europe-west1` (Belgio)** o altra regione europea supportata, specificandolo esplicitamente sia nella configurazione code (`region: "europe-west1"`) sia negli instradamenti dell'Orchestrator (`getFunctions(getApp()).taskQueue("locations/europe-west1/...")`). L'omissione genera errori `400 Invalid Location`.
+
 ---
 
 ## 3. RBAC & Security Context (Zero-Trust JWT)

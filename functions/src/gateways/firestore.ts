@@ -4,6 +4,7 @@ import { buildCollectionPath, getEntityConfig } from "./entityRegistry";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import * as admin from "firebase-admin";
 import * as crypto from "crypto";
+import { z } from "zod";
 
 export const firestore = onCall({
     region: "europe-west4",
@@ -15,6 +16,7 @@ export const firestore = onCall({
     let entityIdStr = "unknown";
     let actionIdStr = "unknown";
     let orgIdStr = "unknown";
+    const startTime = Date.now();
 
     try {
         if (!request.auth) {
@@ -43,7 +45,7 @@ export const firestore = onCall({
         const collectionRef = db.collection(path);
 
         // 1. Idempotency Check for Write Actions
-        const isWrite = ["create", "update", "soft_delete", "hard_delete"].includes(actionId);
+        const isWrite = ["create", "update", "soft_delete", "hard_delete", "batch"].includes(actionId);
         if (idempotencyKey && isWrite) {
             const lockRef = db.collection("idempotency_locks").doc(idempotencyKey);
             const lockSnap = await lockRef.get();
@@ -58,8 +60,7 @@ export const firestore = onCall({
             }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let resultData: any;
+        let resultData: unknown;
 
         switch (actionId) {
             case "list": {
@@ -67,8 +68,7 @@ export const firestore = onCall({
 
                 if (filters && Array.isArray(filters)) {
                     filters.forEach(f => {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        query = query.where(f.field, f.op as any, f.value);
+                        query = query.where(f.field, f.op as admin.firestore.WhereFilterOp, f.value);
                     });
                 }
 
@@ -92,10 +92,10 @@ export const firestore = onCall({
                     query = query.orderBy('createdAt', 'desc');
                 }
 
-                query = query.limit(limit || 50);
+                query = query.limit(Math.min(limit || 50, 500));
 
                 if (cursor) {
-                    const cursorDoc = await collectionRef.doc(cursor).get();
+                    const cursorDoc = await collectionRef.doc(cursor as string).get();
                     if (cursorDoc.exists) {
                         query = query.startAfter(cursorDoc);
                     }
@@ -119,37 +119,45 @@ export const firestore = onCall({
 
                 // Strip timestamps that might arrive as unparsed strings from the client
                 // to avoid Zod schema validation mismatch (expected Date, received string).
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { createdAt, updatedAt, deletedAt, endLifeTime, ...clientPayload } = payload;
+                const clientPayload = { ...payload } as Record<string, unknown>;
+                delete clientPayload.createdAt;
+                delete clientPayload.updatedAt;
+                delete clientPayload.deletedAt;
+                delete clientPayload.endLifeTime;
 
                 const parsedResult = config.schema.safeParse(clientPayload);
                 if (!parsedResult.success) {
                     throw new HttpsError("invalid-argument", `Zod validation failed: ${JSON.stringify(parsedResult.error.issues)}`);
                 }
 
+                const parsedRecord = parsedResult.data as Record<string, unknown>;
+
                 // Security Alert: Mismatch between submitted data and Zod schema
                 const payloadKeysLen = Object.keys(clientPayload).length;
-                const parsedKeysLen = Object.keys(parsedResult.data).length;
+                const parsedKeysLen = Object.keys(parsedRecord).length;
                 if (payloadKeysLen !== parsedKeysLen) {
                     console.warn(`[SecurityAlert] Extra fields stripped during Create on ${entityId}`);
-                    await db.collection("admin/security/alerts").add({
-                        type: "schema_mismatch",
-                        action: "create",
-                        entityId,
-                        uid: request.auth.uid,
-                        payload: JSON.stringify(clientPayload),
-                        errorMessage: "Extra fields stripped during Create",
-                        errorReferenceCode: crypto.randomUUID(),
-                        createdAt: FieldValue.serverTimestamp(),
-                        createdBy: request.auth.uid,
-                        updatedAt: FieldValue.serverTimestamp(),
-                        updatedBy: request.auth.uid,
-                        isArchived: false
-                    });
+                    try {
+                        await db.collection("admin/security/alerts").add({
+                            type: "schema_mismatch",
+                            action: "create",
+                            entityId,
+                            uid: request.auth.uid,
+                            payload: JSON.stringify(clientPayload),
+                            errorMessage: "Extra fields stripped during Create",
+                            errorReferenceCode: crypto.randomUUID(),
+                            createdAt: FieldValue.serverTimestamp(),
+                            createdBy: request.auth.uid,
+                            updatedAt: FieldValue.serverTimestamp(),
+                            updatedBy: request.auth.uid,
+                            isArchived: false
+                        });
+                    } catch (alertError) {
+                        console.warn(`[CircuitBreaker] Failed to save schema_mismatch alert for ${entityId}:`, alertError);
+                    }
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const providedId = (parsedResult.data as any).id || (clientPayload as any).id;
+                const providedId = parsedRecord.id || clientPayload.id;
                 let newRef: admin.firestore.DocumentReference;
 
                 if (providedId && typeof providedId === 'string') {
@@ -163,7 +171,7 @@ export const firestore = onCall({
                 }
                 const now = FieldValue.serverTimestamp();
                 const docData = {
-                    ...parsedResult.data, // Strictly validated data
+                    ...parsedRecord, // Strictly validated data
                     orgId: resolvedOrgId || "system",
                     createdBy: request.auth.uid,
                     createdAt: now,
@@ -182,44 +190,50 @@ export const firestore = onCall({
                 }
 
                 // Strip timestamps that might arrive as unparsed strings from the client
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { createdAt, updatedAt, deletedAt, endLifeTime, ...clientPayload } = payload;
+                const clientPayload = { ...payload } as Record<string, unknown>;
+                delete clientPayload.createdAt;
+                delete clientPayload.updatedAt;
+                delete clientPayload.deletedAt;
+                delete clientPayload.endLifeTime;
 
                 // Allow partial updates for existing fields
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const partialSchema = (config.schema as any).partial ? (config.schema as any).partial() : config.schema;
+                const schemaAny = config.schema as z.ZodObject<z.ZodRawShape>;
+                const partialSchema = schemaAny.partial ? schemaAny.partial() : config.schema;
                 const parsedResult = partialSchema.safeParse(clientPayload);
 
                 if (!parsedResult.success) {
                     throw new HttpsError("invalid-argument", `Zod validation failed: ${JSON.stringify(parsedResult.error.issues)}`);
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const { id, ...updateData } = parsedResult.data as any;
+                const { id, ...updateData } = parsedResult.data as Record<string, unknown>;
 
                 const payloadKeysLen = Object.keys(clientPayload).filter(k => k !== 'id').length;
                 const parsedKeysLen = Object.keys(updateData).length;
                 if (payloadKeysLen !== parsedKeysLen) {
-                    await db.collection("admin/security/alerts").add({
-                        type: "schema_mismatch",
-                        action: "update",
-                        entityId,
-                        uid: request.auth.uid,
-                        payload: JSON.stringify(clientPayload),
-                        errorMessage: "Extra fields stripped during Update",
-                        errorReferenceCode: crypto.randomUUID(),
-                        createdAt: FieldValue.serverTimestamp(),
-                        createdBy: request.auth.uid,
-                        updatedAt: FieldValue.serverTimestamp(),
-                        updatedBy: request.auth.uid,
-                        isArchived: false
-                    });
+                    try {
+                        await db.collection("admin/security/alerts").add({
+                            type: "schema_mismatch",
+                            action: "update",
+                            entityId,
+                            uid: request.auth.uid,
+                            payload: JSON.stringify(clientPayload),
+                            errorMessage: "Extra fields stripped during Update",
+                            errorReferenceCode: crypto.randomUUID(),
+                            createdAt: FieldValue.serverTimestamp(),
+                            createdBy: request.auth.uid,
+                            updatedAt: FieldValue.serverTimestamp(),
+                            updatedBy: request.auth.uid,
+                            isArchived: false
+                        });
+                    } catch (alertError) {
+                        console.warn(`[CircuitBreaker] Failed to save schema_mismatch alert for ${entityId}:`, alertError);
+                    }
                 }
 
                 updateData.updatedAt = FieldValue.serverTimestamp();
                 updateData.updatedBy = request.auth.uid;
 
-                const docRef = collectionRef.doc(id);
+                const docRef = collectionRef.doc(id as string);
                 await docRef.update(updateData);
                 resultData = { id, ...updateData };
                 break;
@@ -245,6 +259,135 @@ export const firestore = onCall({
                 resultData = { id: payload.id, softDeleted: true };
                 break;
             }
+            case "batch": {
+                if (!payload?.operations || !Array.isArray(payload.operations)) {
+                    throw new HttpsError("invalid-argument", "Batch action requires 'operations' array in payload.");
+                }
+                if (payload.operations.length > 500) {
+                    throw new HttpsError("invalid-argument", "Batch action cannot exceed 500 operations. Please chunk your requests.");
+                }
+
+                const batchWrite = db.batch();
+                const now = FieldValue.serverTimestamp();
+                const results: Array<Record<string, unknown>> = [];
+
+                for (const op of payload.operations) {
+                    if (typeof op !== 'object' || op === null) continue;
+                    const opObj = op as Record<string, unknown>;
+                    const opType = opObj.type as string;
+                    const opEntityId = (opObj.entityId as string) || entityId; // Inherit if not provided
+                    const opConfig = getEntityConfig(opEntityId);
+                    const opCollectionPath = buildCollectionPath(opEntityId, resolvedOrgId);
+                    const opCollectionRef = db.collection(opCollectionPath);
+
+                    if (opType === "create") {
+                        const opData = (opObj.data as Record<string, unknown>) || {};
+                        const clientPayload = { ...opData } as Record<string, unknown>;
+                        delete clientPayload.createdAt;
+                        delete clientPayload.updatedAt;
+                        delete clientPayload.deletedAt;
+                        delete clientPayload.endLifeTime;
+
+                        const parsedResult = opConfig.schema.safeParse(clientPayload);
+                        if (!parsedResult.success) {
+                            throw new HttpsError("invalid-argument", `Batch Create Zod validation failed for ${opEntityId}: ${JSON.stringify(parsedResult.error.issues)}`);
+                        }
+                        
+                        const parsedRecord = parsedResult.data as Record<string, unknown>;
+                        const providedId = parsedRecord.id || clientPayload.id;
+                        let newRef: admin.firestore.DocumentReference;
+
+                        if (providedId && typeof providedId === 'string') {
+                            newRef = opCollectionRef.doc(providedId);
+                        } else {
+                            newRef = opCollectionRef.doc();
+                            parsedRecord.id = newRef.id;
+                        }
+
+                        const payloadKeysLen = Object.keys(clientPayload).length;
+                        const parsedKeysLen = Object.keys(parsedRecord).length;
+                        if (payloadKeysLen !== parsedKeysLen) {
+                            console.warn(`[SecurityAlert] Extra fields stripped during Batch Create on ${opEntityId}`);
+                        }
+
+                        const docData = {
+                            ...parsedRecord,
+                            orgId: resolvedOrgId || "system",
+                            createdBy: request.auth.uid,
+                            createdAt: now,
+                            updatedBy: request.auth.uid,
+                            updatedAt: now,
+                            isArchived: false,
+                            deletedAt: null
+                        };
+                        
+                        batchWrite.set(newRef, docData);
+                        results.push({ type: "create", id: newRef.id });
+
+                    } else if (opType === "update") {
+                        if (!opObj.id || typeof opObj.id !== 'string') throw new HttpsError("invalid-argument", "Batch update requires an 'id'.");
+                        const docRef = opCollectionRef.doc(opObj.id);
+                        
+                        const opData = (opObj.data as Record<string, unknown>) || {};
+                        const clientPayload = { ...opData } as Record<string, unknown>;
+                        delete clientPayload.createdAt;
+                        delete clientPayload.updatedAt;
+                        delete clientPayload.deletedAt;
+                        delete clientPayload.endLifeTime;
+
+                        const schemaAny = opConfig.schema as z.ZodObject<z.ZodRawShape>;
+                        const partialSchema = schemaAny.partial ? schemaAny.partial() : opConfig.schema;
+                        const parsedResult = partialSchema.safeParse(clientPayload);
+
+                        if (!parsedResult.success) {
+                            throw new HttpsError("invalid-argument", `Batch Update Zod validation failed for ${opEntityId}: ${JSON.stringify(parsedResult.error.issues)}`);
+                        }
+                        
+                        const parsedRecord = parsedResult.data as Record<string, unknown>;
+                        const updateData = { ...parsedRecord };
+                        delete updateData.id;
+                        updateData.updatedAt = now;
+                        updateData.updatedBy = request.auth.uid;
+
+                        batchWrite.update(docRef, updateData);
+                        results.push({ type: "update", id: opObj.id });
+
+                    } else if (opType === "delete") {
+                        if (!opObj.id || typeof opObj.id !== 'string') throw new HttpsError("invalid-argument", "Batch delete requires an 'id'.");
+                        if (opEntityId === "warehouse" && orgId) {
+                            const orgDoc = await db.collection("organizations").doc(orgId).get();
+                            if (orgDoc.exists && orgDoc.data()?.headquarterId === opObj.id) {
+                                throw new HttpsError("permission-denied", "Il magazzino principale (Headquarter) non può essere eliminato nel batch.");
+                            }
+                        }
+                        const docRef = opCollectionRef.doc(opObj.id);
+                        batchWrite.delete(docRef);
+                        results.push({ type: "delete", id: opObj.id });
+
+                    } else if (opType === "soft_delete") {
+                        if (!opObj.id || typeof opObj.id !== 'string') throw new HttpsError("invalid-argument", "Batch soft_delete requires an 'id'.");
+                        if (opEntityId === "warehouse" && orgId) {
+                            const orgDoc = await db.collection("organizations").doc(orgId).get();
+                            if (orgDoc.exists && orgDoc.data()?.headquarterId === opObj.id) {
+                                throw new HttpsError("permission-denied", "Il magazzino principale (Headquarter) non può essere eliminato nel batch.");
+                            }
+                        }
+                        const docRef = opCollectionRef.doc(opObj.id);
+                        batchWrite.update(docRef, {
+                            deletedAt: now,
+                            deletedBy: request.auth.uid,
+                            updatedAt: now
+                        });
+                        results.push({ type: "soft_delete", id: opObj.id });
+                    } else {
+                        throw new HttpsError("invalid-argument", `Unsupported batch operation type: ${opType}`);
+                    }
+                }
+
+                await batchWrite.commit();
+                resultData = results;
+                break;
+            }
             default:
                 throw new HttpsError("unimplemented", `Action ${actionId} not supported.`);
         }
@@ -261,14 +404,18 @@ export const firestore = onCall({
             });
         }
 
+        const duration = Date.now() - startTime;
+        if (duration > 500) {
+            console.warn(`[PerformanceTelemetry][${correlationId || 'no-corr-id'}] Slow query detected: ${actionId} on ${entityId} took ${duration}ms.`);
+        }
+
         return {
             status: "success",
             actionId,
             data: resultData
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(`[FirestoreGateway][${errorReferenceCode}] Error processing request:`, error);
 
         try {
@@ -282,7 +429,7 @@ export const firestore = onCall({
                 email: request.auth?.token?.email || null,
                 roleId: request.auth?.token?.roleId || "unknown",
                 payload: JSON.stringify(request.data?.payload || {}),
-                errorMessage: error.message || String(error),
+                errorMessage: error instanceof Error ? error.message : String(error),
                 errorReferenceCode,
                 createdAt: FieldValue.serverTimestamp(),
                 createdBy: request.auth?.uid || "system",

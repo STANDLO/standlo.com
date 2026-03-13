@@ -6,7 +6,8 @@
     "dev": "rm -rf .next && next dev -p 3001",
     "build": "next build",
     "start": "next start -p 4000",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "validate": "npm run lint && next build"
   },
   "dependencies": {
     "@xyflow/react": "^12.10.1",

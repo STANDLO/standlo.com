@@ -4,14 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, TriangleAlert, Loader2 } from "lucide-react";
 
-export const vatSystemLocales = [
-    { code: "it", nativeLabel: "Italia", flag: "🇮🇹" },
-    { code: "es", nativeLabel: "España", flag: "🇪🇸" },
-    { code: "en", nativeLabel: "United Kingdom", flag: "🇬🇧" },
-    { code: "us", nativeLabel: "United States of America", flag: "🇺🇸" },
-    { code: "de", nativeLabel: "Deutschland", flag: "🇩🇪" },
-    { code: "fr", nativeLabel: "France", flag: "🇫🇷" }
-];
+import { systemLocales as vatSystemLocales, euLocales } from "../../../functions/src/core/constants";
 
 export interface InputVatProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
     value?: string; // full value like "IT12345678901" or just "12345678901"
@@ -64,6 +57,19 @@ export const InputVat = React.forwardRef<HTMLInputElement, InputVatProps>(
             }
 
             const timeoutId = setTimeout(async () => {
+                // If the selected country is not an EU locale, skip VIES validation
+                if (!euLocales.includes(country.toLowerCase())) {
+                    setIsValidating(false);
+                    if (roleId === "customer") {
+                        setValidationState("success");
+                        setValidationMessage("Bypass for Extra-EU Customer");
+                    } else {
+                        setValidationState("warning");
+                        setValidationMessage("Extra-EU: VIES not supported. You must enable it to act as provider/manager.");
+                    }
+                    return;
+                }
+
                 setIsValidating(true);
                 try {
                     const res = await fetch("/api/vies", {
@@ -117,9 +123,9 @@ export const InputVat = React.forwardRef<HTMLInputElement, InputVatProps>(
         if (validationState === "warning") variantClass = "ui-input-warning";
 
         return (
-            <div className="flex flex-col gap-1 w-full relative">
+            <div className="ui-input-wrapper">
                 {label && (
-                    <label htmlFor={id} className="ui-input-label text-foreground">
+                    <label htmlFor={id} className="ui-input-label">
                         {label}
                     </label>
                 )}

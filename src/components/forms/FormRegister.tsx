@@ -122,9 +122,10 @@ export function FormRegister() {
         <Card
             color={activeColor as CardColor}
             layout="auto"
-            title={t("Register.title")}
+            title="The Global Factory"
             footer={footer}
         >
+            <div id="recaptcha-container"></div>
             <form onSubmit={onSubmit} className="layout-auth-form">
                 {error && (
                     <div className="layout-auth-error">

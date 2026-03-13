@@ -1,13 +1,11 @@
-import { getFirestore } from "firebase-admin/firestore";
-import { getApp } from "firebase-admin/app";
 import { randomUUID } from "crypto";
 import { getEntityConfig } from "../gateways/entityRegistry";
 
-const firestore = getFirestore(getApp(), "standlo");
-
 export async function createPipelineEntity(uid: string, payload: Record<string, unknown>) {
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
     const pipelineId = payload.id as string || randomUUID();
-    const now = new Date().toISOString();
 
     const pipelineData = {
         id: pipelineId,
@@ -16,15 +14,16 @@ export async function createPipelineEntity(uid: string, payload: Record<string, 
         ...payload,
         nodes: payload.nodes || [],
         edges: payload.edges || [],
-        createdAt: now,
-        createdBy: uid,
-        updatedAt: now,
-        updatedBy: uid,
-        deletedAt: null,
         isArchived: false
     };
 
-    await firestore.collection("pipelines").doc(pipelineId).set(pipelineData);
+    const req = createInternalRequest({
+        actionId: "create",
+        entityId: "pipeline",
+        payload: { ...pipelineData, documentId: pipelineId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -34,17 +33,21 @@ export async function createPipelineEntity(uid: string, payload: Record<string, 
 }
 
 export async function updatePipelineEntity(uid: string, pipelineId: string, payload: Record<string, unknown>) {
-    const now = new Date().toISOString();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
     const restPayload = { ...payload };
     delete restPayload.id;
 
-    const updateData = {
-        ...restPayload,
-        updatedAt: now,
-        updatedBy: uid
-    };
+    const updateData = { ...restPayload };
 
-    await firestore.collection("pipelines").doc(pipelineId).update(updateData);
+    const req = createInternalRequest({
+        actionId: "update",
+        entityId: "pipeline",
+        payload: { ...updateData, documentId: pipelineId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -54,14 +57,21 @@ export async function updatePipelineEntity(uid: string, pipelineId: string, payl
 }
 
 export async function deletePipelineEntity(uid: string, pipelineId: string) {
-    const now = new Date().toISOString();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
     // Safe Deletion Protocol: Soft delete by archiving to prevent breakages in active workflows
-    await firestore.collection("pipelines").doc(pipelineId).update({
-        isArchived: true,
-        deletedAt: now,
-        updatedBy: uid
-    });
+    const req = createInternalRequest({
+        actionId: "update",
+        entityId: "pipeline",
+        payload: {
+            documentId: pipelineId,
+            isArchived: true,
+            deletedAt: new Date().toISOString()
+        }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -103,12 +113,21 @@ function interpolateObject(obj: unknown, context: Record<string, unknown>): unkn
 }
 
 export async function runPipeline(uid: string, pipelineId: string, inputContext: Record<string, unknown> = {}, isDryRun: boolean = true) {
-    const doc = await firestore.collection("pipelines").doc(pipelineId).get();
-    if (!doc.exists) {
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
+    const pipelineReq = createInternalRequest({
+        actionId: "read",
+        entityId: "pipeline",
+        payload: { id: pipelineId }
+    }, uid, "standlo");
+    const pipelineRes = await firestore.run(pipelineReq);
+
+    if (!pipelineRes.data) {
         throw new Error(`Pipeline ${pipelineId} not found.`);
     }
 
-    const pipeline = doc.data() as Record<string, unknown>;
+    const pipeline = pipelineRes.data as Record<string, unknown>;
     const nodes: Record<string, unknown>[] = (pipeline["nodes"] as Record<string, unknown>[]) || [];
     const edges: Record<string, unknown>[] = (pipeline["edges"] as Record<string, unknown>[]) || [];
 
@@ -166,7 +185,7 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                 }
             } else if (nodeType === "action") {
                 const actionType = config["actionType"] as string;
-                const targetPath = config["targetPath"] as string; // e.g., 'part', 'stand'
+                const targetPath = config["targetPath"] as string; // e.g., 'part', 'design'
                 let payloadObj: Record<string, unknown> = {};
 
                 if (config["payload"]) {
@@ -232,33 +251,25 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                         }
                     } else if (actionType === "firestore_create") {
                         const newId = (payloadObj["id"] as string) || randomUUID();
-                        const now = new Date().toISOString();
-                        const ObjectWithId = {
-                            id: newId,
-                            ownId: uid,
-                            ...payloadObj,
-                            createdAt: now,
-                            createdBy: uid,
-                            updatedAt: now,
-                            updatedBy: uid,
-                            deletedAt: null,
-                            isArchived: false
-                        };
-                        const colRef = firestore.collection(targetPath);
-                        await colRef.doc(newId).set(ObjectWithId);
-                        output.result = { status: "success", data: { id: newId, path: `${targetPath}/${newId}` } };
+                        const req = createInternalRequest({
+                            actionId: "create",
+                            entityId: targetPath, // Assuming targetPath is entity name
+                            payload: { ...payloadObj, documentId: newId }
+                        }, uid, (pipeline["orgId"] as string) || "standlo");
+                        
+                        const res = await firestore.run(req);
+                        output.result = { status: "success", data: res.data };
                     } else if (actionType === "firestore_update") {
                         if (!payloadObj["id"]) throw new Error("firestore_update requires 'id' in payload");
-                        const now = new Date().toISOString();
                         const { id, ...restPayload } = payloadObj;
-                        const updateData = {
-                            ...restPayload,
-                            updatedAt: now,
-                            updatedBy: uid
-                        };
-                        const colRef = firestore.collection(targetPath);
-                        await colRef.doc(id as string).update(updateData);
-                        output.result = { status: "success", data: { id, path: `${targetPath}/${id}` } };
+                        const req = createInternalRequest({
+                            actionId: "update",
+                            entityId: targetPath,
+                            payload: { ...restPayload, documentId: id as string }
+                        }, uid, (pipeline["orgId"] as string) || "standlo");
+                        
+                        const res = await firestore.run(req);
+                        output.result = { status: "success", data: res.data };
                     } else if (actionType === "http_request") {
                         // Placeholder for external fetch
                         output.result = `Simulated HTTP request to ${targetPath}`;
@@ -280,12 +291,18 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
 
                 console.log(`[Pipeline] Brain Node ${currentNode["id"] as string} requesting Skill ${skillId}`);
 
-                // Load skill document from Firestore
-                const skillDocRef = await firestore.collection("ai_skills").doc(skillId).get();
-                if (!skillDocRef.exists) {
+                // Load skill document from Gateway
+                const skillReq = createInternalRequest({
+                    actionId: "read",
+                    entityId: "ai_skill",
+                    payload: { id: skillId }
+                }, uid, (pipeline["orgId"] as string) || "standlo");
+
+                const skillRes = await firestore.run(skillReq);
+                if (!skillRes.data) {
                     throw new Error(`AI Skill '${skillId}' not found in database.`);
                 }
-                const skillDocData = skillDocRef.data();
+                const skillDocData = skillRes.data;
 
                 // Compute the AI input payload combining statically configured fields and Handlebars interpolations
                 let payloadObj: Record<string, unknown> = {};
@@ -358,7 +375,8 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
 
     if (!isDryRun) {
         try {
-            await firestore.collection("pipelines_executions").doc(randomUUID()).set({
+            const executionData = {
+                documentId: randomUUID(),
                 pipelineId,
                 status: executionLog.some(l => l["status"] === "error") ? "error" : "success",
                 startedAt: executionLog.length > 0 ? ((executionLog[0] as Record<string, unknown>)["output"] as Record<string, unknown>)?.["executedAt"] || new Date().toISOString() : new Date().toISOString(),
@@ -366,9 +384,15 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                 triggeredBy: uid,
                 log: executionLog,
                 finalContext: executionContext,
-                isArchived: false,
-                deletedAt: null
-            });
+            };
+
+            const req = createInternalRequest({
+                actionId: "create",
+                entityId: "pipeline_execution",
+                payload: executionData
+            }, uid, (pipeline["orgId"] as string) || "standlo");
+
+            await firestore.run(req);
         } catch (e) {
             console.error(`[Pipeline ${pipelineId}] Failed to save execution log:`, e);
         }

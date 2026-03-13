@@ -1,4 +1,5 @@
 export * from "./auth";
+export * from "./primitives";
 export * from "./base";
 export * from "./ui";
 export * from "./user";
@@ -12,7 +13,7 @@ export * from "./warehouse";
 export * from "./workcenter";
 export * from "./shelve";
 export * from "./tool";
-export * from "./stand";
+export * from "./design";
 export * from "./build";
 export * from "./emergency";
 export * from "./assembly";

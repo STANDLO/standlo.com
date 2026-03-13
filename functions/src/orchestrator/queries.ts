@@ -1,65 +1,42 @@
-import * as admin from "firebase-admin";
 import { HttpsError } from "firebase-functions/v2/https";
-import { buildCollectionPath } from "../gateways/entityRegistry";
-import { getApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-
-const db = getFirestore(getApp(), "standlo");
 
 export async function listEntities(uid: string, entityId: string, orgId?: string, payload?: Record<string, unknown>) {
     if (!entityId) {
         throw new HttpsError("invalid-argument", "Entity ID is required for listing entities.");
     }
 
-    // Allow basic entity list for PDM
-    const path = buildCollectionPath(entityId, orgId); // Org ID can be empty for global PDM entities
-    let query: admin.firestore.Query = db.collection(path);
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
-    const filters = payload?.filters as Array<{ field: string, op: string, value: unknown }>;
-    if (filters && Array.isArray(filters)) {
-        filters.forEach(f => {
-            query = query.where(f.field, f.op as admin.firestore.WhereFilterOp, f.value);
-        });
+    // We can pass `ignoreSystemFilters` as an explicit `deletedAt` filter if needed, 
+    // but the `firestore.run` gateway already handles default system filters.
+    // However, if the client requested `ignoreSystemFilters: true`, we might need a workaround,
+    // but the centralized `firestore.ts` doesn't currently support an explicit bypass
+    // other than querying for *all* (e.g., deletedAt == 'any'), which Firestore doesn't support easily.
+    // For now, we rely on `firestore.ts`'s standard filtering behavior.
+    
+    // Determine filters
+    const finalFilters = payload?.filters as Array<{ field: string, op: "==" | "<" | "<=" | ">" | ">=" | "array-contains" | "in" | "array-contains-any" | "not-in" | "!=", value: unknown }> | undefined;
+
+    if (payload?.ignoreSystemFilters === true) {
+        // To bypass `isArchived == false`, add a dummy filter if we must? We can't in Firestore.
+        // Actually, the new gateway standard is to NOT ignore system filters unless a specific filter is provided.
     }
 
-    const ignoreSystemFilters = payload?.ignoreSystemFilters === true;
+    const req = createInternalRequest({
+        actionId: "list",
+        entityId: entityId,
+        limit: payload?.limit as number,
+        cursor: payload?.cursor as string,
+        orderBy: payload?.orderBy as Array<{ field: string, direction: 'asc' | 'desc' }>,
+        filters: finalFilters,
+    }, uid, orgId);
 
-    if (!ignoreSystemFilters) {
-        const hasDeletedFilter = filters?.find(f => f.field === 'deletedAt');
-        if (!hasDeletedFilter) {
-            query = query.where('deletedAt', '==', null);
-        }
-        const hasArchivedFilter = filters?.find(f => f.field === 'isArchived');
-        if (!hasArchivedFilter) {
-            query = query.where('isArchived', '==', false);
-        }
-    }
-
-    const orderBy = payload?.orderBy as Array<{ field: string, direction: 'asc' | 'desc' }>;
-    if (orderBy && Array.isArray(orderBy)) {
-        orderBy.forEach(o => {
-            query = query.orderBy(o.field, o.direction);
-        });
-    } else {
-        query = query.orderBy('createdAt', 'desc');
-    }
-
-    query = query.limit((payload?.limit as number) || 50);
-
-    const cursor = payload?.cursor as string;
-    if (cursor) {
-        const cursorDoc = await db.collection(path).doc(cursor).get();
-        if (cursorDoc.exists) {
-            query = query.startAfter(cursorDoc);
-        }
-    }
-
-    const snapshot = await query.get();
-    const resultData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
+    const result = await firestore.run(req);
+    
     return {
         status: "success",
-        data: resultData
+        data: result.data
     };
 }
 
@@ -67,15 +44,20 @@ export async function readEntity(uid: string, entityId: string, docId: string) {
     if (!entityId || !docId) {
         throw new HttpsError("invalid-argument", "Entity ID and Document ID are required for reading an entity.");
     }
-    const path = buildCollectionPath(entityId, "");
-    const docSnap = await db.collection(path).doc(docId).get();
 
-    if (!docSnap.exists) {
-        throw new HttpsError("not-found", "Document not found.");
-    }
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
+    const req = createInternalRequest({
+        actionId: "read",
+        entityId: entityId,
+        payload: { id: docId }
+    }, uid, "");
+
+    const result = await firestore.run(req);
 
     return {
         status: "success",
-        data: { id: docSnap.id, ...docSnap.data() }
+        data: result.data
     };
 }

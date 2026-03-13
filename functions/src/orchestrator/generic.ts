@@ -1,28 +1,27 @@
-import { getFirestore } from "firebase-admin/firestore";
-import * as admin from "firebase-admin";
 import { randomUUID } from "crypto";
-import { buildCollectionPath } from "../gateways/entityRegistry";
 
 export async function createGenericEntity(entityId: string, uid: string, payload: Record<string, unknown>) {
-    const db = getFirestore(admin.app(), "standlo");
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
     const newId = (payload.id as string) || randomUUID();
-    const now = new Date().toISOString();
 
+    const req = createInternalRequest({
+        actionId: "create",
+        entityId: entityId,
+        payload: {
+            ...payload,
+            documentId: newId,
+            id: newId,
+            ownId: uid,
+            isArchived: false
+        }
+    }, uid);
+
+    await firestore.run(req);
+
+    const { buildCollectionPath } = await import("../gateways/entityRegistry");
     const collectionPath = buildCollectionPath(entityId, payload.orgId as string);
-
-    const docData = {
-        id: newId,
-        ownId: uid,
-        ...payload,
-        createdAt: now,
-        createdBy: uid,
-        updatedAt: now,
-        updatedBy: uid,
-        deletedAt: null,
-        isArchived: false
-    };
-
-    await db.collection(collectionPath).doc(newId).set(docData);
 
     return {
         status: "success",
@@ -34,20 +33,25 @@ export async function createGenericEntity(entityId: string, uid: string, payload
 }
 
 export async function updateGenericEntity(entityId: string, uid: string, docId: string, payload: Record<string, unknown>) {
-    const db = getFirestore(admin.app(), "standlo");
-    const now = new Date().toISOString();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id: _id, ...restPayload } = payload;
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
+    const restPayload = { ...payload };
+    delete restPayload.id;
+
+    const req = createInternalRequest({
+        actionId: "update",
+        entityId: entityId,
+        payload: {
+            ...restPayload,
+            documentId: docId
+        }
+    }, uid);
+
+    await firestore.run(req);
+
+    const { buildCollectionPath } = await import("../gateways/entityRegistry");
     const collectionPath = buildCollectionPath(entityId, payload.orgId as string);
-
-    const updateData = {
-        ...restPayload,
-        updatedAt: now,
-        updatedBy: uid
-    };
-
-    await db.collection(collectionPath).doc(docId).update(updateData);
 
     return {
         status: "success",
@@ -59,16 +63,19 @@ export async function updateGenericEntity(entityId: string, uid: string, docId: 
 }
 
 export async function deleteGenericEntity(entityId: string, uid: string, docId: string, payload: Record<string, unknown>) {
-    const db = getFirestore(admin.app(), "standlo");
-    const now = new Date().toISOString();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
+    const req = createInternalRequest({
+        actionId: "delete",
+        entityId: entityId,
+        payload: { documentId: docId }
+    }, uid);
+
+    await firestore.run(req);
+
+    const { buildCollectionPath } = await import("../gateways/entityRegistry");
     const collectionPath = buildCollectionPath(entityId, payload.orgId as string);
-
-    await db.collection(collectionPath).doc(docId).update({
-        deletedAt: now,
-        updatedBy: uid,
-        isArchived: true
-    });
 
     return {
         status: "success",

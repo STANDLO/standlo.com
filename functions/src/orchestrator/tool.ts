@@ -1,27 +1,26 @@
-import { getFirestore } from "firebase-admin/firestore";
-
-import { getApp } from "firebase-admin/app";
-const firestore = getFirestore(getApp(), "standlo");
 import { randomUUID } from "crypto";
 
 export async function createToolEntity(uid: string, payload: Record<string, unknown>) {
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
     const toolId = payload.id as string || randomUUID();
-    const now = new Date().toISOString();
 
     const toolData = {
         id: toolId,
         orgId: payload.orgId || null,
-        ownId: uid,
+        ownId: uid, // Preserving original ownId mapping
         ...payload,
-        createdAt: now,
-        createdBy: uid,
-        updatedAt: now,
-        updatedBy: uid,
-        deletedAt: null,
         isArchived: false
     };
 
-    await firestore.collection("tools").doc(toolId).set(toolData);
+    const req = createInternalRequest({
+        actionId: "create",
+        entityId: "tool",
+        payload: { ...toolData, documentId: toolId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -31,18 +30,19 @@ export async function createToolEntity(uid: string, payload: Record<string, unkn
 }
 
 export async function updateToolEntity(uid: string, toolId: string, payload: Record<string, unknown>) {
-    const now = new Date().toISOString();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, ...restPayload } = payload;
+    const updateData = { ...payload };
+    delete updateData.id;
 
-    const updateData = {
-        ...restPayload,
-        updatedAt: now,
-        updatedBy: uid
-    };
+    const req = createInternalRequest({
+        actionId: "update",
+        entityId: "tool",
+        payload: { ...updateData, documentId: toolId }
+    }, uid);
 
-    await firestore.collection("tools").doc(toolId).update(updateData);
+    await firestore.run(req);
 
     return {
         status: "success",
@@ -52,7 +52,16 @@ export async function updateToolEntity(uid: string, toolId: string, payload: Rec
 }
 
 export async function deleteToolEntity(uid: string, toolId: string) {
-    await firestore.collection("tools").doc(toolId).delete();
+    const { firestore } = await import("../gateways/firestore");
+    const { createInternalRequest } = await import("../gateways/internal");
+
+    const req = createInternalRequest({
+        actionId: "delete",
+        entityId: "tool",
+        payload: { documentId: toolId }
+    }, uid);
+
+    await firestore.run(req);
 
     return {
         status: "success",

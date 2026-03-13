@@ -11,7 +11,7 @@ import { WarehousePolicyMatrix } from "../schemas/warehouse";
 import { WorkcenterPolicyMatrix } from "../schemas/workcenter";
 import { ShelvePolicyMatrix } from "../schemas/shelve";
 import { ToolPolicyMatrix } from "../schemas/tool";
-import { StandPolicyMatrix } from "../schemas/stand";
+import { DesignPolicyMatrix } from "../schemas/design";
 import { AssemblyPolicyMatrix } from "../schemas/assembly";
 import { PartPolicyMatrix } from "../schemas/part";
 import { ProcessPolicyMatrix } from "../schemas/process";
@@ -37,7 +37,7 @@ const PolicyMatrices: Record<string, Record<RoleId, EntityPolicy>> = {
     workcenter: WorkcenterPolicyMatrix,
     shelve: ShelvePolicyMatrix,
     tool: ToolPolicyMatrix,
-    stand: StandPolicyMatrix,
+    design: DesignPolicyMatrix,
     assembly: AssemblyPolicyMatrix,
     part: PartPolicyMatrix,
     process: ProcessPolicyMatrix,

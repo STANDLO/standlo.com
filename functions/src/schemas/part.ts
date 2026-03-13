@@ -54,6 +54,7 @@ export const PartSchema = BaseSchema.extend({
     cost: z.number().optional().describe("Internal standard cost"),
     price: z.number().optional().describe("External standard price"),
     meshId: z.string().optional().describe("ID della Mesh di base da cui ereditare la geometria e il materiale nativo"),
+    defaultTextureId: z.string().optional().describe("ID della texture variante di default (es. Moquette Rossa)"),
     gltfUrl: z.string().optional().describe("URL to the Draco-compressed .glb file stored in Firebase Storage"),
     useCases: z.array(z.object({
         canvasType: z.string(),

@@ -39,11 +39,11 @@ export function CanvasHeaderAdd({ roleId, entityId }: CanvasHeaderAddProps) {
             </button>
             <button
                 disabled={disabled}
-                onClick={() => setMode(mode === "stand" ? null : "stand")}
-                className={`ui-canvas-toolbar-btn disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-muted-foreground ${mode === "stand" ? "ui-canvas-toolbar-btn-active" : "ui-canvas-toolbar-btn-inactive"}`}
+                onClick={() => setMode(mode === "design" ? null : "design")}
+                className={`ui-canvas-toolbar-btn disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-muted-foreground ${mode === "design" ? "ui-canvas-toolbar-btn-active" : "ui-canvas-toolbar-btn-inactive"}`}
             >
                 <Box className="ui-canvas-btn-icon" />
-                Stand
+                Design
             </button>
         </div>
     );

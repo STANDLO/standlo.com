@@ -13,8 +13,7 @@ export const orchestrator = onCall({
     const data = request.data as GatewayRequest;
     const { correlationId, idempotencyKey, orgId, userId, roleId, entityId, actionId, payload } = data;
 
-    // 1. Mandatory Auth check for mutating actions
-    const publicActions = ["list", "read"];
+    const publicActions = ["list", "read", "createCanvasSandbox", "claimCanvasSandbox", "createNode", "updateNode", "deleteNode"];
     if (!request.auth && !publicActions.includes(actionId)) {
         throw new HttpsError("unauthenticated", `User must be authenticated to access Orchestrator action: ${actionId}`);
     }
@@ -58,6 +57,37 @@ export const orchestrator = onCall({
         return onboardOrganization(uid, payload as Record<string, unknown>);
     }
 
+    if (
+        actionId === "createCanvasSandbox" || 
+        actionId === "claimCanvasSandbox" ||
+        actionId === "createNode" ||
+        actionId === "updateNode" ||
+        actionId === "deleteNode" ||
+        actionId === "validateStructure" ||
+        actionId === "extractBOM" ||
+        actionId === "generateInstructions"
+    ) {
+        const { 
+            createCanvasSandbox, 
+            claimCanvasSandbox, 
+            createNode, 
+            updateNode, 
+            deleteNode,
+            validateStructure,
+            extractBOM,
+            generateInstructions
+        } = await import("../orchestrator/canvas");
+        
+        if (actionId === "createCanvasSandbox") return createCanvasSandbox(data, request.auth);
+        if (actionId === "claimCanvasSandbox") return claimCanvasSandbox(data, request.auth);
+        if (actionId === "createNode") return createNode(data, request.auth);
+        if (actionId === "updateNode") return updateNode(data, request.auth);
+        if (actionId === "deleteNode") return deleteNode(data);
+        if (actionId === "validateStructure") return validateStructure(data);
+        if (actionId === "extractBOM") return extractBOM(data);
+        if (actionId === "generateInstructions") return generateInstructions(data);
+    }
+
     if (actionId === "activate_user") {
         if (!payload) {
             throw new HttpsError("invalid-argument", "Payload is required to activate user.");
@@ -96,9 +126,9 @@ export const orchestrator = onCall({
             const { createAssemblyEntity } = await import("../orchestrator/assembly");
             return createAssemblyEntity(uid, payloadRec);
         }
-        if (entityId === "stand") {
-            const { createStandEntity } = await import("../orchestrator/stand");
-            return createStandEntity(uid, payloadRec);
+        if (entityId === "design") {
+            const { createDesignEntity } = await import("../orchestrator/design");
+            return createDesignEntity(uid, payloadRec);
         }
         if (entityId === "process") {
             const { createProcessEntity } = await import("../orchestrator/process");
@@ -148,9 +178,9 @@ export const orchestrator = onCall({
             const { updateAssemblyEntity } = await import("../orchestrator/assembly");
             return updateAssemblyEntity(uid, docId, payload as Record<string, unknown>);
         }
-        if (entityId === "stand") {
-            const { updateStandEntity } = await import("../orchestrator/stand");
-            return updateStandEntity(uid, docId, payload as Record<string, unknown>);
+        if (entityId === "design") {
+            const { updateDesignEntity } = await import("../orchestrator/design");
+            return updateDesignEntity(uid, docId, payload as Record<string, unknown>);
         }
         if (entityId === "process") {
             const { updateProcessEntity } = await import("../orchestrator/process");
@@ -194,7 +224,7 @@ export const orchestrator = onCall({
         const collectionMap: Record<string, string> = {
             part: "parts",
             assembly: "assemblies",
-            stand: "stands",
+            design: "designs",
             process: "processes",
             tool: "tools",
             mesh: "meshes",
@@ -220,9 +250,9 @@ export const orchestrator = onCall({
             const { deleteAssemblyEntity } = await import("../orchestrator/assembly");
             return deleteAssemblyEntity(uid, docId);
         }
-        if (entityId === "stand") {
-            const { deleteStandEntity } = await import("../orchestrator/stand");
-            return deleteStandEntity(uid, docId);
+        if (entityId === "design") {
+            const { deleteDesignEntity } = await import("../orchestrator/design");
+            return deleteDesignEntity(uid, docId);
         }
         if (entityId === "process") {
             const { deleteProcessEntity } = await import("../orchestrator/process");
@@ -284,11 +314,11 @@ export const orchestrator = onCall({
         return getBundleDetailsEntity(uid, payloadRec.id as string);
     }
 
-    if (actionId === "get_stand_details") {
+    if (actionId === "get_design_details") {
         const payloadRec = payload as Record<string, unknown> | undefined;
         if (!payloadRec?.id) throw new HttpsError("invalid-argument", "Payload must contain document 'id'.");
-        const { getStandDetailsEntity } = await import("../orchestrator/stand");
-        return getStandDetailsEntity(uid, payloadRec.id as string);
+        const { getDesignDetailsEntity } = await import("../orchestrator/design");
+        return getDesignDetailsEntity(uid, payloadRec.id as string);
     }
 
     if (actionId === "execute_pipeline") {
