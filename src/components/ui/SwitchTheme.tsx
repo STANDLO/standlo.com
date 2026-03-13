@@ -43,7 +43,7 @@ export function SwitchTheme() {
 
     if (!mounted) {
         return (
-            <button type="button" className="ui-canvas-tools-btn h-10 w-10 px-0 shrink-0 border-transparent opacity-50">
+            <button type="button" className="ui-design-tools-btn h-10 w-10 px-0 shrink-0 border-transparent opacity-50">
                 <span className="sr-only">Toggle theme placeholder</span>
             </button>
         )
@@ -53,13 +53,13 @@ export function SwitchTheme() {
         <button
             type="button"
             onClick={toggleTheme}
-            className="ui-canvas-tools-btn h-10 w-10 px-0 shrink-0"
+            className="ui-design-tools-btn h-10 w-10 px-0 shrink-0"
             title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
         >
             {theme === "light" ? (
-                <Moon className="ui-canvas-tools-icon transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="ui-design-tools-icon transition-all dark:-rotate-90 dark:scale-0" />
             ) : (
-                <Sun className="ui-canvas-tools-icon transition-all dark:rotate-0 dark:scale-100" />
+                <Sun className="ui-design-tools-icon transition-all dark:rotate-0 dark:scale-100" />
             )}
             <span className="sr-only">Toggle theme</span>
         </button>

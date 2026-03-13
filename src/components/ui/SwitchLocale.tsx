@@ -64,7 +64,7 @@ export function SwitchLocale() {
                 type="button"
                 ref={buttonRef as React.RefObject<HTMLButtonElement>}
                 onClick={handleToggle}
-                className="ui-canvas-tools-btn h-10 w-10 px-0 shrink-0"
+                className="ui-design-tools-btn h-10 w-10 px-0 shrink-0"
                 title="Change language"
                 data-active={isOpen}
             >

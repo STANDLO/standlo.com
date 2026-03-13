@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, X, Save, Box, GripVertical, MapPin } from "lucide-react";
-import StandCanvasEditor from "./components/StandCanvasEditor";
+import StandDesignEditor from "./components/StandDesignEditor";
 import { OrchestratorClient } from "../../lib/orchestratorClient";
 
 // Local types
@@ -516,7 +516,7 @@ export default function CanvasStandsAdminPage() {
 
                                     {activeTab === "canvas3d" && (
                                         <div className="ui-canvas-form-editor-container h-full min-h-[500px] border border-border rounded-md bg-black/5 relative flex flex-col">
-                                            <StandCanvasEditor
+                                            <StandDesignEditor
                                                 parts={editing.parts || []}
                                                 assemblies={editing.assemblies || []}
                                                 bundles={editing.bundles || []}

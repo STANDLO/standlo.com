@@ -972,7 +972,7 @@
     @apply flex-1 flex flex-col overflow-y-auto w-full relative;
   }
 
-  .layout-content-area-canvas {
+  .layout-content-area-design {
     @apply flex-1 flex flex-col overflow-hidden w-full relative;
   }
 
@@ -985,131 +985,131 @@
   }
 
   /* Canvas Editor Semantic Classes */
-  .ui-canvas-root {
+  .ui-design-root {
     @apply flex-1 flex flex-col w-full bg-background overflow-hidden relative;
   }
 
-  .ui-canvas-header {
+  .ui-design-header {
     @apply flex-none flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border shadow-sm z-20 relative;
   }
 
-  .ui-canvas-header-left {
+  .ui-design-header-left {
     @apply flex items-center gap-3;
   }
 
-  .ui-canvas-header-icon-box {
+  .ui-design-header-icon-box {
     @apply p-2 bg-primary/10 text-primary rounded-md;
   }
 
-  .ui-canvas-header-icon {
+  .ui-design-header-icon {
     @apply w-5 h-5;
   }
 
-  .ui-canvas-header-title {
+  .ui-design-header-title {
     @apply font-semibold leading-none;
   }
 
-  .ui-canvas-header-subtitle {
+  .ui-design-header-subtitle {
     @apply text-[10px] text-muted-foreground uppercase tracking-widest mt-1;
   }
 
-  .ui-canvas-header-right {
+  .ui-design-header-right {
     @apply flex items-center gap-2;
   }
 
-  .ui-canvas-toolbar-group {
+  .ui-design-toolbar-group {
     @apply flex items-center bg-muted/50 rounded-lg p-1 mr-4 border;
   }
 
-  .ui-canvas-viewer {
+  .ui-design-viewer {
     @apply flex items-center bg-muted/50 rounded-lg p-1 mr-4 border;
   }
 
-  .canvas-header-viewer-2d {
+  .design-header-viewer-2d {
     @apply flex items-center;
   }
 
-  .canvas-header-viewer-3d {
+  .design-header-viewer-3d {
     @apply flex items-center;
   }
 
-  .canvas-header-viewer-xr {
+  .design-header-viewer-xr {
     @apply flex items-center;
   }
 
-  .canvas-header-viewer-ar {
+  .design-header-viewer-ar {
     @apply flex items-center;
   }
 
-  .ui-canvas-toolbar-btn {
+  .ui-design-toolbar-btn {
     @apply px-3 py-1.5 text-xs font-semibold rounded-md transition-colors;
   }
 
-  .ui-canvas-toolbar-btn-active {
+  .ui-design-toolbar-btn-active {
     @apply bg-background shadow-sm text-foreground;
   }
 
-  .ui-canvas-toolbar-btn-inactive {
+  .ui-design-toolbar-btn-inactive {
     @apply text-muted-foreground hover:text-foreground;
   }
 
-  .ui-canvas-btn-icon {
+  .ui-design-btn-icon {
     @apply w-3.5 h-3.5 inline mr-1.5;
   }
 
-  .ui-canvas-action-btn {
+  .ui-design-action-btn {
     @apply h-8 w-8 text-muted-foreground;
   }
 
-  .ui-canvas-action-icon {
+  .ui-design-action-icon {
     @apply w-4 h-4;
   }
 
-  .ui-canvas-separator {
+  .ui-design-separator {
     @apply w-px h-6 bg-border mx-1;
   }
 
-  .ui-canvas-export-btn {
+  .ui-design-export-btn {
     @apply h-8;
   }
 
-  .ui-canvas-export-icon {
+  .ui-design-export-icon {
     @apply w-4 h-4 mr-2;
   }
 
-  .ui-canvas-save-btn {
+  .ui-design-save-btn {
     @apply h-8;
   }
 
-  .ui-canvas-save-icon {
+  .ui-design-save-icon {
     @apply w-4 h-4 mr-2;
   }
 
-  .ui-canvas-main-area {
+  .ui-design-main-area {
     @apply flex-1 flex overflow-hidden relative;
   }
 
-  .ui-canvas-sidebar-left {
+  .ui-design-sidebar-left {
     @apply w-72 flex-none border-r bg-card/50 flex flex-col relative z-10;
   }
 
-  .ui-canvas-viewport {
+  .ui-design-viewport {
     @apply flex-1 relative bg-gradient-to-b from-stone-50 to-stone-100 dark:from-zinc-950 dark:to-black;
   }
 
-  .ui-canvas-sidebar-right {
+  .ui-design-sidebar-right {
     @apply w-72 flex-none border-l bg-card/50 flex flex-col pt-4;
   }
 
-  .ui-canvas-sidebar-header {
+  .ui-design-sidebar-header {
     @apply px-4 pb-3 border-b;
   }
 
-  .ui-canvas-sidebar-title {
+  .ui-design-sidebar-title {
     @apply text-sm font-semibold;
   }
 
-  .ui-canvas-sidebar-empty {
+  .ui-design-sidebar-empty {
     @apply flex-1 overflow-y-auto p-4 flex items-center justify-center text-center text-sm text-muted-foreground italic;
   }
 
@@ -1666,38 +1666,38 @@
     }
   }
 
-  .ui-canvas-tools {
+  .ui-design-tools {
     @apply absolute top-4 left-1/2 -translate-x-1/2 z-50 flex flex-row gap-4 pointer-events-auto items-start;
     animation: slideInFromTop 0.5s ease-out forwards;
   }
 
-  .ui-canvas-tools-block {
+  .ui-design-tools-block {
     @apply h-[64px] flex flex-col justify-between items-center;
   }
 
-  .ui-canvas-tools-block-end {
+  .ui-design-tools-block-end {
     @apply h-[64px] flex flex-col justify-end items-center;
   }
 
-  .ui-canvas-tools-title {
+  .ui-design-tools-title {
     @apply text-[8px] leading-[10px] uppercase text-muted-foreground text-center w-full font-bold;
   }
 
-  .ui-canvas-tools-title-hidden {
+  .ui-design-tools-title-hidden {
     @apply text-[8px] leading-[10px] uppercase invisible text-center w-full font-bold select-none;
   }
 
-  .ui-canvas-tools-group {
+  .ui-design-tools-group {
     @apply h-[54px] flex gap-1 bg-background/90 backdrop-blur-md px-2 items-center rounded-2xl border shadow-xl;
   }
 
-  .ui-canvas-tools-btn {
+  .ui-design-tools-btn {
     @apply h-10 w-10 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-foreground/70 ring-1 ring-transparent hover:bg-transparent rounded-full border border-input bg-background shadow-sm hover:text-accent-foreground;
   }
-  .ui-canvas-tools-btn:hover {
+  .ui-design-tools-btn:hover {
     @apply bg-muted text-foreground ring-border;
   }
-  .ui-canvas-tools-btn[data-active="true"] {
+  .ui-design-tools-btn[data-active="true"] {
     @apply ring-2;
     background-color: hsl(var(--base-green) / 0.15);
     color: hsl(var(--base-green));
@@ -1705,32 +1705,32 @@
     border-color: hsl(var(--base-green));
   }
 
-  .ui-canvas-tools-icon {
+  .ui-design-tools-icon {
     @apply w-5 h-5;
   }
 
   /* Canvas Onboarding Classes */
-  .ui-canvas-onboarding-overlay {
+  .ui-design-onboarding-overlay {
     @apply fixed inset-0 z-[999] flex flex-col w-full min-h-[100dvh] text-foreground pointer-events-auto bg-background/60 backdrop-blur-md;
   }
 
-  .ui-canvas-onboarding-container {
+  .ui-design-onboarding-container {
     @apply flex flex-col lg:flex-row w-full min-h-[100dvh] m-0 p-0;
   }
 
-  .ui-canvas-onboarding-left-col {
+  .ui-design-onboarding-left-col {
     @apply flex-1 flex flex-col justify-center items-center lg:items-end p-8 lg:p-16 lg:pr-16 w-full;
     background-color: hsl(var(--background));
     background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1.5px, transparent 1.5px);
     background-size: 20px 20px;
   }
 
-  .dark .ui-canvas-onboarding-left-col, .dark-mode .ui-canvas-onboarding-left-col {
+  .dark .ui-design-onboarding-left-col, .dark-mode .ui-design-onboarding-left-col {
     background-color: hsl(var(--background));
     background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1.5px, transparent 1.5px);
   }
 
-  .ui-canvas-onboarding-right-col {
+  .ui-design-onboarding-right-col {
     @apply flex-1 flex flex-col justify-center items-center lg:items-start p-8 lg:p-16 lg:pl-16 w-full;
     background-color: hsl(var(--foreground));
     color: hsl(var(--background));
@@ -1738,92 +1738,92 @@
     background-size: 20px 20px;
   }
 
-  .dark .ui-canvas-onboarding-right-col, .dark-mode .ui-canvas-onboarding-right-col {
+  .dark .ui-design-onboarding-right-col, .dark-mode .ui-design-onboarding-right-col {
     background-color: hsl(var(--foreground));
     color: hsl(var(--background));
     background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1.5px, transparent 1.5px);
   }
 
-  .ui-canvas-onboarding-tool-item {
+  .ui-design-onboarding-tool-item {
     @apply flex flex-col items-start gap-2 p-4 text-left rounded-xl border border-background/20 bg-background/10 text-background shadow-sm transition-all hover:shadow-md hover:bg-background/20 backdrop-blur-sm;
   }
 
-  .ui-canvas-onboarding-tool-icon {
+  .ui-design-onboarding-tool-icon {
     @apply w-8 h-8 opacity-90 mb-1;
   }
 
-  .ui-canvas-onboarding-tool-info {
+  .ui-design-onboarding-tool-info {
     @apply flex flex-col gap-1;
   }
 
-  .ui-canvas-onboarding-tool-title {
+  .ui-design-onboarding-tool-title {
     @apply text-sm font-semibold;
   }
 
-  .ui-canvas-onboarding-tool-desc {
+  .ui-design-onboarding-tool-desc {
     @apply text-xs opacity-75 leading-relaxed;
   }
 
-  .ui-canvas-onboarding-header {
+  .ui-design-onboarding-header {
     @apply text-center lg:text-left space-y-4;
   }
 
-  .ui-canvas-onboarding-content {
+  .ui-design-onboarding-content {
     @apply flex flex-col items-center justify-center w-full text-center mx-auto;
   }
 
-  .ui-canvas-onboarding-logo-wrapper {
+  .ui-design-onboarding-logo-wrapper {
     @apply flex w-full items-center justify-center lg:justify-start mb-6 text-primary;
   }
 
-  .ui-canvas-onboarding-logo {
+  .ui-design-onboarding-logo {
     @apply flex flex-col items-center justify-center w-full my-4 mx-auto;
   }
-  .ui-canvas-onboarding-logo .ui-link {
+  .ui-design-onboarding-logo .ui-link {
     @apply block w-auto h-auto mx-auto;
   }
 
-  .ui-canvas-onboarding-title {
+  .ui-design-onboarding-title {
     @apply text-4xl md:text-5xl font-extrabold tracking-tight pt-4 pb-4 text-center w-full;
   }
 
-  .ui-canvas-onboarding-subtitle-container {
+  .ui-design-onboarding-subtitle-container {
     @apply space-y-6 text-lg text-muted-foreground pt-4 max-w-3xl mx-auto text-center;
   }
 
-  .ui-canvas-onboarding-card {
+  .ui-design-onboarding-card {
     @apply w-full max-w-sm flex flex-col gap-4 p-6 bg-card border rounded-2xl shadow-sm mt-8 mx-auto;
   }
 
-  .ui-canvas-onboarding-card-header {
+  .ui-design-onboarding-card-header {
     @apply space-y-2 text-center;
   }
 
-  .ui-canvas-onboarding-card-title {
+  .ui-design-onboarding-card-title {
     @apply text-sm font-medium text-green-600 dark:text-green-500 flex items-center justify-center gap-2;
   }
 
-  .ui-canvas-onboarding-card-desc {
+  .ui-design-onboarding-card-desc {
     @apply text-xs text-muted-foreground text-center;
   }
 
-  .ui-canvas-onboarding-btn {
+  .ui-design-onboarding-btn {
     @apply w-full h-12 text-lg mt-2 transition-all;
   }
 
-  .ui-canvas-onboarding-slogan-block {
+  .ui-design-onboarding-slogan-block {
     @apply space-y-2 text-foreground/90;
   }
 
-  .ui-canvas-onboarding-slogan-block strong {
+  .ui-design-onboarding-slogan-block strong {
     @apply font-bold text-primary;
   }
 
-  .ui-canvas-onboarding-description {
+  .ui-design-onboarding-description {
     @apply text-muted-foreground;
   }
   
-  .ui-canvas-onboarding-description strong {
+  .ui-design-onboarding-description strong {
     @apply font-bold text-foreground;
   }
 }

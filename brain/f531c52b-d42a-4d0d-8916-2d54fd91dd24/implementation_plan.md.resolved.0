@@ -1,0 +1,51 @@
+# Canvas to Design Migration Plan
+
+## Goal Description
+The objective is to rename the `canvas` entity concept to `design` across the entire Standlo monorepo. This shift logic is motivated by the system's evolution: the new `type` field allows creating designs for anything (parts, assemblies), not just for "stands". Consequentially, references to the `canvases` collection must become `designs`.
+
+## User Review Required
+> [!CAUTION]
+> **HTML Canvas and `@react-three/fiber` Protection:**
+> The codebase uses 3D rendering which involves `<canvas>` HTML elements and `<Canvas>` components from `@react-three/fiber`. A global find-and-replace for `canvas` -> `design` would fundamentally break the application's rendering engine.
+> 
+> Therefore, this renaming will be executed selectively via manual scripting and precise file edits, ensuring we only rename the *Domain Entity* (e.g., `CanvasSchema`, `canvas_id`, `canvases` collection, URLs, orchestrators, choreography, hooks) and strictly NOT the rendering layer's imports or elements. Can you confirm you understand this distinction?
+
+## Proposed Changes
+
+### Backend (`functions/src/`)
+- Rename schema: `schemas/canvas.ts` -> `schemas/design.ts`
+  - Update `CanvasSchema` -> `DesignSchema`.
+  - Update `canvasType` -> `designType`.
+- Rename Orchestrator: `orchestrator/canvas.ts` -> `orchestrator/design.ts`
+  - Replace route parameters, `orchestratorCanvas` -> `orchestratorDesign`.
+- Rename Choreography: `choreography/canvas.ts` -> `choreography/design.ts`
+  - Update triggers: `onDocumentCreated("canvases/{designId}")` -> `...("designs/{designId}")`.
+- Update the Policy Engine (`rbac/policyEngine.ts`) mapping the resource `canvas` to `design`.
+- Update API Gateways (`gateways/choreography.ts`, `gateways/orchestrator.ts`) to hit `design` endpoints.
+
+### Admin App (`admin/`)
+- Rename domain editor components:
+  - `admin/app/pdm/stands/components/StandCanvasEditor.tsx` -> `StandDesignEditor.tsx`
+  - `admin/app/pdm/bundles/components/BundleCanvasEditor.tsx` -> `BundleDesignEditor.tsx`
+  - `admin/app/pdm/assemblies/components/AssemblyCanvasEditor.tsx` -> `AssemblyDesignEditor.tsx`
+- Update any links or state targeting the entity within the PDM.
+
+### Frontend App (`src/`)
+- Rename domain-level hooks and lib functions:
+  - `src/lib/canvas.ts` -> `src/lib/design.ts`
+- Move routing:
+  - `src/app/[locale]/canvas` -> `src/app/[locale]/design`
+  - `src/app/api/canvas` -> `src/app/api/design`
+  - Partner routes: `src/app/[locale]/partner/[roleId]/canvas` -> `.../design`
+- Rename domain components in `src/components/layout/canvas` to `src/components/layout/design` (e.g. `CanvasHeader` -> `DesignHeader`, `CanvasOnboarding` -> `DesignOnboarding`).
+
+## Verification Plan
+
+### Automated Tests
+- Inside `functions/`, execute `npm run validate` and `npm run build` to ensure all typings and imports align.
+- Inside `admin/`, execute `npm run build` to ensure paths and component names resolve correctly.
+- Inside root (`src/`), execute `npm run validate` and `npm run build` to ensure no orphaned `canvas` routes or imports remain and that 3D rendering context builds without TS errors.
+
+### Manual Verification
+- Review the `/en/design` route via local emulator.
+- Try creating a new design (formerly a canvas) via the application UI and confirm that a new document correctly initializes in the `designs` collection inside Firebase Firestore.

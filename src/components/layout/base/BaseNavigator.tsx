@@ -156,12 +156,12 @@ export function BaseNavigator({
                                     <SwitchTheme />
                                 </div>
                                 <div className="ui-tools-navigator-action-slot">
-                                    <Link href="/profile" onClick={() => setIsMenuOpen(false)} className="ui-canvas-tools-btn h-10 w-10 px-0 shrink-0">
+                                    <Link href="/profile" onClick={() => setIsMenuOpen(false)} className="ui-design-tools-btn h-10 w-10 px-0 shrink-0">
                                         <User className="h-5 w-5" />
                                     </Link>
                                 </div>
                                 <div className="ui-tools-navigator-action-slot">
-                                    <Link href="/partner/support" onClick={() => setIsMenuOpen(false)} className="ui-canvas-tools-btn h-10 w-10 px-0 shrink-0">
+                                    <Link href="/partner/support" onClick={() => setIsMenuOpen(false)} className="ui-design-tools-btn h-10 w-10 px-0 shrink-0">
                                         <Headset className="h-5 w-5" />
                                     </Link>
                                 </div>

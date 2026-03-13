@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, X, Save, Layers, Box, GripVertical } from "lucide-react";
-import BundleCanvasEditor from "./components/BundleCanvasEditor";
+import BundleDesignEditor from "./components/BundleDesignEditor";
 import { OrchestratorClient } from "../../lib/orchestratorClient";
 
 // Local types
@@ -398,7 +398,7 @@ export default function CanvasBundlesAdminPage() {
 
                                     {activeTab === "canvas3d" && (
                                         <div className="ui-canvas-form-editor-container h-full min-h-[500px] border border-border rounded-md bg-black/5 relative flex flex-col">
-                                            <BundleCanvasEditor
+                                            <BundleDesignEditor
                                                 parts={editing.parts || []}
                                                 onChangeParts={(newParts: BundlePartNode[]) => setEditing({ ...editing, parts: newParts })}
                                             />
