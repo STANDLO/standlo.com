@@ -1,0 +1,10 @@
+# Task Plan: Refactoring Button Component
+
+- [x] Rimuovi dal component Button le vecchie mappature per `primary`, `secondary`, `destructive`, `ghost`, `link` mantenendo solo un fallback all'outline.
+- [x] Verifica tutti gli utilizzi di `variant="primary"` o simili e sostituiscili preferibilmente col tema base `default` per non rompere il sito.
+- [x] Fai una passata per cercare se ci sono versioni Muted/Readonly di base theme passate con template class.es to [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) if required by the new design.
+- [x] Update [FormLogin](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx#35-430) and [FormRegister](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx#16-190) to use light/dark variants based on theme.
+- [ ] Search and update all existing [Button](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Button.tsx#75-80) usages in the project.
+- [x] Apply divider colors to CardAuth footer (border-top and text colors based on currentColor).
+- [x] Remove the Two-Step Verification note from the [FormLogin](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx#35-430) component.
+- [x] Update [ToolsNavigator](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/tools/ToolsNavigator.tsx#29-211) registration button to use the `green` variant.

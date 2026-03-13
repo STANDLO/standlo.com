@@ -1,0 +1,8 @@
+# CanvasOnboarding Refactoring Task
+
+- [ ] Extract all Tailwind utility classes from [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx) and place them as semantic classes in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) using the `@apply` directive.
+- [ ] Add the responsive light/dark `bg-dotted` theme to the new `.ui-canvas-onboarding-overlay` class.
+- [ ] Add all mocked texts from [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx) to [messages/it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json) and the other language files under the [CanvasOnboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx#12-108) block, including the new tooltip tutorial texts.
+- [ ] Implement the `MockTutorialTools` component inside [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx) with a `useEffect` that triggers a popover animation (left to right) for a sequential tool every 3 seconds to act as a mini tutorial.
+- [ ] Update [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx) to use the new semantic classes and the `useTranslations` hook to fetch localized strings, replacing all static JSX strings.
+- [ ] Verify build with `npm run validate` to ensure 0 lint errors, warnings, and vulnerabilities.

@@ -1,0 +1,17 @@
+## Current Objective
+Migrate all API and Function invocations within `src/*` away from `httpsCallable` or [fetch](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasCatalogSidebar.tsx#37-137) towards the centralized API client [src/lib/api.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts) (using [callGateway](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts#14-40)), resolving `401` errors and `cloud:validate` failures.
+
+## Tasks
+- [x] Identify all usages of `httpsCallable` across the codebase.
+- [x] Identify direct [fetch](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasCatalogSidebar.tsx#37-137) calls to `/api/gateway` and similar API endpoints.
+- [x] Refactor [OrganizationUsersCreate.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/OrganizationUsersCreate.tsx) to use [callGateway](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts#14-40).
+- [x] Refactor [FormDetail.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/FormDetail.tsx) to use [callGateway](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts#14-40) and resolve TypeScript errors.
+- [x] Refactor [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx) to use [callGateway](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts#14-40).
+- [x] Refactor remaining form and onboarding components:
+  - [x] [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx)
+  - [x] [FormCreate.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/FormCreate.tsx)
+  - [x] [FormOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormOnboarding.tsx)
+  - [x] [FormList.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormList.tsx)
+- [x] Check for vulnerabilities and lint errors across `root`, `admin`, and `functions` without bypassing any of them.
+- [x] Configure Pentest Scripts to make Nice-To-Have tests into Must-Have DevSecOps policies.
+- [x] Run `npm run cloud:validate` and pass all DevSecOps verification, pentests, linting, and building steps with 0 errors.

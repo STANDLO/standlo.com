@@ -1,0 +1,36 @@
+# Refactoring CanvasOnboarding to Semantic Classes and Localization
+
+## Goal
+The goal of this refactoring is to completely decouple the [CanvasOnboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx#12-108) component from hardcoded Tailwind utility classes and static Italian texts, ensuring a cleaner architectural separation and full internationalization. The user specifically asked to use `apply` to have 0 Tailwind classes, and to implement a dotted background directly derived from `light dotted` and `dark dotted` themes.
+
+## Proposed Changes
+
+### [src/app/globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css)
+- **[MODIFY]** [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css): Inject the new semantic CSS classes under the `@layer components` section, using the `ui-canvas-onboarding-` prefix. This will include classes for the main overlay, container, headers, cards, typography, and buttons.
+- Implement a theme-aware dotted background directly in the `.ui-canvas-onboarding-overlay` class, providing a `light dotted` and `dark dotted` aesthetic while preserving the glassmorphism (`backdrop-blur-md` and `bg-background/60`).
+
+### `messages/*.json`
+- **[MODIFY]** [it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json), [en.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/en.json), [es.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/es.json), [fr.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/fr.json), [de.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/de.json), [us.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/us.json): Add a new [CanvasOnboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx#12-108) translation block.
+- Extract the following strings:
+  - Title: "The Global Factory"
+  - Credits: "Designed by Cristian Mazzetti Martin..."
+  - Description: "Sperimenta il Temporary Information Modeling..."
+  - Private Workspace: "Spazio di Lavoro Privato"
+  - Editor Role: "Inizierai come Editor..."
+  - Statuses: "Avvio in corso...", "Sincronizzazione librerie...", "Inizia a Progettare", "Sincronizzazione fallita..."
+
+### [src/components/layout/canvas/CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx)
+- **[MODIFY]** [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx): 
+  - Replace all static `className="..."` strings with the new `.ui-canvas-onboarding-*` semantic classes.
+  - Implement `useTranslations("CanvasOnboarding")` to fetch dynamically translated strings.
+  - Replace all hardcoded texts in the JSX structure with the [t("key")](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx#213-330) function with appropriate rich text formatting for HTML tags.
+  - **Animated Tooltips Feature**: Inside [CanvasOnboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx#12-108), introduce a mock `TutorialCanvasTools` visual component overlay. This mock will render dummy tool icons. A `useEffect` loop will iterate every 3 seconds highlighting one icon at a time. When highlighted, an animated popup will appear (from left to right) explaining the tool's purpose using simple tooltips extracted to the translation files.
+
+## Verification Plan
+### Automated Tests
+- Run `npm run validate` (which executes `next build` and `eslint`) to ensure that:
+  - There are no TypeScript/ESLint errors caused by invalid i18n usage.
+  - The build compiles successfully with the new global CSS classes.
+### Manual Verification
+- Ask the user to visually verify the onboarding screen in both light and dark modes to check the dotted background and new semantic styling. 
+- Ask the user to verify if the text is correctly rendered from the translations.

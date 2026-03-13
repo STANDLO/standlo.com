@@ -1,0 +1,35 @@
+# Button Component Semantic Refactoring Plan
+
+## Proposed Changes
+
+### 1. [src/components/ui/Button.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Button.tsx)
+We will rewrite `buttonVariants` to include all requested color variants. Each color will support `Default`, `Muted`, `Readonly`, and `Outline` styles.
+
+**Colors to Support:**
+- `primary` (Theme Dynamic)
+- `secondary` (Theme Dynamic)
+- `destructive` (Theme Dynamic)
+- `light` (Always light UI, dark text)
+- `dark` (Always dark UI, light text)
+- 7 Brand Colors: `green` (emerald), `blue`, `yellow` (amber), `fuchsia`, `violet`, `red`, `orange`.
+
+**Variant Naming Convention:**
+- `<color>`
+- `<color>Muted`
+- `<color>Readonly`
+- `<color>Outline`
+
+For example: `green`, `greenMuted`, `greenReadonly`, `greenOutline`.
+
+### 2. [src/components/forms/FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx) & [src/components/forms/FormRegister.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx)
+The login and registration files use `<Button>` on the main submission and in [CardAuthSocials](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx#72-109) via children rendering.
+The objective states: "Nei form login register bisogna usare variante light per tema light e variante dark per tema dark, non usare le versioni colorate".
+
+We will wrap them with `useTheme()` from `next-themes` and select the semantic variant dynamically:
+`const { resolvedTheme } = useTheme();`
+`const btnVariant = resolvedTheme === "dark" ? "dark" : "light";`
+
+We will update the `<Button>` component usages in the auth forms to use this dynamic string.
+
+### 3. Usage Checks
+We will check current occurrences of `button` and `<Button variant="...">` across the app to ensure nothing is broken. Existing `<Button variant="outline">` will map to `primaryOutline` or remain `outline` (legacy). We'll keep legacy `outline` just in case, mapping it to standard `border-input bg-background`.

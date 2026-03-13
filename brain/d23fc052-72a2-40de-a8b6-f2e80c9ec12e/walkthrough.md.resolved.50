@@ -1,0 +1,291 @@
+# Walkthrough: Brand Palette and Layout Enhancements
+
+I've successfully implemented the brand palette enhancements, layout modifications, and the logo component updates as requested.
+
+## Summary of Changes
+
+### 1. Brand Palette & [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css)
+- **Color Themes**: Added 7 brand new CSS color themes (`.theme-green`, `.theme-blue`, `.theme-yellow`, `.theme-fucsia`, `.theme-violet`, `.theme-red`, `.theme-orange`) based on the updated design system. Each theme uses refined primary and secondary HSL values for sharp contrast.
+- **Base Backgrounds**: Optimized `--background` and `--card` colors in both light (`0 0% 100%`) and dark (`240 10% 4%`) modes for a cleaner canvas look.
+- **Smooth Transitions**: Added `transition: background-color 0.3s ease, color 0.3s ease;` to `body` and `*` elements for a more premium feeling during theme toggling.
+- **Public Layout Grid**: Integrated the dotted grid background pattern to `.layout-public-root` (`radial-gradient` overlay with `24px` spacing).
+
+### 2. Logo Components Updates
+- **Dynamic Icons**: Both [Logo](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/base/BaseNavigator.tsx#56-104) components (Public & Admin) now accept `color` and `bg` props to seamlessly switch between the full textual logo and the new square icon variations.
+- **Background Logic**: Depending on the `bg` prop, the correct colored or monochrome icon is loaded into an appropriately sized and padded square container.
+- **Clickable Links**: The Logo component content is now wrapped in a `next/link` component to act as a navigational shortcut back to the homepage (`/`).
+
+### 3. Public Layout & Header Adjustments
+- **Transparent Header**: Modified `.layout-header-main` in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to be fully visible and `bg-transparent`.
+- **Removed Footer**: Detached `<PublicFooter />` from the public layout structure so the grid and content take up the full emphasis.
+
+### 4. Theme and Color Selector Implementations
+- **`next-themes` Verification**: Confirmed `next-themes` is actively tracking Light/Dark state in LocalStorage (in sync with `<SwitchTheme />`).
+- **New `useBrandColor` Hook**: Authored a streamlined custom hook that automatically manages string states (e.g. `"green"`, `"red"`) with `localStorage` persistence, dynamically appending/removing the valid `.theme-<color>` classes on the root HTML element.
+- **New `<SwitchColor />` Component**: Formatted to match the existing `<SwitchTheme />` trigger, it provides a dropdown populated with all 7 colors. You can find this right alongside the theme toggle in the public header.
+
+You should now be able to start the development server (`npm run dev`), view the public page, select any of the 7 themes alongside toggling light/dark mode, and see changes directly persist and dynamically apply to the background and primary colors!
+
+### 5. Post-It Aesthetics
+- **Strict `Logo.tsx` Architecture**: The [Logo](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/base/BaseNavigator.tsx#56-104) components (both Admin and Public) have been refactored to be exclusively Post-It variants, completely discarding the old textual SVG layouts. They now accept explicit `icon` (to choose the colored Firebase `icon_XXX.png`), `postit` (to set the CSS background color), and `slogan` (boolean) props.
+- **Rigid Square Layout**: The `Logo.tsx` enforces an absolute square dimension (`minWidth` and `minHeight` via inline styles plus the `shrink-0` Tailwind class). The top 20% contains a darker semi-transparent strip resembling glue, and the bottom right corner uses a `10% 30%` border radius curve to mimic peeling paper.
+- **Icon Rendering Logic**: The actual graphic (the "S" Standlo shape with its own peeling effect provided in your Firebase assets) is centered using the `PUBLIC_ICONS_URLS` registry directly pulled from Cloud Storage.
+- **`CardAuth.tsx` Overhaul**: Enabled Post-It design onto the core authentication card wrapper (`CardAuth.tsx`). Upgraded the module to a client component to cleanly integrate the `useBrandColor()` hook, directly injecting the dynamic theme color so the entire login/signup interface acts as a massive Post-It.
+- **`Card.tsx` Variations**: Implemented logic where `color` props (e.g., `color="green"`, `color="blue"`) applied to a `<Card />` seamlessly inject Tailwind classes mapping to the active `.theme-X` schema.
+- **`Card` Glue Headers**: Handled custom CSS cascading from `.card-post-it > .ui-card-header` within [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to add the darker top section that resembles the sticky part of a Post-It pad.
+
+## 2. Global CSS Definitions ([globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css))
+- Added semantic `.ui-tools-navigator-*` classes, mapping directly from the UI requirements to proper tailored styles.
+- Configured styling for the outer container, links, interactive menus, action buttons, and nested dropdown elements.
+- Fixed a bug where `tailwindcss-animate` utilities (`animate-in fade-in-0 zoom-in-95`) caused build errors by substituting them with a standard `@keyframes dropdown-fade-in` application.
+- Added a specific `.ui-tools-navigator-btn:hover` state using `color-mix` with `--color-glue` to replicate the card header's "glue" effect with white text, as requested.
+
+## 3. Build & Quality Verification
+- Resolved syntax issues missing a `return` in the rewritten component logic.
+- Verified successful `npm run build` after addressing Tailwind unknown utility errors.
+- Checked application structure to ensure locale-switching and authentication rendering work appropriately without layout shifts (Tailwind classes were fully migrated).
+
+### 6. Bug Fixes
+- **Build Error**: Resolved a Next.js build issue `Module not found: Can't resolve '@/components/ui/DropdownMenu'` by fully initializing the component with `shadcn` and correcting its class-casing.
+- **Hydration Error**: Resolved a React Hydration error by removing a redundant `<Link>` wrapping around the `<Logo>` in `PublicHeader.tsx`, as `<Logo>` now inherently functions as a hyperlink.
+
+### 7. Unified Canvas Architecture
+- **Global Layout Structure**: Merged the previously separate [(public)](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/api/gateway/route.ts#25-108) and [(protected)](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/api/gateway/route.ts#25-108) routing layouts into a single immersive global layout in [src/app/[locale]/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/layout.tsx). The viewport acts as a rigid, full-screen container (`100vw`/`100vh`) with the dotted CSS grid applied.
+- **Tools Overlay**: Deployed `<ToolsOverlay />` (z-index: 50) for interactive floating 2D interface elements, ensuring they float above the 3D scene correctly. Navigation generation rules logic has been formally migrated to `RootLayout`.
+- **Canvas Overlay**: Integrated `@react-three/fiber` as `<CanvasOverlay />` forming the foundational transparent background layer.
+- **Floating Controls**: Created `<ToolsLogo />` (a fixed 48x48 Green Post-It logo in the top left) and heavily remixed the header controls into `<ToolsNavigator />` (fixed to the top right). The Navigator seamlessly toggles its inner variants depending on if a user is authenticated or visiting the public flow.
+- **Legacy Cleanup**: Successfully removed legacy components and layouts (`HeaderProtected`, `LayoutProtected`, `PublicHeader`, `PublicFooter`, `partner/layout.tsx`, [(protected)/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/api/gateway/route.ts#25-108), [(public)/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/api/gateway/route.ts#25-108)) to fully commit to the Spatial/Canvas design paradigm.
+
+### 8. Cloud Branding & Asset Delivery
+- **Custom Post-It Favicons**: Generated programmatic Post-it aesthetic Favicons (Standard multi-resolution `png`, `favicon.ico`, and `apple-touch-icon`) using a Node.js `sharp` script.
+- **Storage Migration**: Successfully migrated and uploaded the entirety of the application's `public/` icon assets to Firebase Storage under the explicit path `/standlo/brand/web/` using the Firebase Admin SDK.
+- **Asset Consumption Optimization**: Updated `Logo.tsx` image sources and [src/app/[locale]/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/layout.tsx) metadata headers to fetch assets directly from the `firebasestorage.googleapis.com` public URL.
+
+
+## Locales & Settings Update
+- **Default Theme Adjustment:** Modified `useBrandColor.ts` to set `green` as the system default.
+- **Removed Color Switcher:** Eliminated `<SwitchColor />` from `ToolsNavigator.tsx` as it's no longer necessary for end users.
+- **Locale Pruning & Switching:** Trimmed `systemLocales` array and `locales` supported by Next-Intl to exclusively [it](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx#120-224), [es](file:///Users/cristiankalexai/Progetti/standlo.com/firestore.rules), and [us](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/GenericPart.tsx#80-145). [us](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/GenericPart.tsx#80-145) has been set as the application's default locale natively.
+- **Syncing Translations:** Moved [messages/en.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/en.json) structure to [messages/us.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/us.json) and completely modified the Admin Translation Portal ([admin/app/i18n/page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/i18n/page.tsx), etc.) to securely source "us.json" as its baseline representation.
+- **Dropdown Readability:** Adjusted the layout constraints of the language selector dropdown ([SwitchLocale.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/SwitchLocale.tsx)) to stretch appropriately, preventing "United States of America" from line wrapping.
+
+## Bug Fix: Eliminating the Initial Blue Flash
+- **Root Cause Identified:** While `useBrandColor.ts` applied `.theme-green` to the layout over time, the raw `:root` and `.dark` blocks in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) were still defaulting to the original blue `--primary` colors. Changing locales triggered a NextJS structural update, momentarily stripping the JS-applied theme class before `useBrandColor`'s `useEffect` could rehydrate it, causing a rapid "flash" back to the un-themed default (`blue`).
+- **Resolution:** Modified the base CSS definitions inside `:root` and `.dark` within [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to natively output the **green** values by default. Now, even without a specific `.theme-[color]` utility class applied during initial SSR or transitional mounting phases, the CSS will naturally resolve to green.
+
+## Optimization: Authentication Layout Update
+- **Social Login Reordering**: Modified `CardAuth.tsx` to position the Social Login buttons (Google/GitHub) at the top of the authentication card, above the standard Email/Password form. This prioritizes faster onboarding flows as the primary choice for users.
+- **Card Spacing Adjustments**: Updated the global Semantic CSS (`.ui-card-content` and `.ui-card-footer` in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css)) to use `1rem` padding (`p-4 pt-0`) down from `1.5rem` (`p-6 pt-0`). This ensures all cards have consistent, slightly tighter padding across the UI, while adjusting the inner spacing elements (like the `divider`) to perfectly match the layout hierarchy.
+
+## Optimization: Sizing Semantic Classes
+1. **Button Component Enhancements**: Fixed syntax errors in `cva` definition, removed `defaultVariants` to strictly mandate explicit `variant` props, updated size variants to utilize semantic classes (`ui-btn-size-*`), and implemented a dynamic fallback mechanism defaulting to the active theme (`dark` / `light`) if no explicit variant is defined.
+2. **Globals.css Theme & Button Standardization**: 
+    * Unified all 9 styles (`light`, `dark`, and the 7 brand colors) under a single structure. Each semantic class (e.g. `.green`, `.blue`) now implements the complete set of structural base properties (like `--background`, `--card`, `--foreground`, etc.) copying the behavior of `.dark`.
+    * Extracted the 7 raw color HSL values into `:root` as `--base-[color]` variables, providing a single source of truth for all themes.
+    * **Button Refinement:** Re-mapped `Button.tsx` variants (e.g., `variant="green"`) to implement `theme-green ui-btn-theme` simultaneously. Refactored `.ui-btn-theme` within [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to consume `var(--primary)` and `var(--primary-foreground)`. Buttons will now flawlessly adopt their passed `theme-[color]` or naturally inherit the global document's theme.
+    * Appended `py-2` to the `.ui-btn` base class to assure uniform padding across all generated buttons. 
+    * Refactored CSS classes within `CardAuth.tsx` to align with the new standard (`layout-auth-card-note`, `layout-auth-card-link`, `layout-auth-card-copyright` were changed to `ui-card-auth-note`, `ui-card-auth-link`, and `ui-card-auth-copyright` respectively).
+    * **Canvas Onboarding Refinement:** Fixed [CanvasOnboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx#10-85) structure to use a full-height centered layout with solid `bg-background` and `text-foreground` to prevent transparency bleeding from the canvas underneath. Raised the `z-index` to 50 and applied `pointer-events-auto` to restore interaction for the "Inizia a Progettare" button. Corrected the button's color application from the raw `className="green"` to the dynamic `variant="green"`.
+    * **Middleware Route Whitelisting:** Fixed an issue where Next.js middleware (`proxy.ts`) was redirecting non-authenticated users from the [PublicCanvasPage](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/canvas/public/%5Buid%5D/page.tsx#7-40) (`/canvas/public`) to the login page by adding `/canvas/public` to `PUBLIC_PATHS` and whitelisting the `canvas` locale area.
+    * Restyled `.ui-card-auth-copyright` to render with a dynamic `border-top` using `--current-color`, mirroring the authentic dividers.
+    * Added `cursor-pointer` directly to the `.ui-btn` base class to ensure all buttons correctly trigger the hand pointer, regardless of their HTML wrapping tag.
+    * **Glue Effect Centralization**: Added a dynamic `--glue` CSS variable per theme (falling back to black `0 0% 0%` in `:root`, and white `0 0% 100%` in all `.dark` and color brand themes). 
+    * Refactored `.ui-btn-*[color]:hover`, `.ui-logo-glue`, and `.card-post-it > .ui-card-header` to leverage `color-mix` with the `--color-glue` variable, establishing a globally synchronized, intelligent visual translucency system without hardcoded colors.
+    * Removed the Two-Step Verification note `* L'accesso richiede una verifica in due passaggi` from the `FormLogin` component entirely.
+- **App Icons & Metadata Standardization**:
+    - Generated missing favicon resolutions (`16x16`, `32x32`, `.ico`) and mobile device icons (`apple-touch-icon`, `android-chrome-192x192`, `android-chrome-512x512`) using `sharp-cli`.
+    - Configured the root `layout.tsx` `generateMetadata` function to point directly to the public Firebase Storage URLs for all 6 generated icon formats, ensuring perfect cross-device visibility for homescreen and dock additions.
+
+## Optimization: Semantic Auth CSS
+- Refactored `CardAuth.tsx` to eliminate inline Tailwind utility classes.
+- Introduced specific semantic classes extending `.ui-card-auth` within [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css):
+  - `.ui-card-auth-socials`, `.ui-card-auth-socials-group`, `.ui-card-auth-social-btn`
+1.  **CSS Adjustments:**
+    *   Removed `margin-top: calc(var(--spacing) * 6);` from `.ui-card-auth-divider`.
+    *   Removed `margin-top: calc(var(--spacing) * 4);` from `.ui-checkbox-container`.
+    *   Added `flex flex-col gap-4` to `.ui-card-auth-socials` to ensure uniform spacing between the social divider and the social buttons group, while removing `margin-bottom: calc(var(--spacing) * 6);` (mb-6).
+    *   Changed `.ui-card-auth-socials-group` gap from `gap-2` to `gap-4` to match standard spacing.
+    *   Updated `.ui-checkbox-input` to retain the theme background when checked (removed `checked:bg-emerald-500`) and use a green checkmark (`after:text-emerald-500`).
+    
+2.  **Component Refinements:**
+    *   Added a secondary `CardDivider` at the bottom of `CardAuthSocials` to display an "OPPURE" ("Or") text break.
+    
+3.  **Localization Updates:**
+    *   Updated the `termsDivider` translation in all localized JSON files, removing the "Prima cosa: " phrasing (e.g. "Prima cosa: Accetta Privacy & Condizioni" simply became "Accetta Privacy & Condizioni").
+    *   Added a new `orDivider` translation key to explicitly handle the "OPPURE (ma richiede TELEFONO per MFA)" text separator.
+    *   Updated the `acceptTerms` key in all language files to include a `<br></br>` tag to break the sentence cleanly.
+    *   Standardized the term to "Terms of Service" (e.g. "Termini e Condizioni di Servizio") across all `acceptTerms` localization keys.
+    *   Added `br: () => <br />` format support to `t.rich("Register.acceptTerms", ...)` within [src/components/forms/FormRegister.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx) to handle the new line break within translations.
+## Refinement: Auth Divider Theming
+- Simplified `.ui-card-auth-divider` in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to use a transparent flex layout.
+- Adopted `bg-current` for the lines and `text-current` for the text, allowing the divider elements to naturally inherit the parent card's foreground color without relying on solid block backgrounds.
+
+## Fix: Auth Divider Centering
+- Added a secondary `.ui-card-auth-divider-line-container` to the right side of the text in the `CardAuth` component's JSX to ensure the flex box algorithm correctly centers the visual text element between the two fluid lines.
+
+## Fix: Thematic Input Background Integration
+- Discovered that `.ui-input-primary` and standard inputs were previously using `bg-transparent`. When placed inside colored cards (e.g., green `ui-card`), the inputs visually inherited the card's background color, violating the expected input appearance.
+- Replaced `bg-transparent` with `bg-background text-foreground` on `.ui-input` and removed transparencies on base inputs so that their backdrop mimics primary themed `outline` buttons. Inputs are now reliably opaque and styled properly across differently colored panels.
+
+## Fix: Thematic Login Button 
+- The submit button in `FormLogin.tsx` previously used the default `primary` variant, making it blend completely into the themed `primary` card backgrounds. 
+- Restructured to `variant="outline"` ensuring the main submit button stands out as a white opaque button on top of the themed card, identical to the social login buttons.
+
+## Feature: Additional Login Divider 
+- Created a new localization key `loginDividerText` in IT, US, EN, and ES (`us.json`, `it.json`, `es.json`, `en.json`) translating "Click to access your account".
+- Added a `<CardDivider>` element in `FormLogin.tsx` right above the email/password submit button.
+- Confirmed that `.ui-card-auth-divider-text` enforces `uppercase` styling universally.
+
+## Fix: Invalid CSS Color Variables
+- **Replaced Tailwind Classes**: Removed non-existent tailwind animation classes (`animate-in`, `fade-in`, etc.) and replaced them with standard semantic CSS `ui-tools-navigator` prefixed classes inside [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css).
+- **Button Hover Effect**:
+  - Found that `color-mix()` in the global button hover state was failing because `var(--primary)` evaluated to raw HSL geometric numbers (`142 71% 45%`).
+  - Wrapped these properly utilizing `var(--color-primary)` which ensures the raw variable coordinates resolve into a recognizable `hsl()` valid color across all elements.
+  - Successfully cascaded the beautifully designed 3D Glue effect to `.ui-tools-navigator-btn` by removing its manual override lock entirely.
+- **Button Refactoring**: Changed the native HTML `<button>` element to the UI `<Button variant="light" size="icon">` component to clean up the implementation.
+
+## Feature: MFA Login Footer Tweaks
+- Updated the `footerNote` translation in IT, EN, ES, US, FR, and DE to remove the explicit "(MFA SMS)" text for a cleaner look. 
+- Removed `mt-4` from the `.layout-auth-footer-note` CSS block inside [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to fix the padding spacing.
+
+## Feature: Firebase MFA SMS implementation
+- **Backend Custom Claims**: Updated the [functions/src/orchestrator/admin.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/admin.ts), `organization.ts`, and `organizationUser.ts` backend orchestrators. Whenever custom claims are set or generated, the user's `phoneNumber` (from their Firebase `UserRecord`) is explicitly parsed and injected into the custom `.claims.phoneNumber` property.
+- **FormLogin Integration**:
+  - Replaced the simple `email/password` submission in `FormLogin.tsx` with a multi-step component that handles MFA challenges (`auth/multi-factor-auth-required`) using Firebase's `PhoneAuthProvider` and `RecaptchaVerifier`.
+  - Added a Forced Enrollment path. If a user logs in successfully via email/password but hasn't yet enrolled any multi-factor mechanism (`multiFactor(user).enrolledFactors.length === 0`), the UI freezes the progression and prompts the user to enroll a phone number via SMS before creating the server-side Next.js session block.
+  - Successfully mapped missing localized translation keys (e.g. `mfaVerifyMessage`, `phoneNumberLabel`) across all translation arrays (`en.json`, `it.json`, `es.json`, `fr.json`, `de.json`, `us.json`) programmatically.
+- **Verification**:
+  - `npm run build` returned a successful completion with zero ESLint errors and zero TypeScript compile errors.
+  - `functions: tsc` returned a successful compilation output.
+
+## Feature Update: Registration Redirect to MFA Login
+- **`FormRegister.tsx` Refactoring**: Removed the `handleLoginSuccess` function from the registration form. Now, whether a user registers via Email, Google, or Github, they are automatically logged out of the client Firebase session and redirected to `/auth/login?registered=true`.
+- **`FormLogin.tsx` Banner**: Intercepts the `registered=true` query parameter and displays a success banner (`layout-auth-error` style with semantic green coloring) prompting the user to log in again. This elegantly forces all newly registered users into the exact same SMS MFA Enrollment loop that existing users follow without duplicating `RecaptchaVerifier` logic.
+- **Translations Injected**: The key `"registrationSuccess"` has been seamlessly added into all locale map JSON files in `messages/`.
+
+## Optimization: Social Login MFA Exemption
+- **Bypassed Forced SMS Enrollment**: Logic in `FormLogin.tsx` (`handleLoginSuccess`) has been refined to inspect `user.providerData`. If the user is logging in exclusively via a social provider (`google.com` or `github.com`), the application will no longer forcefully halt the login process to demand an SMS enrollment. Since Google and GitHub inherently manage their own rigorous security and 2FA protocols, this reduces friction while maintaining security for traditional Email/Password users.
+
+## Optimization: FormRegister UI
+- **Terms & Privacy Checkbox Relocation**: Moved the terms and privacy acceptance checkbox to the very beginning of the registration form, enforcing its visibility as the primary actionable item.
+- **New Authentication Dividers**: Added two new `<CardDivider>` elements to visually separate the form's logical steps.
+  - Added `Register.termsDivider` ("Prima cosa: Accetta Privacy & Condizioni") above the checkbox.
+  - Added `Register.registerDivider` ("Completa la registrazione") just before the final submission button.
+- **Styling Unification**: Modified the main submit button in `FormRegister.tsx` to use the `variant="outline"` property. This aligns it with the thematic styling of `FormLogin.tsx`, ensuring a consistent, themed visual hierarchy across the entire authentication flow.
+- **Validation**: Conducted a full typescript check via `npm run build` which compiled cleanly with zero errors in 18 seconds.
+- **CardAuthSocials Detachment**: Safely extracted the Google and GitHub authentication buttons from the core `CardAuth.tsx` component into a newly isolated `CardAuthSocials.tsx` component. This enabled injecting the social buttons directly into `FormLogin.tsx` and `FormRegister.tsx` exactly where desired—specifically placing them *after* the mandatory Privacy & Terms Checkbox on the registration flow.
+- **Social Login Suggestion**: Reorganized the layout within `CardAuthSocials.tsx` so that a dividing line and message appear *before* the Google and GitHub login options, correctly encouraging users to use social logins. Programmatically added the new `"socialDivider"` copy across all active languages (`it.json`, `en.json`, `es.json`, `us.json`, `fr.json`, `de.json`).
+
+## Feature: Semantic Button Components
+- **Refactored `Button.tsx`**: Completely rewrote the `buttonVariants` (cva) to include 7 discrete brand colors (`green`, `blue`, `yellow`, `fuchsia`, `violet`, `red`, `orange`) alongside explicit `light` and `dark` alternatives. Each of these supports multiple states natively (`Default`, [Muted](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx#38-52), `Readonly`, `Outline`).
+- **Legacy Compatibility**: Kept legacy mappings (`primary`, `secondary`, `destructive`, and standard `outline`) mapping directly to Tailwind utility variables so older components continue functioning seamlessly without manual refactoring.
+- **Dynamic Thematic Authentication**: Modified `FormLogin.tsx`, `FormRegister.tsx`, and `CardAuth.tsx` to directly inject the `next-themes` `useTheme()` hook via `resolvedTheme === "dark" ? "dark" : "light"`, entirely overriding the hardcoded `variant="outline"`. As a result, login and registration buttons dynamically flip to deep dark (`bg-zinc-950`) on dark themes, and stark white (`bg-white text-zinc-950`) on light themes cleanly differentiating them from the colored card backgrounds.
+- **Validation**: `npm run build` returned a clean compilation with exactly zero type or lint errors.
+
+## Refactoring ToolsOverlay for Semantic Layout
+- **Semantic Foundation**: Extracted hardcoded Tailwind flex/dimension/boundary classes out of `ToolsOverlay`, `ToolsMain`, `ToolsMainSidebar`, `ToolsMainContent`, `ToolsPropbar`, and `ToolsFooter`.
+- **CSS Hierarchy**: Registered all exact dimensional constraints as dedicated layout semantic classes in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) (`.tool`, `.ui-tools-main`, `.ui-tools-main-sidebar`, `.ui-tools-main-content`, `.ui-tools-main-propbar`, `.ui-tools-footer`).
+- **Clean JSX**: Updated `ToolsOverlay.tsx` to cleanly compose standard child components inside a base `<div className="tool">`.
+- **Validation**: Confirmed structural integrity via `npm run lint` and `npm run build` producing zero build and type errors across the monorepo.
+
+## 9. 3D Canvas Grid & Visual Enhancements
+- **Perfect Grid Subdivisions**: Reconfigured the 3D `<Grid>` component `cellSize` to `0.1` and `sectionSize` to `1`, ensuring the grid accurately displays perfectly square 1-unit blocks and 0.1-unit subdivisions.
+- **Dynamic Theming Support**: Integrated Next-Themes into the [Canvas](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/store.ts#42-43) grid, establishing dynamic `cellColor` and `sectionColor`.
+  - **Light Mode**: Set cell color to `hsl(220, 13%, 65%)` and section color to `hsl(220, 13%, 75%)` perfectly balancing visibility logic for the bright background.
+  - **Dark Mode**: Configured high-contrast variants (`#52525b` & `#3f3f46`) tailored specifically for nocturnal development visual comfort.
+- **Artifact Removal**: Eliminated a persistent gray halo rendering at the origin coordinate [(0,0,0)](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/api/gateway/route.ts#25-108) by safely purging the `ContactShadows` scene component.
+- **Persistent Context**: Established an ongoing `CANVAS.md` knowledge file documenting the refactoring context, state, and next steps for resilient continuity.
+
+### UI Mode Override, Permissions, and Public Landing
+The `CanvasOverlay` and `ToolsOverlay` wrappers initially relied solely on the server-read `ui_mode` cookie, which originally defaulted to `tools`. This caused a chain of UX issues:
+1. **Direct navigation:** Navigating directly to `/partner/[...]/canvas` kept the mode as `tools`, hiding the canvas. This was fixed by using a client-side `usePathname()` override to force Canvas activation on `/canvas` routes.
+2. **Public Unauthenticated View:** The public landing page (`/it`) uses the 3D Canvas as its background, but since public visitors don't have the cookie set (or tokens), `variant === "public"`, yet `CanvasOverlay` remained inactive. A server-side fix in [src/app/[locale]/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/layout.tsx) now enforces `canvasActive` when `variant === "public"`.
+3. **Default Fallback & Permissions:** Changed the system default from `tools` to `canvas`. Implemented a robust `hasToolsAccess` check in `layout.tsx` (evaluating `claims.active` and `role`) that actively strips `tools` authorization if the user lacks sufficient RBAC privileges. This prop is passed down to [BaseNavigator](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/base/BaseNavigator.tsx#30-214) and `SwitchMode` to safely remove unauthorized entries from the dashboard toggle menu.
+
+## 10. Ecosystem Code Quality & Security Validation
+- **Root Workspace**: Executed `npm run lint`, `npm run build`, and `npm audit`. Diagnosed and resolved 2 errors and 5 warnings regarding unused variables and implicit `any` casting in [Canvas.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx) and [page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/pdm/viewer/page.tsx). Final result: **0 Lint Errors, 0 Build Errors, 0 Vulnerabilities**.
+- **Admin Workspace**: Executed Next.js ESLint, build, and npm audit. Rectified 3 isolated ESLint warnings related to unused variables (`getAuth`, `e`) and hook dependencies within the [gateway/route.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/api/gateway/route.ts) and `pipelines/run/page.tsx` directories. Final result: **0 Lint Errors, 0 Build Errors, 0 Vulnerabilities**.
+- **Functions Workspace**: Ran build and audit natively. Final result: **0 Compile Errors, 0 Build Errors, 0 Vulnerabilities**.
+- **Cloud Deployment Bugfix**: Diagnosed and resolved a fatal issue where Canvas failed to render remotely. The [page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/pdm/viewer/page.tsx) route was synchronously importing `xrStore` directly from [Canvas.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx), dragging the entire WebGL R3F ecosystem into the Next.js Server-Side Rendering (SSR) bundle. Segregated `xrStore` into its own decoupled [xrStore.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/xrStore.ts) model, safely resolving the Next.js `dynamic()` App Router strict chunking violation.
+
+## 11. Canvas Onboarding & Layer Experience
+In the final iteration, the immersive **3D Standlo Canvas** was upgraded to provide a robust onboarding and layer-based design system:
+- **Canvas Catalog Sidebar:** Introduced a new slide-out catalog on the left to browse and search parts, assemblies, and stands available for your design.
+- **Layer Header UI:** Added a dedicated layer selection menu (`CanvasHeaderLayers`) directly inside the top controls, enabling switching between critical operational layers such as `appendimento`, `strutture`, `impianto`, and more.
+- **Fading Inactive Layers:** Integrated an advanced wireframe and fading algorithm into [GenericPart.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/GenericPart.tsx). When a specific layer is isolated (e.g. `impianto`), all non-selected items drop to a subtle 15% opacity with disabled pointer events. This declutters the workspace during intensive domain-specific design phases.
+- **Auto-Routing (PDM Layers):** Added `useCases` metadata to the base entities schema. Dragging and dropping an entity from the Catalog now deterministically maps its target `layerId` based on the active `canvasType`.
+- **Guided Onboarding Tour:** Implemented `<CanvasTour />`. When unauthenticated users enter the Sandbox (`?tutorial=1`), they are met with a series of pulsing UI cards that guide them through the Catalog insertion, Tool controls, and Layer manipulation.
+- **Optimistic UI & Orchestrator Backing:** Injections via the Catalog are instantly mounted in the local Zustand store for zero-latency 3D feedback, while a background AppCheck-protected Orchestrator handles the Firebase asynchronous document creation.
+- **Public Sandbox Editing:** Created a safe mechanism for public read-only shares (`/it/canvas/public/[uid]`) featuring a password overlay pattern (UI facade completed) mimicking the upcoming collaborative editing controls.
+
+## 12. Global Home Overlay Integration
+- **Layout Architecture:** Responding to user feedback, the original clean `/it` landing page UI was restored and transformed into a dedicated full-screen `HomeOverlay` component.
+- **Default System Mode:** Adjusted [functions/src/index.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/index.ts) to register `home` within the `systemUiModes` manifest, and updated [src/app/[locale]/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/layout.tsx) to utilize `home` as the default cookie fallback instead of `canvas`. This ensures organic new users are presented with the primary Standlo welcome screen before diving into the 3D space.
+- **Seamless 3D Transition:** Configured the `HomeOverlay` dismiss action to update the `ui_mode` cookie to `canvas` client-side, enabling an instant, zero-reload transition that smoothly reveals the underlying `CanvasOverlay` and the [CanvasOnboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx#10-85) application below.
+- **Cross-Route Stability:** Engineered `HomeOverlay.tsx` to actively listen for `pathname.includes('/canvas')` client-side, guaranteeing that direct links to shared public Canvas models natively bypass the home overlay obstruction.
+- **Ecosystem Build Quality:** Re-ran full validations across all isolated workspaces following the layout refactoring. Sustained perfect code health across the board without bypassing any safety protocols:
+  - **Root Workspace:** `npm run validate` -> 0 Lint Errors, 0 Build Errors, 0 Vulnerabilities
+  - **Admin Workspace:** `npx next build && npx eslint "{app,components,lib}/**/*.{ts,tsx}" && npm audit` -> 0 Lint Errors, 0 Build Errors, 0 Vulnerabilities
+  - **Functions Workspace:** `npm run build && npm audit` -> 0 Typescript Errors, 0 Build Errors, 0 Vulnerabilities
+
+## 13. HomeOverlay 8x8 Grid Redesign & Chessboard Cards
+- **Grid Layout System:** Refactored `HomeOverlay` entirely to abandon the single centered logo in favor of an expansive CSS Grid (8 columns by 8 rows). Configured semantic `.ui-home` and `.ui-home-cell` classes inside [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) enforcing explicit padded cells (2rem).
+- **Chessboard Background:** Extensively upgraded the foundation of the home screen to natively render a 64-cell rigid black-and-white (`bg-black` and `bg-white`) chessboard background entirely generated in real-time grid coordinates, creating a visually striking checkerboard aesthetic underlying the application.
+- **Interactive POST-IT Components:** Reconstructed the overlay to host 9 thematic POST-IT `<Card>` components, mapped to specific layout coordinates mapping exact design specifications spanning 2x2 cells (e.g. `col-start-1 col-span-2 row-start-1 row-span-2`), intelligently spaced with single row and column gutters.
+- **Dynamic Theming Updates:** 
+  - Restructured [src/components/ui/Card.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Card.tsx) discarding the legacy `theme-` string interpolation and formally adopting the `CardColor` typing directly matching [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) base classes.
+  - Formally appended `.light` to [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) matching `.dark`'s behavior logic, enabling the new explicit `light` Post-It color mapping.
+  - Upgraded internal `<CardIcon />` logic ensuring the proper foreground color context (black vs white icons depending on card luminosity: yellow, green, light).
+- **Immersive Micro-Interactions:** 
+  - Attached a staggered cascading CSS animation (`@keyframes fadeSlideUp`) across the cards leveraging `animationDelay` mapped programmatically logic rendering dynamic fluid entrances upon overlay initialization.
+  - Implemented the hovering Post-It logic: hovering scales the individual cards `scale-105` and initiates a slight `-rotate-1` tilt with deep drop-shadowing mimicking physical stickiness lifting off the viewport.
+
+## 14. Canvas Sandbox Editor Security & Tools Dashboard (March 2026)
+- **Editor Auto-Provisioning ([canvas.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/schemas/canvas.ts))**: Upgraded [createCanvasSandbox](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/canvas.ts#21-100) to generate a secure `editPassword` natively during the creation flow, bypassing the need for manual user input.
+- **Parametric Onboarding ([CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx))**: The UI immediately transitions the user to the generated Canvas using a dynamic `?key=PASSWORD` URL parameter.
+- **Client Security Hydration ([page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/pdm/viewer/page.tsx))**: The Sandbox page detects the `key` parameter, injects it into the `useCanvasStore.setEditPassword()`, unlocks the editing capabilities, and actively sanitizes the Browser History state by stripping the `key` parameter to prevent accidental URL sharing leaks.
+- **Canvas Tools Sidebar ([CanvasTools.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx))**: Engineered a comprehensive, animated floating dashboard (top-right) partitioned into logical operational blocks:
+  - **Inserimento**: Controls for initializing Parts, Assemblies, Bundles, and Stands.
+  - **Azioni**: Interactive toggles (`translate`, `rotate`, [snap](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/GenericPart.tsx#156-170)) physically linked to the `transformMode` within Zustand.
+  - **View**: Future-proofed viewport triggers supporting 3D, AR (Pass-through), and VR (Immersive) tailored for impending Meta Quest 3 WebXR deployment.
+  - **Manufacturing**: Shortcuts for rendering the Bill of Materials (BoM) and Bill of Process (BoP).
+  - **Share Mechanism**: Integrated a `@radix-ui/react-popover` instance that presents two isolated sharing paths. It provides a clean, keyless URL for Read-Only stakeholders, while distinctly displaying the full admin URL and the generated `editPassword` for direct collaborators. All buttons were standardized utilizing the semantic `defaultOutline` or active `green` UI styling.
+
+## 15. Canvas Tools Semantic Refactoring & Immersive View
+- **Semantic CSS Classes**: Extracted all inline Tailwind classes within [CanvasTools.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx) into robust, reusable semantic classes in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) (`.ui-canvas-tools`, `.ui-canvas-tools-block`, `.ui-canvas-tools-group`, etc.). This enforces a horizontal layout architecture (`top-4 left-32`) replacing the previous cascading column.
+- **Maximized Viewport Focus**: Refactored the `/canvas/public/[uid]/page.tsx` structural wrapper to completely conceal the left-side "Editor Sbloccato" banner once the Sandbox password has been successfully verified. This ensures developers and designers are presented with a purely unobstructed 3D Canvas environment overlaid precisely by the new [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#33-302) horizontal dashboard, returning absolute focus to the CAD elements.
+- **Button Styling**: Applied unified styling to [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#33-302) buttons matching the [BaseNavigator](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/base/BaseNavigator.tsx#30-214) rounded aesthetics (`.ui-canvas-tools-btn` in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) with an active green outline and fill).
+
+### Stage 4: Layout adjustments and Localization (CanvasTools)
+For the final touches, structural styling and translations were introduced to properly scale [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#33-302).
+
+**Actions Applied:**
+- Modified [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) with exact specs for Canvas blocks and groups (`ui-canvas-tools-block` isolated background layout, height `64px` block, height `54px` group, line-height 10px, text-size 8px for title elements).
+- Addressed global CSS structural synchronization, ensuring all action buttons inside `<BaseNavigator />` ([SwitchLocale](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/SwitchLocale.tsx#15-108), [SwitchTheme](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/SwitchTheme.tsx#12-68), `SwitchMode`, `Profile`, `Support`) and inside [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#33-302) use the unified `.ui-canvas-tools-btn` dimensions (`h-10 w-10`).
+- Configured programmatic UI string localization by modifying [messages/it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json), [messages/us.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/us.json), [messages/es.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/es.json) with a localized `"tools"` partition within the `"Canvas"` node.
+- Injected the standard `useTranslations("Canvas.tools")` interface into [CanvasTools.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx) to source elements seamlessly directly from JSON payloads.
+
+**Validation Results (Phase 4):**
+- [x] Evaluated pixel-perfect dimensional stability for dynamic dashboard sections without rendering regressions.
+- [x] Scanned typescript build steps (returning **0 compile issues**), guaranteeing safety across native properties linking `next-intl` dictionaries in Next.js Turbopack pipelines.
+
+## 16. Final Ecosystem Validation
+- **Functions**: Fixed unused variables in Orchestrator files ([generic.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/generic.ts), [part.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/schemas/part.ts), [place.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/place.ts), [warehouse.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/warehouse.ts)) and typings in [policyOrganization.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/rbac/policyOrganization.ts). Evaluated with `npx eslint .` -> 0 errors, 0 warnings.
+- **Frontend / Root**: Fixed unused imports in components ([BaseNavigator.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/base/BaseNavigator.tsx), [SwitchLocale.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/SwitchLocale.tsx), [SwitchTheme.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/SwitchTheme.tsx), [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx), [Canvas.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx)). Evaluated with `npm run lint` -> 0 errors, 0 warnings. Evaluated `npm run build` natively -> 0 build errors.
+- **Admin**: Evaluated `npm run build` -> 0 build errors.
+
+## 17. RBAC Refinements and Stable UI Delivery
+To ensure a secure environment for public guests navigating the Standlo catalog without disrupting internal designer pipelines, the Zero-Trust RBAC `PolicyMatrices` within `functions/src/schemas` received a systemic expansion:
+
+1. **Strict Public Isolation**: The schema definition arrays for `part`, `assembly`, `stand`, `bundle`, and `mesh` were recalibrated strictly. The `guest` role (representing non-authenticated Canvas drop-ins) was granted explicitly `canRead: true`, whilst `canCreate`, `canUpdate`, and `canDelete` were set to `false`. Additionally, deep field-level validations stripped `write: true` from guests. 
+2. **Elevated Native Privileges**: Analogously, the permissions for catalog modifications were officially bound to `standlo_manager` and `standlo_designer`. Both roles explicitly received `canCreate: true`, `canUpdate: true`, `canDelete: true` combined with full `write: true` field capabilities, locking down catalog management securely inside the DB schema layer.
+3. **CanvasTools Stability**: Resolved a critical runtime `ReferenceError: mode is not defined` crashing the 3D workspace. The problem stemmed from bulk Zustand state destructuring losing React context during immediate re-renders. Converting `useCanvasStore` implementations to pull targeted individual selectors (e.g. `(state) => state.mode`) instantly stabilized the UI component, solving the Turbopack hydration failures and reinstating the catalog interaction buttons natively. 
+4. **Backend Validation**: An immediate `npm run build` was cast over the `functions` directory smoothly yielding 0 errors, confirming that the dynamic policy schema syntax rewrite aligns flawlessly with the Typescript compiler rules.
+
+### Canvas 3D Rendering & Transform Glitch Fixes (Mar 11 2026)
+* **Transparent Cubes Resolved**: Fixed an issue where inserted parts were rendering as generic transparent wireframes. Expanded the `isCustomMesh` evaluation logic in `GenericPart.tsx` to explicitly allow `part`, `assembly`, and `stand` types to render their own dimensions based on the `metadata.geometry` provided by the Orchestrator.
+* **Missing Materials Fixed**: Upgraded `CanvasCatalogSidebar.tsx` to perform an additional fetch for the `material` database mapping upon loading catalog items. The `color`, `roughness`, and `metalness` corresponding to the item's `materialId` are now seamlessly injected into the optimistic entity metadata, so that `GenericPart.tsx` natively displays the correct physical material properties.
+* **Orchestrator Backend Metadata Preservation**: Discovered that user-inserted parts would lose their specific dimensions (`1x0.3x0.1` defaulting to `1x1x1` generic boxes) after an initial refresh because `CanvasCatalogSidebar.tsx` was only sending structural data to the runtime Orchestrator (missing `metadata`). Upgraded `gateways/canvas.ts` `insertNode` endpoint to accept and natively write `metadata` (including geometry, custom dimensions, and injected material physical properties) permanently into the Firestore document, effectively cementing physical attributes against the db.
+* **PDM Mesh Reference Resolution (Parts scaling)**: Fixed the exact issue where a newly inserted `Part` (like `100x30x1-MDF`) rendered as `1x1x1` white boxes because `CanvasCatalogSidebar` did not automatically unpack the dimensions embedded in the correlated `meshId` (e.g. `ad59f8d7-c...`). Installed a `Promise.all` hydration phase inside the catalog fetcher that queries the Orchestrator for all raw `mesh` geometries associated with the incoming parts, merging their `dimensions`, `geometryType`, and `materialId` into the visual catalog state.
+* **Canvas Toolbar Duplicate & Delete**: Extended the canvas editing capabilities by adding a contextual *Selezione* block in the `CanvasTools.tsx` sidebar. When a user clicks to select a subcomponent, they now have contextual `Trash2` and `Copy` buttons. The **Delete** action triggers local state removal and invokes a newly established `deleteNode` endpoint in the Orchestrator `canvas.ts` Gateway. The **Duplicate** action creates an exact deep copy (with a 0.5 XYZ offset) and fires the `insertNode` endpoint so the clone is persisted to Firestore.
+* **Anomalous Transforms (Drifting) Eliminated**: Addressed a physics engine state desynchronization bug during `TransformControls` object movement. Manually syncing `setNextKinematicTranslation` inside the `useFrame` of `GenericPart.tsx` for a `RigidBody` nested within a transformed group caused recursive offsets and visual jitter. Trusting `react-three-rapier` natively to handle child kinematic body updates fixed the erratic behavior during Translate and Snap interactions.

@@ -1,0 +1,64 @@
+# Refactoring API Client & DevSecOps Validation
+
+We successfully completed the migration of all `httpsCallable` and [fetch](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasCatalogSidebar.tsx#38-161) calls within the `src/*` directory to the newly centralized [src/lib/api.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts) client. Additionally, we've strengthened our deployment pipeline by rigorously passing DevSecOps validations across all three primary project parts (root, admin, functions).
+
+### Implementazione Finale Canvas AI e Canvas Debug
+- **CanvasDebug:** Estratto e separato concettualmente le funzionalità di Stress Test (`Generazione 1600 Nodi` + `Svuotamento` + `Sync su DB`) in un componente `<CanvasDebug />` dedicato ai soli ambienti `localhost`. Questo ha permesso di liberare la UI principale.
+- **Floating AI Prompt:** Il componente [CanvasAI](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasAI.tsx#7-100) è stato posizionato as un overlay assoluto e flottante in basso (`bottom-8`), assumendo l'aspetto di una vera e propria barra terminale di intelligenza artificiale. L'interfaccia interagirà selettivamente con il nodo del canvas selezionato.
+
+## Changes Made
+- Centralized the [callGateway](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts#14-69) function within [src/lib/api.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts) making sure it properly carries all payloads while typing Responses with `Record<string, unknown>`.
+- Refactored [OrganizationUsersCreate.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/OrganizationUsersCreate.tsx), [FormDetail.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormDetail.tsx), [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx), [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx), [FormCreate.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormCreate.tsx), [FormOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormOnboarding.tsx), and [FormList.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormList.tsx) to standardize API usage via [callGateway](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts#14-69).
+- Resolved generic Typescript `any` errors ensuring pure typings, e.g. mapping `Response.data` structures directly.
+- Audited `root`, `admin`, and `functions` directories. They have been individually built, linted, and audited with **0 Vulnerabilities, 0 Errors, and 0 Warnings**.
+- Elevated the Level 4 DevSecOps Tests in `pentest.mjs` (Directory Traversal checks: `/.env`, [/.env.local](file:///Users/cristiankalexai/Progetti/standlo.com/.env.local), [/package.json](file:///Users/cristiankalexai/Progetti/standlo.com/package.json)) from "NICE-TO-HAVE" to "MUST-HAVE".
+
+## What Was Tested
+- Typescript build steps (`npm run build`) in [app](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/GenericPart.tsx#289-297), `admin`, and `functions`.
+- Vulnerability analyses via `npm audit` across all three codebases environments simultaneously with no bypassing.
+- The ISO 27001 automatic Pentest Script running against the active Next.js server locally confirming no Bypass leaks.
+- `npm run cloud:validate` end-to-end to replicate pre-deployment safety steps.
+
+## Validation Results
+All tests and validations have **PASSED**. The `cloud:validate` pipeline confirms no vulnerabilities and 100% security baseline success.
+
+```diff
+-        const gatewayFn = httpsCallable(functions, "canvas");
+-        const response = await gatewayFn({ actionId: "createCanvasSandbox", payload: { canvasType: "canvas", editPassword: autoPassword } });
+-        const data = response.data as any;
++        const data = await callGateway<Record<string, unknown>>("canvas", { actionId: "createCanvasSandbox", payload: { canvasType: "canvas", editPassword: autoPassword } });
+```
+
+# Intelligent Texture Variants System
+
+We have successfully implemented the "Intelligent Texture Variants System" as part of the Data-Driven Rendering Architecture (v2.0) upgrade. This logic allows textures (like different carpet colors or wood grains) to act as variants applied to core materials, making the Canvas UI smarter and the PDM more descriptive.
+
+## Changes Made
+- **Texture Schema ([functions/src/schemas/texture.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/schemas/texture.ts))**: Added a `compatibleMaterials` array so each texture can declare which Base Materials (e.g., "Moquette") it is meant to be applied to.
+- **PDM Textures UI ([admin/app/pdm/textures/page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/pdm/textures/page.tsx))**: Upgraded the texture editing interface to include a multi-select for `compatibleMaterials`. You can now select one or more basic materials that match the new variant.
+- **Part Schema ([functions/src/schemas/part.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/schemas/part.ts))**: Added `defaultTextureId` to let builders assign a default texture/variant directly at the catalog part level.
+- **PDM Parts UI ([admin/app/pdm/parts/page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/pdm/parts/page.tsx))**: 
+  - Added a "Default Texture Variant" selector inside the "3D Properties / Geometric Inheritance" box.
+  - Automatically updates the Part `name` placeholder appending the chosen texture (e.g. `Moquette - 100x100 cm - Moquette Rossa`) when changed.
+- **Canvas Tool Intelligence ([src/components/layout/canvas/CanvasTools.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx))**:
+  - The aspect/palette popover now dynamically filters the list of available textures based on the `materialId` of the currently selected object. If a texture specifies `compatibleMaterials`, it will only appear if the object's material is in that list (or if the texture is a legacy/global texture with an empty compatible list).
+- **Canvas Sidebar Catalog ([src/components/layout/canvas/CanvasCatalogSidebar.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasCatalogSidebar.tsx))**: 
+  - Ensure `defaultTextureId` of the catalog part propagates properly down to the inserted node's `textureId` on the canvas when dragged and dropped.
+  
+## Next Steps
+The system is now fully functional and deployed locally. When creating new textures (like "Moquette Rossa" or "Moquette Grigio Scuro"), remember to select "Moquette" as their **Compatible Material**. Then when you assign the Moquette material to an object, only Moquette-related textures will be suggested.
+
+# Phase 3: Core 3D Architecture (Performance & Raycasting)
+
+We successfully transformed the rendering architecture of the 3D Canvas from physics-heavy individual components to a massive instanced architecture using `InstancedMesh` and `three-mesh-bvh`, optimized for thousands of simultaneous elements.
+
+## Changes Made
+- **three-mesh-bvh Integration**: Implemented accelerated Raycasting by globally mapping `THREE.BufferGeometry` and `THREE.Mesh` prototypes to `computeBoundsTree` and `acceleratedRaycast`, and wrapping the elements in a `<Bvh>` context.
+- **Dynamic Instancing**: Grouped identical entities inside [store.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/store.ts) and [Canvas.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx) to drastically reduce draw calls. Entities sharing geometry, dimensions, and material properties are automatically collected and rendered via a single [InstancedPartGroup](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/InstancedPartGroup.tsx#12-131) component.
+- **Dynamic Selection Transition**: Refined the selection engine to render active objects as `<GenericPart>`, bringing back `TransformControls` and visual gizmos dynamically only for currently manipulated instances.
+- **AABB Logical Collisions**: Removed the heavy overhead of `@react-three/rapier` physics (completely removing RigidBodies from parts) and transitioned overlap detection to lightweight, manual AABB (`Box3`) intersection calculations during `useFrame`, resulting in zero visual lag.
+
+## Validation Results
+- Replaced heavily complex geometries with pure JSX instances (`<boxGeometry>`, `<cylinderGeometry>`, `<sphereGeometry>`).
+- Verified zero errors and warnings inside [GenericPart.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/GenericPart.tsx), [InstancedPartGroup.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/InstancedPartGroup.tsx), and [Canvas.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx).
+- Successfully ran the production build (`npm run build`) and confirmed zero NextJS, Linter, or TypeScript breaks.

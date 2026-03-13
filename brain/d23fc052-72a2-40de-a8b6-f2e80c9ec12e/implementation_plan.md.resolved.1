@@ -1,0 +1,24 @@
+# Brand Palette and Post-it Aesthetic Plan
+
+This plan outlines the changes to establish the STANDLO color palette and to update [Logo.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Logo.tsx) and [Card.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Card.tsx) components to dynamically display a post-it note aesthetic.
+
+## Proposed Changes
+
+### Components
+#### [MODIFY] [Logo.tsx (Public & Admin)](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Logo.tsx)
+- Update the component to render as a "post-it" when `bg="colored"` or when a specific new variant flag is passed. The default icon color for the post-it will be "green" if not specified.
+- The post-it will have the background color corresponding to the selected brand color.
+- An overlay or top border with a semi-transparent dark shade (`bg-black/10`) will be applied to simulate the darker "glue" of the post-it.
+- The PNG icon will be centered both vertically and horizontally with a subtle drop shadow on the post-it container.
+
+#### [MODIFY] [Card.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Card.tsx)
+- Add a new optional `color` prop to the `Card` component, mapping to the `BRAND_COLORS` (green, blue, yellow, etc.).
+- When `color` is provided, the card will adopt the post-it background color and a subtle drop shadow (`shadow-md`).
+- We will modify `ui-card` classes and use CSS variables or inline styles to apply the exact map colors.
+- The `CardHeader` (which typically contains the `CardTitle`) will be styled to act as the "glue" part, featuring a slightly darker, semi-transparent background (e.g., `bg-black/10`) and appropriate padding to visually anchor the top of the post-it.
+
+## Verification Plan
+
+### Manual Verification
+1. Review the [Logo](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Logo.tsx#35-102) component on the frontend header or testing sandbox to verify the post-it aesthetic, centering, and the glue strip.
+2. Review usage of the `Card` component with a `color` prop to verify the background matches the brand colors, and the `CardTitle` header displays the darker adhesive effect.

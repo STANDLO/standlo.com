@@ -1,0 +1,43 @@
+<current_dom_explanation>
+This is a temporary snapshot of the current page's DOM structure. The DOM will change if you navigate to or interact with another page. Use a tool like browser_get_dom to capture and preserve the DOM in your trajectory if needed for later reference.
+</current_dom_explanation>
+<current_dom>
+Inserimento
+[0] (111,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Aggiungi Parte' />
+[1] (143,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Aggiungi Assemblato' />
+[2] (174,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Aggiungi Bundle' />
+[3] (205,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Aggiungi Stand' />
+Azioni
+[4] (257,68)<button class='ui-canvas-tools-btn h-10 w-10' title='Sposta' />
+[5] (289,68)<button class='ui-canvas-tools-btn h-10 w-10' title='Ruota' />
+[6] (320,68)<button class='ui-canvas-tools-btn h-10 w-10' title='Aggancia' />
+View
+[7] (372,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Vista 3D' />
+[8] (404,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Modo AR (Pass-through)' />
+[9] (435,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Modo VR (Immersiva)' />
+Manufacturing
+[10] (487,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Distinta Base (BoM)' />
+[11] (518,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Distinta di Processo (BoP)' />
+[12] (550,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Gioca' />
+Condividi
+[13] (602,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Instagram' />
+[14] (633,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='LinkedIn' />
+[15] (665,68)<button class='ui-canvas-tools-btn h-10 w-10 px-0' title='Condividi' />
+[16] (34,62)<a class='ui-link group' href='/' />
+	[17] (34,62)<div  />
+		[18] (34,62)<div  />
+			[19] (34,65)<img  />
+[20] (790,58)<button class='ui-canvas-tools-btn h-10 w-10 px-0 shrink-0' title='Switch UI Mode'>Switch UI Mode />
+	Switch UI Mode
+[21] (824,58)<button class='ui-canvas-tools-btn h-10 w-10 px-0 shrink-0' title='Change language'>🇮🇹
+Switch language />
+	🇮🇹
+	Switch language
+[22] (858,58)<button class='ui-canvas-tools-btn h-10 w-10 px-0 shrink-0' title='Switch to Dark Mode'>Toggle theme />
+	Toggle theme
+[23] (898,58)<a class='ui-tools-navigator-link' href='/it/auth/login'>Accedi />
+[24] (951,58)<a href='/it/auth/create' />
+	[25] (951,58)<button class='ui-btn ui-btn-theme theme-green ui-btn-size-sm'>Registrati />
+Running in emulator mode. Do not use with production credentials.
+
+</current_dom>

@@ -1,0 +1,47 @@
+# Standlo Canvas Data Architecture & Onboarding Plan
+
+Questo documento delinea l'architettura per l'Onboarding del Canvas pubblico e la nuova struttura gerarchica (PDM) basata sui Livelli (Layers) per l'editor 3D.
+
+## Struttura Approvata
+> [!NOTE]
+> **Orchestrator "Fire & Forget" e Optimistic UI**
+> Abbiamo concordato un approccio ibrido ad alte prestazioni:
+> 1. Inserimento immediato nel local state (`ZustandXR`) per feedback visivo istantaneo (Optimistic UI).
+> 2. Chiamata in background a un endpoint Orchestrator protetto da AppCheck (accessibile anche a `public`).
+> 3. L'Orchestrator passa il job alla Choreography (background workers) per consolidare i documenti Firestore asincronamente.
+> Questo elimina la latenza di scrittura per l'utente, rendendo il Canvas 3D estremamente reattivo.
+> E confermiamo la struttura Firestore **flat** con campo `layerId` per ottimizzare le query di caricamento.
+
+## Must Have (Core Features)
+
+### 1. Sistema di "Layers" (Livelli)
+- **Definizione Schema**: In [functions/src/schemas/canvas.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/schemas/canvas.ts), aggiungere il `canvasType` (es. "stand") e un array costante per i layer predefiniti: `appendimento`, `pavimento`, `pareti`, `strutture`, `impianto`, `arredo`, `grafiche`, `consumabili`.
+- **Integrazione UI**: Creazione pannello UI per selezionare il "Layer Attivo".
+- **Struttura Dati Flat**: I nodi copiati nel Canvas avranno il campo `layerId` invece di annidarsi in subcollections profonde, garantendo un read unificato veloce da `/organizations/{orgId}/canvas/{canvasId}/nodes`.
+
+### 2. Architettura "Snapshot" con Orchestrator (Optimistic Copy)
+- **Inserimento Client-Side Istantaneo**: Quando l'utente inserisce una part/assembly, questa viene aggiunta **immediatamente allo store Zustand** per essere renderizzata in tempo reale.
+- **Orchestrator (Fire & Forget)**: Contestualmente, viene avviata una chiamata Callable `canvas-insert-node`. L'Orchestrator valida la richiesta (AppCheck) e delega la clonazione asincrona al motore di Choreography (es. estrazione dei `processes`).
+
+### 3. Public Canvas Onboarding (Playground)
+- **Modifica Home Page ([src/app/[locale]/page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/page.tsx))**: Sostituire l'azione di "chiusura" della home (`ui-home-exit`) con un bottone "Run Canvas Onboarding".
+- **`CanvasOnboarding` Component**: Un nuovo wrapper (in `src/components/layout/canvas`) che avvia l'esperienza guidata.
+- **Endpoint Pubblico Protetto (`createCanvasSandbox`)**:
+  - Una *Callable Cloud Function* protetta tramite **AppCheck**.
+  - Se l'utente non è loggato: Crea un documento Canvas temporaneo in `/organizations/public/canvas/{newId}` precompilato con dati mock (`orgType: EDUCATIONAL`, `userRole: designer`, ecc.).
+  - Se l'utente è loggato: Usa i veri `orgId` e `userId` dell'utente tramite `context.auth`.
+  - Ritorna il Canvas ID al client, che vi si iscrive in realtime tramite `syncSubcollection`.
+
+## Nice to Have (Enhancements per l'UX Top-level)
+
+- **Fading/Ghosting dei Layer Inattivi**: Quando l'utente seleziona il livello "Impianti", i nodi degli altri layer (pavimento, pareti) diventano semi-trasparenti o mostrano un effetto Wireframe, per concentrare l'attenzione visiva. (Attivabile via Three.js Material Opacity).
+- **Auto-Routing dei Layer**: Invece di dover selezionare il layer manualmente, l'Intelligenza Artificiale o un metadato globale nel Catalogo sa che "Faretto LED" va in "Impianto" o "Appendimento" e lo posiziona nel layer corretto in automatico.
+- **Drag & Drop dal Catalogo Sidebar**: Un'interfaccia a griglia laterale dove l'utente trascina la Card della "Parte" direttamente nella Scena 3D.
+- **Tutorial Guidato a Step (Onboarding Tour)**: Durante la fase `public`, un fumetto guida l'utente: "Prova a inserire un muro", "Adesso cambia il materiale", "Fantastico, hai creato il tuo primo stand!".
+
+## Verification Plan
+### Testing Manuale Richiesto:
+1. Navigare su `/it` senza essere loggati.
+2. Cliccare sulla UI per avviare l'Onboarding.
+3. Verificare nel Network Tab la chiamata alla function Firebase `createCanvasSandbox` e confermare la creazione del documento in Firestore (`/organizations/public/canvas/[id]`).
+4. Testare l'UI di cambio Layer e inserire due entità diverse, verificando che vengano salvate con il corretto tag `layerId` in Firestore.

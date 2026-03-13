@@ -1,0 +1,36 @@
+## Current Objective
+Migrate all API and Function invocations within `src/*` away from `httpsCallable` or [fetch](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormOnboarding.tsx#22-82) towards the centralized API client [src/lib/api.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts) (using `callGateway`), resolving `401` errors and `cloud:validate` failures.
+
+## Tasks
+- [x] Identify all usages of `httpsCallable` across the codebase.
+- [x] Identify direct [fetch](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormOnboarding.tsx#22-82) calls to `/api/gateway` and similar API endpoints.
+- [x] Refactor `OrganizationUsersCreate.tsx` to use `callGateway`.
+- [x] Refactor [FormDetail.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/FormDetail.tsx) to use `callGateway` and resolve TypeScript errors.
+- [x] Refactor [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx) to use `callGateway`.
+- [x] Refactor remaining form and onboarding components:
+  - [x] [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx)
+  - [x] [FormCreate.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/FormCreate.tsx)
+  - [x] [FormOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormOnboarding.tsx)
+  - [x] [FormList.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormList.tsx)
+- [x] Check for vulnerabilities and lint errors across `root`, `admin`, and `functions` without bypassing any of them.
+- [x] Configure Pentest Scripts to make Nice-To-Have tests into Must-Have DevSecOps policies.
+- [x] Run `npm run cloud:validate` and pass all DevSecOps verification, pentests, linting, and building steps with 0 errors.
+- [x] Fix Canvas Object Translation Drift (Decouple RigidBody and TransformControls hierarchies).
+- [x] Fix TransformControls Hover Interference (Pointer Events filtering).
+- [x] Refine Canvas Visual Snap Markers (Dynamic scaling, Z-fighting resolution with depthTest=false, color #2CFF05).
+- [x] Fix TransformControls Rotation Axis Muting (Lock CameraControls during TransformControls drag).
+
+## View Tools and Projections
+- [x] Fix text rotation on `ZUpGizmoViewcube: Destra/Fronte/Sinistra`
+- [x] Implement full localization for [ZUpGizmoViewcube](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/ZUpGizmoViewcube.tsx#203-227) using `messages/[locale].json`
+- [x] Add a Home button in [ZUpGizmoViewcube](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/ZUpGizmoViewcube.tsx#203-227) to reset camera position
+- [x] Add a new 'Proiezioni' tools block in [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#51-544) with `Perspective`, `Orthographic`, and `Ortho Faces` toggles
+  - [x] Localize all texts in [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#51-544) and [ZUpGizmoViewcube](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/ZUpGizmoViewcube.tsx#203-227) across `it, en, es` locales
+
+## VR Capabilities
+- [x] Wire the AR and VR buttons in CanvasTools to use `@react-three/xr` store methods for testing Meta Quest 3.
+- [x] Integrate [ErrorGuard.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/ErrorGuard.tsx) to handle `NotSupportedError` gracefully when clicking XR tools without hardware connected.
+
+## UI Restructuring
+- [x] Hide [BaseNavigator](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/base/BaseNavigator.tsx#30-194) completely when Canvas mode is active.
+- [x] Extract vital [BaseNavigator](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/base/BaseNavigator.tsx#30-194) functionalities (Locale, Theme, Support, Login/Logout) into a new "ACCOUNT" block inside [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#51-544).

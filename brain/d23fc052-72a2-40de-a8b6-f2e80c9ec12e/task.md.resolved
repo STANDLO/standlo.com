@@ -1,0 +1,148 @@
+#* [x] **Refactor CanvasOnboarding.tsx**
+  * `[x]` Move all text content from `CanvasOnboarding.tsx` to [messages/it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json) (and other languages) under a new `CanvasOnboarding` block.
+  * `[x]` Update `CanvasOnboarding.tsx` to use `useTranslations("CanvasOnboarding")`.
+  * `[x]` Remove all Tailwind CSS classes from `CanvasOnboarding.tsx`.
+  * `[x]` Create equivalent semantic CSS classes (e.g., `ui-canvas-onboarding-container`, `ui-canvas-onboarding-title`) in `globals.css` using `@apply`.
+  * `[x]` Implement the theme-aware dotted background using CSS variables (`--canvas-dot-color`) in `globals.css` for the `.ui-canvas-onboarding-overlay` class.
+  * `[x]` Add "The Global Factory" header above the onboarding content.
+  * `[x]` Insert the requested text block under "The Global Factory" using the consistent font/style as other subtitles.
+
+* [x] **Implement Interactive Tutorial**
+  * `[x]` Add a new `MockTutorialTools` component to `CanvasOnboarding.tsx` to simulate the Canvas tools.
+  * `[x]` Create simple tool icons (e.g., using `lucide-react` icons like `Square`, `Circle`, `Type`, `Image`, etc.).
+  * `[x]` Use `useEffect` with `setInterval` to cycle through tools every 3 seconds.
+  * `[x]` Render an animated CSS popup for the active tool showing its tooltip.
+  * `[x]` Ensure tooltip strings are added to the translation files ([messages/it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json), etc.) under a new `CanvasOnboarding.tutorials` namespace or similar.
+
+* [x] **Fix CanvasOnboarding CSS Layout**
+  * `[x]` Make `ui-canvas-onboarding-container` full width/height so columns are side-by-side (flex-row).
+  * `[x]` Left column: in light theme, use light dotted background. In dark theme, use dark dotted background.
+  - [x] Modify `globals.css` to make `.ui-canvas-onboarding-container` a full-width/full-height flex container.
+  - [x] Add theme-aware dotted backgrounds for left and right columns.
+*- [x] Fix Canvas Onboarding Component Styling
+  - [x] Review [logs/web.log](file:///Users/cristiankalexai/Progetti/standlo.com/logs/web.log) for debugging and contextual information.
+  - [x] Add `padding-top: 16px` (`pt-4`) to `.ui-canvas-onboarding-subtitle-container` in `globals.css`.
+  - [x] Ensure text inside `.ui-canvas-onboarding-subtitle-container` is centered.
+  - [x] Update `.ui-canvas-onboarding-card` in `globals.css` to be centered.
+  - [x] Ensure the Logo and title properly stay centered on desktop modes.
+- [x] Fix Missing Translations
+  - [x] Identify and add the missing Italian ([it](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/choreography/canvas.ts#42-120)) translations for `SystemRoleOptions` used in `OrganizationOnboarding.tsx` to [messages/it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json).
+- [x] Verification
+  - [x] Run `npm run build` to verify no related build errors persist.
+
+* [x] **Refactor OrganizationOnboarding Form Layout**
+  - [x] Extend `OnboardingSchema` to include `displayName` field.
+  - [x] Add `displayName` input field to the UI in `OrganizationOnboarding` component.
+  - [x] Refactor existing form fields into a 2-column grid (`grid-cols-1 md:grid-cols-2`).
+  - [x] Rearrange field order:
+    - Row 1: VAT (left), Name (right)
+    - Row 2: Type (left), Role (right)
+    - Row 3: DisplayName (left), Birthday (right)
+    - Row 4: Place (full width)
+    - Row 5: Gallery/Logo (full width)
+  - [x] Add Italian and English translations for `displayName` globally.
+  - [x] Replace `CardOnboarding` with the standard `Card` component to unify UI theming, removing `CardOnboarding.tsx` entirely.
+  - [x] Refactor `OrganizationOnboarding` to use the props-based `<Card />` structure, mirroring `FormLogin.tsx`.
+  - [x] Fix `Card.tsx` styles so that if passed `color="default"`, it assumes the active theme variables and still applies the `.card-post-it` glow effect accurately.
+  - [x] Add `<div id="recaptcha-container"></div>` to `OrganizationOnboarding.tsx`, `FormRegister.tsx`, `FormAuthAction.tsx`, and `FormVerifyEmail.tsx` for full Firebase Auth Recaptcha support.
+
+* [x] **Refactor Onboarding Form Architecture**
+  - [x] Rename `FormOnboarding.tsx` to `OrganizationOnboarding.tsx`.
+  - [x] Update [src/app/[locale]/(protected)/onboarding/page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/%28protected%29/onboarding/page.tsx) to use the new `OrganizationOnboarding` component.
+  - [x] Refactor `OrganizationOnboarding` to remove `callGateway` "getManifest" action.
+  - [x] Add the `required` attribute to input fields in `OrganizationOnboarding.tsx` for native browser validation.
+  - [x] Identify all other legacy forms within `src/components/forms/` that do not have native validation implemented.
+  - [x] Add the `required` attribute to the relevant input fields in those forms to enable native browser validation.
+  - [x] Implement `react-hook-form` + `@hookform/resolvers/zod` with `OrganizationCreateSchema` (extended with `birthday`).
+  - [x] Delete legacy `DynamicSDUIForm.tsx` file.
+  - [x] Verify UI validation (Zod) is active for form fields.
+
+* [x] **Final Validation**
+  - [x] Wrap `src/app/[locale]/partner/layout.tsx` children in `ToolsOverlay`
+  - [x] Refactor `SwitchMode` to use `router.push('/...');` instead of deleting cookies and triggering a browser reload.
+
+* [x] **Phase 1: Addressing the Gallery Bug (#1 & #2)**
+  - [x] `src/components/ui/Gallery.tsx`: Fix the UI bug where the image goes behind the Dropzone box instead of inside it.
+  - [x] Apply standard semantic CSS (ui-gallery-*).
+  - [x] Fix dropzone rendering below uploaded images instead of inside.
+
+- [x] **Firebase Storage Permissions**
+  - [x] Investigate `storage/unauthorized` exception during logo upload.
+  - [x] Verify `OrganizationOnboarding.tsx` uses the correct internal path mapping `path="public/logos"`.
+  - [x] Verify Firebase Auth hydration race condition on `Gallery.tsx` and fix it by awaiting `auth.onAuthStateChanged`.
+
+- [x] **Local Emulator & Pipeline Seeding**
+  - [x] Create/update `scripts/seedLocalPipelines.ts` mapping all 5 pipelines.
+  - [x] Assure pipeline ID `auth-onboarding` is renamed conceptually to `organization-onboarding`.
+  - [x] Ensure custom pipelines run gracefully in the emulator layout (`scripts/offline.mjs`).
+  - [x] Create `scripts/seedLocalAISkills.mjs` with hardcoded existing AI skills.
+  - [x] Update `scripts/offline.mjs` to execute both seeders.
+
+- [x] **Optimizing VAT Validation with EU Locale Detection**
+  - [x] Added `euLocales` array to `functions/src/core/constants.ts` containing EU VAT prefixes.
+  - [x] Updated `InputVat.tsx` to conditionally bypass the `/api/vies` fetch if the selected country is Extra-EU.
+  - [x] Verified build integrity with `npm run validate`.
+
+- [x] **BaseNavigator UI Fixes**
+  - [x] Adjusted `globals.css` to remove nested `fixed` positioning and redundant extra backgrounds inside the navigator, ensuring `ui-tools-navigator` visually contains `ui-tools-navigator-menu`.
+  - [x] Removed `SwitchMode` from the public navigator variant to prevent layout shifting.
+
+- [x] **Card UI Fixes**
+  - [x] Added `max-w-2xl` to `.ui-card-layout-auto` in `globals.css` to prevent full-width stretching and ensure optimal layout for one or two columns.
+  - [x] Added `m-auto max-h-[90vh]` to `.ui-card` for central horizontal and vertical alignment with a max height constraint.
+  - [x] Added `overflow-y-auto` to `.ui-card-content` so content can scroll if it exceeds the card's maximum height.
+  - [x] Wrapped `OrganizationOnboarding` inside `.layout-main-body` (flex, min-h-screen) to guarantee perfect vertical centering.
+  - [x] Refactored the `Gallery` component structure so that the dashed dropzone acts as the outer container spanning full-width, elegantly satisfying the "container of images" requirement.
+
+* [x] **BaseVersion Component**
+  - [x] Create `src/components/layout/base/BaseVersion.tsx` representing package version.
+  - [x] Add `"support"` translation keys correctly in all locale files.
+  - [x] Create `src/app/[locale]/(public)/support/page.tsx` as a temporary placeholder.
+  - [x] Implement `.ui-base-version` semantic CSS class in `globals.css`.
+  - [x] Integrate `BaseVersion` into `src/app/[locale]/layout.tsx` beside `BaseNavigator`.
+
+* [x] **UI & Gallery Follow-up Fixes**
+  - [x] Fix `.ui-card` vertical and horizontal centering inside `OrganizationOnboarding` container by using `flex` on `.layout-main-body`.
+  - [x] Ensure `.ui-gallery-dropzone` properly envelops the grid content as a single full-width container (previously updated in Gallery structural refactor).
+  - [x] Fix Firebase Storage permission error `storage/unauthorized` by updating the upload path to `users/${auth.currentUser?.uid}/gallery` in `OrganizationOnboarding.tsx` and ensuring Next.js reactivity.
+  - [x] Modify `src/app/[locale]/page.tsx` to automatically redirect users to the `/[locale]/canvas` route.
+  - [x] Fix Orchestrator Backend Zod Schema Invalid Argument error by explicitly sanitizing empty strings `""` to `undefined` during `onboardOrganization` both in the `OrganizationOnboarding` frontend component and within the backend resolver.
+
+* [x] **Linting and Type Safety Cleanup**
+  - [x] Remove the `eslint-disable-next-line @typescript-eslint/no-explicit-any` bypass in `src/lib/api.ts` and ensure generic typing uses `unknown` safely.
+  - [x] Remove the same bypass in `functions/src/choreography/auth.ts`, fixing the incorrect `operator` field to `op` using the correct `GatewayFilter` typing.
+  - [x] Remove all `eslint-disable-next-line @typescript-eslint/no-unused-vars` bypasses across all `functions/src/orchestrator` endpoints (9 files in total) by replacing native object destructuring with clean spread and `delete` semantics.
+  - [x] Validate codebase by running `npm run validate` inside `root`, `functions`, and `admin` separately, achieving 0 ESLint warnings and 0 build errors across the entire monorepo.
+
+* [x] **Investigate Canvas Creation Error**
+  - [x] Examined `createCanvasSandbox` function in `functions/src/orchestrator/canvas.ts`.
+  - [x] Traced the "Document not found" error during canvas creation.
+  - [x] Identified that the `orchestrator` was successfully enqueuing the background `choreographyCanvasCreateSandbox` task.
+  - [x] Discovered that the background task was failing silently because the FE was requesting `canvasType: "canvas"`, and the fallback in `choreography/canvas.ts` was also `"canvas"`.
+  - [x] Checked `schemas/canvas.ts` and identified that the Zod schema (`CANVAS_TYPES`) strictly only allows `["part", "assembly", "design"]`. The mismatched `"canvas"` type caused the Firestore gateway `create` to throw an `invalid-argument`.
+  - [x] Resolved by updating the `canvasType` payloads from `"canvas"` to `"design"`.
+  - [x] Validated functions build successfully with `npm run build` yielding 0 errors.
+
+* [x] **Refine Correlator Usages Storage**
+  - [x] Investigate `functions/src/choreography/correlator.ts` or `core/correlate.ts` to find where the `usages` array is updated.
+  - [x] Modify the correlation logic to save usages as documents in a subcollection instead of an array on the main document.
+  - [x] Use pluralized entity names for the subcollection name (convention).
+
+* [x] **Fix Cloud Tasks Deployment Region Error**
+  - [x] Investigate `Location 'europe-west4' is not a valid location` during function deploy.
+  - [x] Add explicit `region: "europe-west4"` to `canvasQueueConfig` in `functions/src/choreography/canvas.ts` to ensure `onTaskDispatched` initializes the Cloud Tasks queue in the correct European datacenter.
+
+* [x] **Remove `us-central1` References Globally**
+  - [x] Search the monorepo (`src`, `functions`) for `us-central1` strings.
+  - [x] Replace all occurrences with `europe-west4` to align with the active European GCP region deployment.
+
+* [x] **Apply `europe-west1` for Cloud Tasks Worker Queues**
+  - [x] Update `canvasQueueConfig` in `functions/src/choreography/canvas.ts` to use `europe-west1`.
+  - [x] Update queue paths in `functions/src/orchestrator/canvas.ts` to enqueue to `locations/europe-west1/...`.
+  - [x] Forcefully delete orphaned `europe-west4` queues via `gcloud functions delete` because Cloud Tasks API prevents normal deletion in unsupported regions.
+
+* [x] **Gemini Brain Context Sync & Cleanup**
+  - [x] Recursively delete old legacy Gemini contexts (kaktus, pincho, etc.) from `~/.gemini/antigravity/brain/` keeping only the current chat ID (`d23fc052...`).
+  - [x] Create `scripts/SyncBrain.mjs` to synchronize contexts between `~/.gemini/antigravity/brain` and the local project's `./brain` folder.
+  - [x] Hook `SyncBrain.mjs pull` to `npm run development` to automatically restore the Brain metadata from the repo onto any new computer.
+  - [x] Hook `SyncBrain.mjs push` to `npm run cloud`, `npm run cloud:firebase`, and `npm run cloud:validate` to automatically dump the local Brain metadata into the repository before deploying/committing.

@@ -1,0 +1,23 @@
+# Tasks
+
+- [x] Modify [src/app/globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to add color theme classes (`.theme-green`, `.theme-blue`, etc.) and adjust background canvases.
+- [x] Update [src/components/ui/Logo.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Logo.tsx) to support `color` and `background` props for rendering square icons.
+- [x] Update [admin/app/components/ui/Logo.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/components/ui/Logo.tsx) to identically support `color` and `background` props.
+- [x] Add CSS theme smooth transitions to [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) and optimize the base background colors.
+- [x] Implement/Update Theme selector to persist dark/light and chosen color using `next-themes` or localStorage.
+- [x] Update public Layout: Remove footer, add dotted grid background pattern.
+- [x] Update public Layout: make header transparent.
+- [x] Update Logo components to be clickable links returning to home.
+- [x] Implement Post-it aesthetic for Public and Admin [Logo.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Logo.tsx) components (colored background, dark glue strip, centered transparent icon).
+- [x] Rewrite [Card.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Card.tsx) to support a `color` prop for post-it styling, placing the `CardHeader/Title` in the darker glue region.
+- [x] Enforce rigid square layout on Post-It variants in [Logo.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Logo.tsx).
+- [x] Change default green post-it variant to use the black icon ([/icon_black.png](file:///Users/cristiankalexai/Progetti/standlo.com/public/icon_black.png)) for better contrast.
+- [x] Convert [CardAuth.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx) to utilize the active brand color and adopt the matching Post-It style.
+
+### Unified Canvas Architecture
+- [ ] Refactor [src/app/[locale]/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/layout.tsx) to handle the global 100vw/100vh dotted grid background without native scrolling.
+- [ ] Create `src/components/canvas/Canvas.tsx` with `@react-three/fiber` as the base transparent backdrop layer (z-index 0).
+- [ ] Create `src/components/layout/ToolsOverlay.tsx` (pointer-events-none, z-index 50) to host floating UI components.
+- [ ] Implement `src/components/layout/tools/ToolsLogo.tsx` (fixed top-left, 48x48 green post-it).
+- [ ] Implement `src/components/layout/tools/ToolsNavigator.tsx` (fixed top-right, holding locale/theme selectors and user menu).
+- [ ] Merge [(public)](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/components/ui/Logo.tsx#37-142) and [(protected)](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/components/ui/Logo.tsx#37-142) routing layouts into the new `UnifiedLayout`, deleting obsolete header/footer files.

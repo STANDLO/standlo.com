@@ -1,0 +1,19 @@
+#* [x] **Refactor CanvasOnboarding.tsx**
+  * `[x]` Move all text content from [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx) to [messages/it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json) (and other languages) under a new [CanvasOnboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx#33-135) block.
+  * `[x]` Update [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx) to use `useTranslations("CanvasOnboarding")`.
+  * `[x]` Remove all Tailwind CSS classes from [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx).
+  * `[x]` Create equivalent semantic CSS classes (e.g., `ui-canvas-onboarding-container`, `ui-canvas-onboarding-title`) in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) using `@apply`.
+  * `[x]` Implement the theme-aware dotted background using CSS variables (`--canvas-dot-color`) in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) for the `.ui-canvas-onboarding-overlay` class.
+  * `[x]` Add "The Global Factory" header above the onboarding content.
+  * `[x]` Insert the requested text block under "The Global Factory" using the consistent font/style as other subtitles.
+
+* [x] **Implement Interactive Tutorial**
+  * `[x]` Add a new `MockTutorialTools` component to [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx) to simulate the Canvas tools.
+  * `[x]` Create simple tool icons (e.g., using `lucide-react` icons like `Square`, `Circle`, `Type`, `Image`, etc.).
+  * `[x]` Use `useEffect` with `setInterval` to cycle through tools every 3 seconds.
+  * `[x]` Render an animated CSS popup for the active tool showing its tooltip.
+  * `[x]` Ensure tooltip strings are added to the translation files ([messages/it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json), etc.) under a new `CanvasOnboarding.tutorials` namespace or similar.
+
+* [x] **Final Validation**
+  - [x] Wrap [src/app/[locale]/partner/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/partner/layout.tsx) children in [ToolsOverlay](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/ToolsOverlay.tsx#18-41)
+  - [x] Refactor [SwitchMode](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/SwitchMode.tsx#21-132) to use `router.push`('/...');` instead of deleting cookies and triggering a browser reload.

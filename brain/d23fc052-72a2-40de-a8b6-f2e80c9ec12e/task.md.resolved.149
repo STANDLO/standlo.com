@@ -1,0 +1,32 @@
+# Architecture Refactoring & Cleanup
+
+## 1. Global TypeScript Typing & `eslint-disable` Cleanup
+- [x] Clean [functions/src/types.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/types.ts)
+- [x] Clean [functions/src/gateways/firestore.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/firestore.ts)
+- [x] Clean [functions/src/gateways/entityRegistry.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/entityRegistry.ts)
+- [x] Audit and clean all files in `functions/src/orchestrator/`
+- [x] Audit and clean all files in `functions/src/choreography/`
+
+## 2. Firestore Gateway Enhancements (Must-Haves)
+- [x] Implement `actionId: "batch"` handler in `firestore.ts`
+- [x] Validate batch schemas before commit
+- [x] Implement Circuit Breaker for Security Logging in `firestore.ts`
+
+## 3. Enterprise-Grade Gateway Enhancements (Nice-to-Haves)
+- [x] Implement Deep Pagination Limit (Max 500)
+- [x] Add Metrics & Telemetry (Warn on queries > 500ms)
+- [x] Implement Circuit Breaker for Security Alerts
+- [x] Implement Dead Letter Queue (DLQ) for Async Tasks
+- [x] Automated Zod Schema Extraction Endpoint
+
+## 4. Orchestrator Migrations
+- [ ] Refactor `orchestrator/canvas.ts` (`claimCanvasSandbox`)
+- [ ] Refactor `orchestrator/bundle.ts` to use new `batch` gateway
+- [ ] Refactor `orchestrator/stand.ts` to use new `batch` gateway
+- [ ] Refactor `orchestrator/assembly.ts` to use new `batch` gateway
+- [ ] Refactor remaining `orchestrator` domain files to use `firestore.run`
+
+## 5. Choreography Migrations
+- [ ] Refactor `choreography/canvas.ts` (`handleCanvasDeleteNode` soft delete logic)
+- [ ] Refactor `choreography/auth.ts`
+- [ ] Refactor `choreography/correlator.ts` 

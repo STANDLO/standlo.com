@@ -1,0 +1,174 @@
+# Resolve Unsafe Aliasing Crash (Retaining Rapier)
+
+The user is experiencing an application crash: `Uncaught Error: recursive use of an object detected which would lead to unsafe aliasing in rust`. This occurs from within `@react-three/rapier` when `RigidBody` components are dynamically added to the Canvas.
+
+The root cause is the use of `colliders="cuboid"` or automatic collider generation. When Rapier attempts to automatically scan complex, nested 3D React component trees (especially those containing lines, edges, and nested `THREE.Group`s), it often encounters recursive references or non-manifold geometries that crash the Rust WebAssembly module.
+
+## Proposed Changes
+
+### 1. Fix Bug via Explicit Colliders
+Instead of removing Rapier, we will disable automatic scanning by setting `colliders={false}` on the `<RigidBody>`. We will manually define explicit physics colliders (`<CuboidCollider>`, `<CylinderCollider>`, `<BallCollider>`) whose dimensions perfectly match the visual geometries. This completely bypasses the unsafe Rust code paths.
+
+#### [MODIFY] [GenericPart.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/GenericPart.tsx)
+- Import `CuboidCollider`, `CylinderCollider`, `BallCollider` from `@react-three/rapier`.
+- Update `<RigidBody>` to set `colliders={false}`.
+- Bind physics parameters to the `RigidBody` from `entity.metadata`:
+  - `friction={entity.metadata?.friction ?? 0.5}`
+  - `restitution={entity.metadata?.restitution ?? 0}`
+  - `mass={entity.metadata?.mass}`
+- Inside the `<RigidBody>`, render an explicit collider based on the entity's geometry type and dimensions (calculating half-extents appropriately).
+
+## Verification Plan
+
+### Manual Verification
+1. Open the `/it/editor/canvas` or an assembly.
+2. Add multiple objects (boxes, cylinders) sequentially to the canvas.
+3. Verify that the application no longer crashes with the Rust unsafe aliasing error.
+4. Verify that physical collision events still register (the red highlight effect on overlap) ensuring that the explicit colliders are sizing correctly relative to the visual meshes.
+
+## Root Cause of Instability
+
+Il sistema dei temi è instabile (e il tema chiaro non si attiva) a causa di **tre conflitti principali** in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css):
+
+1.  **Conflitto di Nomenclatura (`next-themes` vs Component Themes)**:
+    `next-themes` funziona aggiungendo le classi `dark` e `light` (o rimuovendo `dark` cosicché valga `:root`) al tag `<html>`. Allo stesso tempo, il design system prevedeva l'uso delle classi `.dark` e `.light` anche per colorare singoli layer o post-it cards. Questo ha generato collisioni globali.
+
+2.  **Sovrascrittura Involontaria dei Background (Hardcoded Dark Mode)**:
+    Le classi `.green`, `.light`, `.dark`, `.red` ecc. avevano tutte al loro interno questa struttura:
+    ```css
+    .light {
+      --background: 220 60% 4%; /* COLORE SCURO! */
+      --foreground: 0 0% 98%;
+      /* ... */
+      --primary: var(--base-light);
+    }
+    ```
+    Ciò significa che, non appena `next-themes` iniettava `class="light"` sull'HTML quando l'utente cliccava il tema chiaro, l'intero sito adottava immediatamente la classe `.light` la quale forzava i background ad essere **scuri**.
+
+3.  **Variazioni CSS Locali Non Isolate**:
+    Alcune componenti UI applicano il colore ma distruggono le variazioni logiche di background, forzando l'intero sito a sembrare "un unico blocco" senza depth# Data-Driven Rendering Architecture (v2.0) - Phase 3 Implementation Plan
+
+This plan focuses on **Phase 3: Core 3D Architecture (Performance & Raycasting)**. The goal is to optimize the 3D scene to support thousands of objects, using spatial acceleration structures and instanced rendering.
+
+## Proposed Changes
+
+---
+### 1. Spatial Raycasting Optimization (three-mesh-bvh)
+Integrate `three-mesh-bvh` to dramatically speed up raycasting intersections, preventing UI freezes when interacting with highly detailed scenes or dense 10k+ object setups.
+
+#### [NEW] Dependencies
+- `npm install three-mesh-bvh`
+
+#### [MODIFY] [src/components/layout/canvas/Canvas.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx)
+- Import `computeBoundsTree`, `disposeBoundsTree`, and `acceleratedRaycast` from `three-mesh-bvh`.
+- Extend `BufferGeometry.prototype` with the bounds tree functions.
+- Override `Mesh.prototype.raycast` globally with `acceleratedRaycast`.
+- Ensure this setup runs once when the module loads or within a `useEffect` on first boot.
+
+---
+### 2. Dynamic Grouping & Instanced Rendering
+Currently, every entity in the canvas state is rendered as a standalone `<GenericPart>` or `<mesh>`. We will group identical entities to minimize WebGL draw calls using `InstancedMesh`.
+
+#### [MODIFY] [src/components/layout/canvas/store.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/store.ts)
+- Introduce a new state property `renderGroups` or a derived memoized selector that groups incoming entities.
+- Entities are considered identical if they share the exact same `baseEntityId` (geometry), `materialId`, and `textureId`.
+- **RenderGroup Structure**: Record<VisualHash, CanvasEntity[]>
+
+#### [MODIFY] [src/components/layout/canvas/GenericPart.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/GenericPart.tsx) (or new `InstancedPartGroup.tsx`)
+- Adapt [Canvas.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx) to render `InstancedMesh` components for groups with counts > 1.
+- Use `matrixAt` to update the transforms of each instance efficiently.
+- Support click events on specific instances by using `e.instanceId` in React Three Fiber pointer events.
+
+---
+### 3. Dynamic Selection Transition
+`TransformControls` works correctly on single standalone meshes. To support moving objects that are part of an `InstancedMesh`, we will extract them on selection.
+
+#### [MODIFY] [src/components/layout/canvas/Canvas.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx) or Store logic
+- If `selectedEntityId` belongs to an instanced group, the specific entity is excluded from the `InstancedMesh` re-rendering and temporarily spawned as a standalone `<mesh>`.
+- The `TransformControls` attaches to this standalone mesh.
+- Upon deselection, the entity is re-integrated into the `InstancedMesh` render group with its updated position/rotation.
+
+---
+### 4. AABB Logical Collisions
+Instead of heavy physics engines, implement basic AABB intersection checking for overlap prevention when dragging objects.
+
+#### [MODIFY] `src/components/layout/canvas/components/TransformOverlay.tsx` (or wherever transform logic lives)
+- Apply constraints using `Box3` intersection checks against the rest of the scene bounds.
+- Provide visual feedback (red highlight or preventing movement) if an `intersectsBox` check is true during `onObjectChange`.
+
+## Verification Plan
+
+### Automated Tests
+- Run `npm run lint` and `npx tsc --noEmit` to ensure TypeScript constraints are met for the new Three.js prototype extensions.
+- Verify production build works: `npm run build`.
+
+### Manual Verification
+- Verify that raycasting (hovering over objects) remains instant even with many objects.
+- Validate that `InstancedMesh` correctly positions objects using `THREE.InstancedMesh.setMatrixAt`.
+- Select an object from an instanced group; verify it becomes editable via `TransformControls` and changes are saved.
+- Ensure dragging objects triggers basic AABB collision prevention properly.e il sistema stabile, scalabile e prevedibile, attueremo questa architettura isolata:
+
+### 1. Sistema Tematico Globale (Base Layer)
+Questo livello ascolterà solo `next-themes` (o le preferenze di sistema) e determinerà l'aspetto generico del contenitore (chiaro o scuro).
+-   `:root { ... }`: Conterrà tutte le palette chiare (`--background: 0 0% 100%`, ecc.) e le reference assolute di design (`--base-green`, `--base-blue`, ecc.). Sarà la fonte di verità del **Light Mode**.
+-   `.dark { ... }`: Conterrà **unicamente** le palette scure (`--background: 220 60% 4%`, ecc.). Definisce il **Dark Mode**.
+Queste classi non conterranno MAI forzature per i color themes individuali (perché `.dark` e `:root` devono supportare qualsiasi componente).
+
+### 2. Sistema Tematico per Componenti (Color Namespaces)
+Per i componenti come Layouts, Cards o Buttons che devono assumere uno dei 7 colori o forzare una specifica modalità (dark/light) a prescindere dal livello base, **rinomineremo i selettori isolandoli**.
+Ogni colore avrà un suo selettore esplicito (es. `.theme-green`, `.theme-light`, `.theme-dark`, `.theme-red`).
+
+In questo modo, se applichi `<div className="theme-light">`, quel componente specifico acquisirà le palette `--primary` e `--secondary` del light, **senza rompere il `next-themes`** che invece sta cercando di pilotare le classi pure `light` e `dark` sull'HTML root.
+
+I selettori di tema configureranno solo ciò che cambia (primary, ring, glue), senza forzare `--background` o `--card` dei propri figli a meno che non sia strettamente intenzionale (cioè per creare un blocco inverso).
+
+### 3. Ripristino del `BaseNavigator` Theming
+Rimuoveremo i lock cromatici dai component navbar. `BaseNavigator` applicherà semplicemente la sua logica e si tingerà secondo le basi `:root` e `.dark`, reagendo fluente al bottone "SwitchTheme".
+
+## Steps Execution
+1.  **Refactoring [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css)**:
+    -   Pulizia del layer `:root` e della direttiva `@theme` Tailwind.
+    -   Confinamento di `.dark` solo per i background globali.
+    -   Ri-assegnazione di `.green` -> `.theme-green`, `.light` -> `.theme-light`, `.dark` (color variant) -> `.theme-dark` per isolarli dalle direttive OS Root.
+    -   Rimozione dell'hardcoding errato (`--background: 220 60% 4%` ecc.) dai singoli `theme-*`, in modo che mantengano l'ereditarietà del layout di fondo e cambino solo i Primary Colors.
+2.  **Aggiornamento Componenti UI**:
+    -   Modificheremo `Card.tsx`, definendo internamente il map stringhe in modo che `variant="green"` restituisca la classe `"theme-green"`.
+    -   Modificheremo [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx) o altri componenti che usavano i vector errati.
+3.  **Verifica in Runtime SSR e CSR**:
+    -   Build Next.js e convalida dell'orchestrazione Server/Client tramite i Provider.
+
+Il risultato sarà un `SwitchTheme` reattivo (Cambia da Light a Dark e viceversa l'intera app) e component UI (Post-It, form, overlay) capaci di mantenere colori strutturali (Rosso, Verde, Giallo) a prescindere dal contenitore sfondo.
+
+# Implementazione Automazione Password Canvas e CanvasTools (Marzo 2026)
+
+L'obiettivo è rimuovere gli attriti in fase di onboarding della Sandbox e dotare l'ambiente Canvas di una vera e propria interfaccia strumenti (UI Editor).
+
+## Modifiche Proposte
+
+### 1. [src/components/layout/canvas/CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx)
+- **Generazione Automatica**: Rimuovere l'input manuale per la password.
+- Generare randomicamente una password alfanumerica di 6-8 caratteri (es. `Math.random().toString(36).slice(2, 8).toUpperCase()`).
+- Passare questa password a `createCanvasSandbox` e, una volta ricevuta la risposta, reindirizzare l'utente passando la password come parametro URL `?key=PASSWORD`.
+
+### 2. [src/components/layout/canvas/store.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/store.ts)
+- Aggiungere lo stato `editPassword` (stringa opzionale) e [setEditPassword](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/store.ts#150-151) per mantenere in memoria la password generata e visualizzarla nel menu Share.
+- Assicurarsi di includere anche l'eventuale function per sbloccare l'UI.
+
+### 3. [src/app/[locale]/canvas/public/[uid]/page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/canvas/public/%5Buid%5D/page.tsx)
+- Leggere il parametro URL `key`. Se presente, memorizzarlo nello Zustand store (es. [setEditPassword](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/store.ts#150-151)) e sbloccare automaticamente l'editor (`setUnlocked(true)`).
+- **Security UX**: Sostituire l'URL (`window.history.replaceState`) rimuovendo il query param `?key=` subito dopo averlo acquisito. Questo impedisce all'utente di copiare per sbaglio dalla barra degli indirizzi il link originale e permette la condivisione sicura dell'URL.
+- Nascondere o ridurre il precedente riquadro della password quando l'editor è sbloccato, demandando la visualizzazione della key al nuovo menu "Share".
+
+### 4. [src/components/layout/canvas/CanvasTools.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx) (NUOVO)
+- Creare il nuovo menu interattivo (floating o in posizione definita) con i 5 blocchi richiesti:
+  - **Inserimento**: Bottoni per "Parts", "Assembly", "Bundles", "Stand".
+  - **Azioni**: "Sposta", "Ruota", "Aggancia" (si appoggeranno alle variabili nel [store.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/store.ts) come [setTransformMode](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/store.ts#153-154)).
+  - **View**: "3D", "AR", "VR" (inclusa la predisposizione VR per i Meta Quest 3 4K).
+  - **Manufacturing**: Bottoni per "BoM" e "BoP".
+  - **Share**: Bottone che apre un Dialog/Popover contenente il link di condivisione pulito e la Password in chiaro appena salvata nello store, pronta da copiare.
+- Integrare [CanvasTools.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx) al posto o in aggiunta all'attuale Sidebar Pubblica quando l'utente è "Sbloccato".
+
+## Piano di Verifica
+1. **Onboarding Diretto**: Provare l'onboarding e verificare che non venga richiesta la password al creatore e che entri nello stage già sbloccato (con l'URL pulita dal parametro `key`).
+2. **Accesso Condiviso**: Copiare l'URL tramite il pulsante Share e incollarlo in Incognito. Verificare che lì appaia il prompt per bloccare la modifica finché non si inserisce codesta password.
+

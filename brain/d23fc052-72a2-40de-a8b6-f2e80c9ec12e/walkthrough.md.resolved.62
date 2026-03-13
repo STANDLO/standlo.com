@@ -1,0 +1,18 @@
+# Firestore Gateway Refactoring Walkthrough
+
+## 1. Orchestrator Migrations
+* Complete audit of [orchestrator/assembly.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/assembly.ts), [orchestrator/bundle.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/bundle.ts), and [orchestrator/stand.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/stand.ts). Confirmed these have successfully been refactored to use `actionId: "batch"` via `firestore.run()`.
+* The `orchestrator` layer is completely free of any direct references to Firebase Admin SDK or direct object manipulation through `.set()`/`.update()`.
+
+## 2. Choreography Migrations
+* Refactored [choreography/canvas.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/choreography/canvas.ts) ([handleCanvasDeleteNode](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/choreography/canvas.ts#299-328)): We replaced the hard delete logic against the Firestore Admin SDK with a robust `firestore.run` using `actionId: "soft_delete"`.
+* Refactored [choreography/auth.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/choreography/auth.ts): Replaced manual logic querying and deduplicating Auth events. It now uses the [list](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/queries.ts#3-42) action provided by `firestore.run` with standardized [createInternalRequest](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/internal.ts#5-39) filtering array syntax, followed by `actionId: "create"`.
+* Checked [choreography/correlator.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/choreography/correlator.ts): Since this involves massive data aggregations across disparate collections (`arrayRemove`/`arrayUnion` on four segment subcollections), the most optimal approach relies heavily on the `admin.firestore.Firestore` object directly mapped to `.batch()`.
+* Checked DLQ wrapping: All available background queue handlers in [canvas.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/canvas.ts) correctly implement and use the [withDLQ()](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/choreography/utils/dlq.ts#5-43) wrapper passing their native Cloud Tasks `Request<T>`.
+
+## 3. Typings and Code Cleanliness
+* We ran the official CI pipelines locally over `functions/src`.
+* Both `npx tsc --noEmit` and `npm run lint` succeeded with exactly 0 typing incompatibilities and 0 ESLint warnings.
+* All `eslint-disable` or direct `any` bindings have been removed.
+
+All tests succeed and the migrations requested in the checklist have been successfully reviewed and resolved.

@@ -1,0 +1,34 @@
+# Brand Palette and Logo Component Plan
+
+This plan outlines the specific changes to establish the STANDLO color palette in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) and to update the [Logo.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Logo.tsx) components to dynamically display the brand icons.
+
+## Proposed Changes
+
+### Configuration
+#### [MODIFY] [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css)
+- **Base Canvas Colors**:
+  - Update `:root` to have a slightly off-white or white canvas for `light` mode (e.g., `--background: 0 0% 100%;` and `--card: 0 0% 100%;`).
+  - Update `.dark` to have a very dark canvas (e.g., `--background: 240 10% 4%;` and `--card: 240 60% 6%;`).
+- **Color Themes**:
+  - Define 7 new CSS classes: `.theme-green`, `.theme-blue`, `.theme-yellow`, `.theme-fucsia`, `.theme-violet`, `.theme-red`, `.theme-orange`.
+  - For each class, map the chosen Hex color to its corresponding `--primary` HSL value.
+  - Set the `--secondary` color to a contrasting color from the palette for each theme.
+  - Provide a cohesive `--primary-foreground` and `--secondary-foreground` (either black or white) to ensure proper contrast.
+
+### Components
+#### [MODIFY] [Logo.tsx (Public)](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Logo.tsx)
+#### [MODIFY] [Logo.tsx (Admin)](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/components/ui/Logo.tsx)
+- **New Props**:
+  - `color: "green" | "blue" | "yellow" | "fucsia" | "violet" | "red" | "orange" | "white" | "black" | "default"`
+  - `bg: "transparent" | "white" | "black" | "colored"`
+- **Logic**:
+  - If `color` is `"default"`, render the text logo ([logo_light.webp](file:///Users/cristiankalexai/Progetti/standlo.com/public/logo_light.webp) and [logo_dark.webp](file:///Users/cristiankalexai/Progetti/standlo.com/public/logo_dark.webp)) as it currently does.
+  - If a specific `color` is provided, render the `icon_{color}.png` image in a square container layout.
+  - If `bg` is `"colored"`, use the [icon_white.png](file:///Users/cristiankalexai/Progetti/standlo.com/public/icon_white.png) inside a square container that has the background color of the specified `color` prop.
+  - Otherwise, set the container background based on the `bg` prop (`transparent`, `white`, or `black`).
+
+## Verification Plan
+
+### Manual Verification
+1. I will ask the user to view the app locally to confirm the root color themes act as expected (e.g., adding `theme-green dark` or `theme-fucsia` to the `html` or `body` element).
+2. I will ask the user to verify a page where the [Logo](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Logo.tsx#18-44) component is rendered with the new props (`color` and `background`) to confirm all combinations display correctly and matching the designer's matrix.

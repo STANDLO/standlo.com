@@ -1,0 +1,58 @@
+# Deep Analysis of Theme System & Globals.css Re-Architecture
+
+## Root Cause of Instability
+
+Il sistema dei temi è instabile (e il tema chiaro non si attiva) a causa di **tre conflitti principali** in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css):
+
+1.  **Conflitto di Nomenclatura (`next-themes` vs Component Themes)**:
+    `next-themes` funziona aggiungendo le classi `dark` e `light` (o rimuovendo `dark` cosicché valga `:root`) al tag `<html>`. Allo stesso tempo, il design system prevedeva l'uso delle classi `.dark` e `.light` anche per colorare singoli layer o post-it cards. Questo ha generato collisioni globali.
+
+2.  **Sovrascrittura Involontaria dei Background (Hardcoded Dark Mode)**:
+    Le classi `.green`, `.light`, `.dark`, `.red` ecc. avevano tutte al loro interno questa struttura:
+    ```css
+    .light {
+      --background: 220 60% 4%; /* COLORE SCURO! */
+      --foreground: 0 0% 98%;
+      /* ... */
+      --primary: var(--base-light);
+    }
+    ```
+    Ciò significa che, non appena `next-themes` iniettava `class="light"` sull'HTML quando l'utente cliccava il tema chiaro, l'intero sito adottava immediatamente la classe `.light` la quale forzava i background ad essere **scuri**.
+
+3.  **Variazioni CSS Locali Non Isolate**:
+    Alcune componenti UI applicano il colore ma distruggono le variazioni logiche di background, forzando l'intero sito a sembrare "un unico blocco" senza depth, finché lo switch non si scollega del tutto dal sistema.
+
+## Proposed Plan
+
+Per rendere il sistema stabile, scalabile e prevedibile, attueremo questa architettura isolata:
+
+### 1. Sistema Tematico Globale (Base Layer)
+Questo livello ascolterà solo `next-themes` (o le preferenze di sistema) e determinerà l'aspetto generico del contenitore (chiaro o scuro).
+-   `:root { ... }`: Conterrà tutte le palette chiare (`--background: 0 0% 100%`, ecc.) e le reference assolute di design (`--base-green`, `--base-blue`, ecc.). Sarà la fonte di verità del **Light Mode**.
+-   `.dark { ... }`: Conterrà **unicamente** le palette scure (`--background: 220 60% 4%`, ecc.). Definisce il **Dark Mode**.
+Queste classi non conterranno MAI forzature per i color themes individuali (perché `.dark` e `:root` devono supportare qualsiasi componente).
+
+### 2. Sistema Tematico per Componenti (Color Namespaces)
+Per i componenti come Layouts, Cards o Buttons che devono assumere uno dei 7 colori o forzare una specifica modalità (dark/light) a prescindere dal livello base, **rinomineremo i selettori isolandoli**.
+Ogni colore avrà un suo selettore esplicito (es. `.theme-green`, `.theme-light`, `.theme-dark`, `.theme-red`).
+
+In questo modo, se applichi `<div className="theme-light">`, quel componente specifico acquisirà le palette `--primary` e `--secondary` del light, **senza rompere il `next-themes`** che invece sta cercando di pilotare le classi pure `light` e `dark` sull'HTML root.
+
+I selettori di tema configureranno solo ciò che cambia (primary, ring, glue), senza forzare `--background` o `--card` dei propri figli a meno che non sia strettamente intenzionale (cioè per creare un blocco inverso).
+
+### 3. Ripristino del [BaseNavigator](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/base/BaseNavigator.tsx#31-215) Theming
+Rimuoveremo i lock cromatici dai component navbar. [BaseNavigator](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/base/BaseNavigator.tsx#31-215) applicherà semplicemente la sua logica e si tingerà secondo le basi `:root` e `.dark`, reagendo fluente al bottone "SwitchTheme".
+
+## Steps Execution
+1.  **Refactoring [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css)**:
+    -   Pulizia del layer `:root` e della direttiva `@theme` Tailwind.
+    -   Confinamento di `.dark` solo per i background globali.
+    -   Ri-assegnazione di `.green` -> `.theme-green`, `.light` -> `.theme-light`, `.dark` (color variant) -> `.theme-dark` per isolarli dalle direttive OS Root.
+    -   Rimozione dell'hardcoding errato (`--background: 220 60% 4%` ecc.) dai singoli `theme-*`, in modo che mantengano l'ereditarietà del layout di fondo e cambino solo i Primary Colors.
+2.  **Aggiornamento Componenti UI**:
+    -   Modificheremo [Card.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Card.tsx), definendo internamente il map stringhe in modo che `variant="green"` restituisca la classe `"theme-green"`.
+    -   Modificheremo [CanvasOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasOnboarding.tsx) o altri componenti che usavano i vector errati.
+3.  **Verifica in Runtime SSR e CSR**:
+    -   Build Next.js e convalida dell'orchestrazione Server/Client tramite i Provider.
+
+Il risultato sarà un [SwitchTheme](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/SwitchTheme.tsx#14-71) reattivo (Cambia da Light a Dark e viceversa l'intera app) e component UI (Post-It, form, overlay) capaci di mantenere colori strutturali (Rosso, Verde, Giallo) a prescindere dal contenitore sfondo.

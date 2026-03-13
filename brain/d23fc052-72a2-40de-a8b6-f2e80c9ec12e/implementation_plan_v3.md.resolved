@@ -1,0 +1,28 @@
+# Implementation Plan: Canvas Layout & Onboarding Refactor
+
+## Proposed Changes
+
+### CSS Layout ([src/app/globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css))
+- **Modify** `.ui-canvas-onboarding-container` to be full width (`w-full`) and full height (`min-h-[100dvh]`), ensuring the two columns are always side-by-side on desktop.
+- **Modify** `.ui-canvas-onboarding-left-col` to have the default theme dotted background (`bg-background`).
+- **Modify** `.ui-canvas-onboarding-right-col` to have the inverted theme dotted background (dark in light theme, light in dark theme).
+
+### Onboarding Architecture ([src/components/forms/FormOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormOnboarding.tsx))
+- **Remove** the dependency on [DynamicSDUIForm](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/DynamicSDUIForm.tsx#32-190) and the dynamic `getManifest` backend call.
+- **Implement** `react-hook-form` combined with `@hookform/resolvers/zod` to achieve robust Client-Side UI Validation.
+- **Schema**: Use `OrganizationCreateSchema` from `@/core/schemas` extended with the required `birthday` field (which is used for the user profile during onboarding). 
+- **Fields Rendered**: Manually render the specific fields needed (`type`, `name`, `vatNumber`, `sdiCode`, `birthday`, `roleId`, `place`, `logoUrl`) using the existing custom UI components (`Input`, `Select`, `InputVat`, `InputPlace`, `InputDate`, `Gallery`).
+- **Validation**: Wire up `errors` from `react-hook-form` to display inline, localized validation errors (e.g., minimum characters, valid PEC/SDI, mandatory fields).
+- **Submission**: On valid submit, send the payload to [callGateway("orchestrator", { actionId: "onboard_organization" })](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts#14-58) as before.
+
+## Verification Plan
+
+### Automated Tests
+- Run `npm run validate` to ensure no linting or type errors are introduced.
+
+### Manual Verification
+- In the browser, navigate to a Canvas Onboarding URL (e.g. `/it/canvas`) and verify that the layout displays as two distinct, full-height columns with alternating dotted backgrounds.
+- Toggle between dark and light themes to ensure the dotted backgrounds correctly invert.
+- In the browser, navigate to the [/onboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/api/auth/onboarding) page manually inside a logged-in Google session without an organization. 
+- Try to submit the form empty to verify that Zod UI validation catches the errors immediately (without network requests).
+- Fill the form and complete onboarding to ensure the `onboard_organization` orchestrator logic still successfully creates the organization and redirects to the dashboard.

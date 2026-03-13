@@ -1,0 +1,8 @@
+# Guest/Public RBAC in Orchestrator
+
+- [ ] Update [functions/src/orchestrator/canvas.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/canvas.ts): Migrate [createCanvasSandbox](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/canvas.ts#21-99) and [claimCanvasSandbox](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/canvas.ts#100-150) logic from the old canvas gateway.
+- [ ] Update [functions/src/gateways/orchestrator.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/orchestrator.ts):
+  - [ ] Add [createCanvasSandbox](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/canvas.ts#21-99), [insertNode](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/canvas.ts#5-22), [updateNode](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/canvas.ts#202-241), [deleteNode](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/canvas.ts#310-334) to `publicActions` list to prevent throwing `unauthenticated`.
+  - [ ] Add routing logic blocks for [createCanvasSandbox](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/canvas.ts#21-99) and [claimCanvasSandbox](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/gateways/canvas.ts#100-150).
+- [ ] Update [src/lib/api.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts): When `auth.currentUser` is null, explicitly pass `orgId: "public"` and `roleId: "guest"` in the GatewayRequest.
+- [ ] Verify functionality via build / tests.

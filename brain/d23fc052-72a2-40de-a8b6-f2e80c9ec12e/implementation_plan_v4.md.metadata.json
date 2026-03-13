@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Updated plan outlining the switch to react-hook-form + Zod for OrganizationOnboarding (formerly FormOnboarding), removing DynamicSDUIForm, and Canvas CSS changes.",
+  "updatedAt": "2026-03-12T22:39:22.462795Z"
+}

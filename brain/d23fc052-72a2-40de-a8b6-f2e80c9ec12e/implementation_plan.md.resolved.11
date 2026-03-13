@@ -1,0 +1,45 @@
+# Standlo Canvas Data Architecture & Onboarding Plan
+
+Questo documento delinea l'architettura per l'Onboarding del Canvas pubblico e la nuova struttura gerarchica (PDM) basata sui Livelli (Layers) per l'editor 3D.
+
+## User Review Required
+> [!IMPORTANT]
+> **Struttura dei Dati Firestore (Subcollections vs Flat con campo `layerId`)**
+> Nel tuo messaggio suggerisci una struttura profondamente annidata: `/canvas/{canvasId}/layers/{layerId}/parts/{partId}`.
+> **Proposta Alternativa Consigliata:** Per un Editor 3D in Realtime, ascoltare 8+ subcollections diverse (una per layer) o usare Collection Group Queries può rallentare il rendering e complicare i listener. Suggerisco di mantenere una subcollection "piatta" (es. `/canvas/{canvasId}/nodes/{nodeId}`) dove ogni nodo ha proprietà `entityType: 'part'|'assembly'`, `globalRefId: string` e un campo **`layerId: string`**. 
+> Questo permette di scaricare l'intero Canvas con una sola query veloce e filtrare o raggruppare visivamente per livello direttamente nel Local State (`BzustandXR`) del browser. I layer stessi possono essere definiti nello schema [canvas.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/schemas/canvas.ts).
+> **Cosa ne pensi di questa ottimizzazione? Procedo con la struttura piatta con campo `layerId`, o preferisci le subcollections annidate fisicamente?**
+
+## Must Have (Core Features)
+
+### 1. Sistema di "Layers" (Livelli)
+- **Definizione Schema**: In [functions/src/schemas/canvas.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/schemas/canvas.ts), aggiungere il `canvasType` (es. "stand") e un enum/array costante per i layer predefiniti: `appendimento`, `pavimento`, `pareti`, `strutture`, `impianto`, `arredo`, `grafiche`, `consumabili`.
+- **Integrazione UI**: Creazione di un pannello UI (nel [ToolsOverlay](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/ToolsOverlay.tsx#18-41) o header del Canvas) per selezionare il "Layer Attivo".
+- **Inserimento Nodi**: Quando un utente fa Drag&Drop o clicca "Inserisci" dal catalogo globale, il nodo viene clonato nel Canvas e gli viene assegnato il `layerId` attivo.
+
+### 2. Architettura "Snapshot" (Global to Local Copy)
+- **Copia Locale**: Invece di usare reference ai documenti globali (`parts`, `assemblies`), quando un elemento viene inserito nel canvas, facciamo una copia (snapshot) locale in `/organizations/{orgId}/canvas/{canvasId}/nodes/{nodeId}`.
+- **Processi Associati**: Tutti i processi legati all'elemento inserito (es. tempo di montaggio di una parete) vengono instanziati nella subcollection logica del canvas e legati al `nodeId` e al `layerId`, garantendo un ordine coerente.
+
+### 3. Public Canvas Onboarding (Playground)
+- **Modifica Home Page ([src/app/[locale]/page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/page.tsx))**: Sostituire l'azione di "chiusura" della home (`ui-home-exit`) con un bottone "Run Canvas Onboarding".
+- **`CanvasOnboarding` Component**: Un nuovo wrapper (in `src/components/layout/canvas`) che avvia l'esperienza guidata.
+- **Endpoint Pubblico Protetto (`createCanvasSandbox`)**:
+  - Una *Callable Cloud Function* protetta tramite **AppCheck**.
+  - Se l'utente non è loggato: Crea un documento Canvas temporaneo in `/organizations/public/canvas/{newId}` precompilato con dati mock (`orgType: EDUCATIONAL`, `userRole: designer`, ecc.).
+  - Se l'utente è loggato: Usa i veri `orgId` e `userId` dell'utente tramite `context.auth`.
+  - Ritorna il Canvas ID al client, che vi si iscrive in realtime tramite `syncSubcollection`.
+
+## Nice to Have (Enhancements per l'UX Top-level)
+
+- **Fading/Ghosting dei Layer Inattivi**: Quando l'utente seleziona il livello "Impianti", i nodi degli altri layer (pavimento, pareti) diventano semi-trasparenti o mostrano un effetto Wireframe, per concentrare l'attenzione visiva. (Attivabile via Three.js Material Opacity).
+- **Auto-Routing dei Layer**: Invece di dover selezionare il layer manualmente, l'Intelligenza Artificiale o un metadato globale nel Catalogo sa che "Faretto LED" va in "Impianto" o "Appendimento" e lo posiziona nel layer corretto in automatico.
+- **Drag & Drop dal Catalogo Sidebar**: Un'interfaccia a griglia laterale dove l'utente trascina la Card della "Parte" direttamente nella Scena 3D.
+- **Tutorial Guidato a Step (Onboarding Tour)**: Durante la fase `public`, un fumetto guida l'utente: "Prova a inserire un muro", "Adesso cambia il materiale", "Fantastico, hai creato il tuo primo stand!".
+
+## Verification Plan
+### Testing Manuale Richiesto:
+1. Navigare su `/it` senza essere loggati.
+2. Cliccare sulla UI per avviare l'Onboarding.
+3. Verificare nel Network Tab la chiamata alla function Firebase `createCanvasSandbox` e confermare la creazione del documento in Firestore (`/organizations/public/canvas/[id]`).
+4. Testare l'UI di cambio Layer e inserire due entità diverse, verificando che vengano salvate con il corretto tag `layerId` in Firestore.

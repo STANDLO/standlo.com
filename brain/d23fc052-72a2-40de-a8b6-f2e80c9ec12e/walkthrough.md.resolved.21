@@ -1,0 +1,152 @@
+# Walkthrough: Brand Palette and Layout Enhancements
+
+I've successfully implemented the brand palette enhancements, layout modifications, and the logo component updates as requested.
+
+## Summary of Changes
+
+### 1. Brand Palette & [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css)
+- **Color Themes**: Added 7 brand new CSS color themes (`.theme-green`, `.theme-blue`, `.theme-yellow`, `.theme-fucsia`, `.theme-violet`, `.theme-red`, `.theme-orange`) based on the updated design system. Each theme uses refined primary and secondary HSL values for sharp contrast.
+- **Base Backgrounds**: Optimized `--background` and `--card` colors in both light (`0 0% 100%`) and dark (`240 10% 4%`) modes for a cleaner canvas look.
+- **Smooth Transitions**: Added `transition: background-color 0.3s ease, color 0.3s ease;` to `body` and `*` elements for a more premium feeling during theme toggling.
+- **Public Layout Grid**: Integrated the dotted grid background pattern to `.layout-public-root` (`radial-gradient` overlay with `24px` spacing).
+
+### 2. Logo Components Updates
+- **Dynamic Icons**: Both `Logo` components (Public & Admin) now accept `color` and `bg` props to seamlessly switch between the full textual logo and the new square icon variations.
+- **Background Logic**: Depending on the `bg` prop, the correct colored or monochrome icon is loaded into an appropriately sized and padded square container.
+- **Clickable Links**: The Logo component content is now wrapped in a `next/link` component to act as a navigational shortcut back to the homepage (`/`).
+
+### 3. Public Layout & Header Adjustments
+- **Transparent Header**: Modified `.layout-header-main` in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to be fully visible and `bg-transparent`.
+- **Removed Footer**: Detached `<PublicFooter />` from the public layout structure so the grid and content take up the full emphasis.
+
+### 4. Theme and Color Selector Implementations
+- **`next-themes` Verification**: Confirmed `next-themes` is actively tracking Light/Dark state in LocalStorage (in sync with `<SwitchTheme />`).
+- **New `useBrandColor` Hook**: Authored a streamlined custom hook that automatically manages string states (e.g. `"green"`, `"red"`) with `localStorage` persistence, dynamically appending/removing the valid `.theme-<color>` classes on the root HTML element.
+- **New `<SwitchColor />` Component**: Formatted to match the existing `<SwitchTheme />` trigger, it provides a dropdown populated with all 7 colors. You can find this right alongside the theme toggle in the public header.
+
+You should now be able to start the development server (`npm run dev`), view the public page, select any of the 7 themes alongside toggling light/dark mode, and see changes directly persist and dynamically apply to the background and primary colors!
+
+### 5. Post-It Aesthetics
+- **Strict `Logo.tsx` Architecture**: The `Logo` components (both Admin and Public) have been refactored to be exclusively Post-It variants, completely discarding the old textual SVG layouts. They now accept explicit `icon` (to choose the colored Firebase `icon_XXX.png`), `postit` (to set the CSS background color), and `slogan` (boolean) props.
+- **Rigid Square Layout**: The `Logo.tsx` enforces an absolute square dimension (`minWidth` and `minHeight` via inline styles plus the `shrink-0` Tailwind class). The top 20% contains a darker semi-transparent strip resembling glue, and the bottom right corner uses a `10% 30%` border radius curve to mimic peeling paper.
+- **Icon Rendering Logic**: The actual graphic (the "S" Standlo shape with its own peeling effect provided in your Firebase assets) is centered using the `PUBLIC_ICONS_URLS` registry directly pulled from Cloud Storage.
+- **[CardAuth.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx) Overhaul**: Enabled Post-It design onto the core authentication card wrapper ([CardAuth.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx)). Upgraded the module to a client component to cleanly integrate the `useBrandColor()` hook, directly injecting the dynamic theme color so the entire login/signup interface acts as a massive Post-It.
+- **[Card.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Card.tsx) Variations**: Implemented logic where `color` props (e.g., `color="green"`, `color="blue"`) applied to a `<Card />` seamlessly inject Tailwind classes mapping to the active `.theme-X` schema.
+- **[Card](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx#29-65) Glue Headers**: Handled custom CSS cascading from `.card-post-it > .ui-card-header` within [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to add the darker top section that resembles the sticky part of a Post-It pad.
+
+### 6. Bug Fixes
+- **Build Error**: Resolved a Next.js build issue `Module not found: Can't resolve '@/components/ui/DropdownMenu'` by fully initializing the component with `shadcn` and correcting its class-casing.
+- **Hydration Error**: Resolved a React Hydration error by removing a redundant `<Link>` wrapping around the `<Logo>` in `PublicHeader.tsx`, as `<Logo>` now inherently functions as a hyperlink.
+
+### 7. Unified Canvas Architecture
+- **Global Layout Structure**: Merged the previously separate [(public)](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx#133-134) and [(protected)](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx#133-134) routing layouts into a single immersive global layout in [src/app/[locale]/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/layout.tsx). The viewport acts as a rigid, full-screen container (`100vw`/`100vh`) with the dotted CSS grid applied.
+- **Tools Overlay**: Deployed `<ToolsOverlay />` (z-index: 50) for interactive floating 2D interface elements, ensuring they float above the 3D scene correctly. Navigation generation rules logic has been formally migrated to `RootLayout`.
+- **Canvas Overlay**: Integrated `@react-three/fiber` as `<CanvasOverlay />` forming the foundational transparent background layer.
+- **Floating Controls**: Created `<ToolsLogo />` (a fixed 48x48 Green Post-It logo in the top left) and heavily remixed the header controls into `<ToolsNavigator />` (fixed to the top right). The Navigator seamlessly toggles its inner variants depending on if a user is authenticated or visiting the public flow.
+- **Legacy Cleanup**: Successfully removed legacy components and layouts (`HeaderProtected`, `LayoutProtected`, `PublicHeader`, `PublicFooter`, `partner/layout.tsx`, [(protected)/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx#133-134), [(public)/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx#133-134)) to fully commit to the Spatial/Canvas design paradigm.
+
+### 8. Cloud Branding & Asset Delivery
+- **Custom Post-It Favicons**: Generated programmatic Post-it aesthetic Favicons (Standard multi-resolution `png`, `favicon.ico`, and `apple-touch-icon`) using a Node.js `sharp` script.
+- **Storage Migration**: Successfully migrated and uploaded the entirety of the application's `public/` icon assets to Firebase Storage under the explicit path `/standlo/brand/web/` using the Firebase Admin SDK.
+- **Asset Consumption Optimization**: Updated `Logo.tsx` image sources and [src/app/[locale]/layout.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/layout.tsx) metadata headers to fetch assets directly from the `firebasestorage.googleapis.com` public URL.
+
+
+## Locales & Settings Update
+- **Default Theme Adjustment:** Modified `useBrandColor.ts` to set `green` as the system default.
+- **Removed Color Switcher:** Eliminated `<SwitchColor />` from [ToolsNavigator.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/tools/ToolsNavigator.tsx) as it's no longer necessary for end users.
+- **Locale Pruning & Switching:** Trimmed `systemLocales` array and `locales` supported by Next-Intl to exclusively [it](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx#156-195), [es](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/%28protected%29/pending/page.tsx#14-69), and `us`. `us` has been set as the application's default locale natively.
+- **Syncing Translations:** Moved [messages/en.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/en.json) structure to [messages/us.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/us.json) and completely modified the Admin Translation Portal ([admin/app/i18n/page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/i18n/page.tsx), etc.) to securely source "us.json" as its baseline representation.
+- **Dropdown Readability:** Adjusted the layout constraints of the language selector dropdown ([SwitchLocale.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/SwitchLocale.tsx)) to stretch appropriately, preventing "United States of America" from line wrapping.
+
+## Bug Fix: Eliminating the Initial Blue Flash
+- **Root Cause Identified:** While `useBrandColor.ts` applied `.theme-green` to the layout over time, the raw `:root` and `.dark` blocks in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) were still defaulting to the original blue `--primary` colors. Changing locales triggered a NextJS structural update, momentarily stripping the JS-applied theme class before `useBrandColor`'s `useEffect` could rehydrate it, causing a rapid "flash" back to the un-themed default (`blue`).
+- **Resolution:** Modified the base CSS definitions inside `:root` and `.dark` within [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to natively output the **green** values by default. Now, even without a specific `.theme-[color]` utility class applied during initial SSR or transitional mounting phases, the CSS will naturally resolve to green.
+
+## Optimization: Authentication Layout Update
+- **Social Login Reordering**: Modified [CardAuth.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx) to position the Social Login buttons (Google/GitHub) at the top of the authentication card, above the standard Email/Password form. This prioritizes faster onboarding flows as the primary choice for users.
+- **Card Spacing Adjustments**: Updated the global Semantic CSS (`.ui-card-content` and `.ui-card-footer` in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css)) to use `1rem` padding (`p-4 pt-0`) down from `1.5rem` (`p-6 pt-0`). This ensures all cards have consistent, slightly tighter padding across the UI, while adjusting the inner spacing elements (like the `divider`) to perfectly match the layout hierarchy.
+
+## Optimization: Sizing Semantic Classes
+1. **Button Component Enhancements**: Fixed syntax errors in `cva` definition, removed `defaultVariants` to strictly mandate explicit `variant` props, updated size variants to utilize semantic classes (`ui-btn-size-*`), and implemented a dynamic fallback mechanism defaulting to the active theme (`dark` / `light`) if no explicit variant is defined.
+2. **Globals.css Standardization**: Appended `py-2` to the `.ui-btn` base class to assure uniform padding across all generated buttons. Also, refactored CSS classes within [CardAuth.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx) to align with the new standard (`layout-auth-card-note`, `layout-auth-card-link`, `layout-auth-card-copyright` were changed to `ui-card-auth-note`, `ui-card-auth-link`, and `ui-card-auth-copyright` respectively). The copyright element now has a border top styled dynamically with current color syntax to mirror the dividers.
+    * Removed the Two-Step Verification note `* L'accesso richiede una verifica in due passaggi` from the [FormLogin](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx#35-430) component entirely.
+- Refactored [Button.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Button.tsx) to handle dynamic theming directly. [Button](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Button.tsx#75-80) is now a Client Component utilizing `next-themes`, ensuring it defaults to the active `light` or `dark` variant when no variant is explicitly provided.
+- Removed `defaultVariants` property from [Button](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Button.tsx#75-80)'s `cva` declaration to enforce explicit variant specification (particularly for colors).
+
+## Optimization: Semantic Auth CSS
+- Refactored [CardAuth.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx) to eliminate inline Tailwind utility classes.
+- Introduced specific semantic classes extending `.ui-card-auth` within [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css):
+  - `.ui-card-auth-socials`, `.ui-card-auth-socials-group`, `.ui-card-auth-social-btn`
+1.  **CSS Adjustments:**
+    *   Removed `margin-top: calc(var(--spacing) * 6);` from `.ui-card-auth-divider`.
+    *   Removed `margin-top: calc(var(--spacing) * 4);` from `.ui-checkbox-container`.
+    *   Added `flex flex-col gap-4` to `.ui-card-auth-socials` to ensure uniform spacing between the social divider and the social buttons group, while removing `margin-bottom: calc(var(--spacing) * 6);` (mb-6).
+    *   Changed `.ui-card-auth-socials-group` gap from `gap-2` to `gap-4` to match standard spacing.
+    *   Updated `.ui-checkbox-input` to retain the theme background when checked (removed `checked:bg-emerald-500`) and use a green checkmark (`after:text-emerald-500`).
+    
+2.  **Component Refinements:**
+    *   Added a secondary `CardDivider` at the bottom of [CardAuthSocials](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx#74-113) to display an "OPPURE" ("Or") text break.
+    
+3.  **Localization Updates:**
+    *   Updated the `termsDivider` translation in all localized JSON files, removing the "Prima cosa: " phrasing (e.g. "Prima cosa: Accetta Privacy & Condizioni" simply became "Accetta Privacy & Condizioni").
+    *   Added a new `orDivider` translation key to explicitly handle the "OPPURE (ma richiede TELEFONO per MFA)" text separator.
+    *   Updated the `acceptTerms` key in all language files to include a `<br></br>` tag to break the sentence cleanly.
+    *   Standardized the term to "Terms of Service" (e.g. "Termini e Condizioni di Servizio") across all `acceptTerms` localization keys.
+    *   Added `br: () => <br />` format support to `t.rich("Register.acceptTerms", ...)` within [src/components/forms/FormRegister.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx) to handle the new line break within translations.
+## Refinement: Auth Divider Theming
+- Simplified `.ui-card-auth-divider` in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to use a transparent flex layout.
+- Adopted `bg-current` for the lines and `text-current` for the text, allowing the divider elements to naturally inherit the parent card's foreground color without relying on solid block backgrounds.
+
+## Fix: Auth Divider Centering
+- Added a secondary `.ui-card-auth-divider-line-container` to the right side of the text in the [CardAuth](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx#29-65) component's JSX to ensure the flex box algorithm correctly centers the visual text element between the two fluid lines.
+
+## Fix: Thematic Input Background Integration
+- Discovered that `.ui-input-primary` and standard inputs were previously using `bg-transparent`. When placed inside colored cards (e.g., green `ui-card`), the inputs visually inherited the card's background color, violating the expected input appearance.
+- Replaced `bg-transparent` with `bg-background text-foreground` on `.ui-input` and removed transparencies on base inputs so that their backdrop mimics primary themed `outline` buttons. Inputs are now reliably opaque and styled properly across differently colored panels.
+
+## Fix: Thematic Login Button 
+- The submit button in [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx) previously used the default `primary` variant, making it blend completely into the themed `primary` card backgrounds. 
+- Restructured to `variant="outline"` ensuring the main submit button stands out as a white opaque button on top of the themed card, identical to the social login buttons.
+
+## Feature: Additional Login Divider 
+- Created a new localization key `loginDividerText` in IT, US, EN, and ES ([us.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/us.json), [it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json), [es.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/es.json), [en.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/en.json)) translating "Click to access your account".
+- Added a `<CardDivider>` element in [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx) right above the email/password submit button.
+- Confirmed that `.ui-card-auth-divider-text` enforces `uppercase` styling universally.
+
+## Feature: MFA Login Footer Tweaks
+- Updated the `footerNote` translation in IT, EN, ES, US, FR, and DE to remove the explicit "(MFA SMS)" text for a cleaner look. 
+- Removed `mt-4` from the `.layout-auth-footer-note` CSS block inside [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to fix the padding spacing.
+
+## Feature: Firebase MFA SMS implementation
+- **Backend Custom Claims**: Updated the [functions/src/orchestrator/admin.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/admin.ts), [organization.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/organization.ts), and [organizationUser.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/organizationUser.ts) backend orchestrators. Whenever custom claims are set or generated, the user's `phoneNumber` (from their Firebase `UserRecord`) is explicitly parsed and injected into the custom `.claims.phoneNumber` property.
+- **FormLogin Integration**:
+  - Replaced the simple `email/password` submission in [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx) with a multi-step component that handles MFA challenges (`auth/multi-factor-auth-required`) using Firebase's `PhoneAuthProvider` and `RecaptchaVerifier`.
+  - Added a Forced Enrollment path. If a user logs in successfully via email/password but hasn't yet enrolled any multi-factor mechanism (`multiFactor(user).enrolledFactors.length === 0`), the UI freezes the progression and prompts the user to enroll a phone number via SMS before creating the server-side Next.js session block.
+  - Successfully mapped missing localized translation keys (e.g. `mfaVerifyMessage`, `phoneNumberLabel`) across all translation arrays ([en.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/en.json), [it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json), [es.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/es.json), [fr.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/fr.json), [de.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/de.json), [us.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/us.json)) programmatically.
+- **Verification**:
+  - `npm run build` returned a successful completion with zero ESLint errors and zero TypeScript compile errors.
+  - `functions: tsc` returned a successful compilation output.
+
+## Feature Update: Registration Redirect to MFA Login
+- **[FormRegister.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx) Refactoring**: Removed the [handleLoginSuccess](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx#79-141) function from the registration form. Now, whether a user registers via Email, Google, or Github, they are automatically logged out of the client Firebase session and redirected to `/auth/login?registered=true`.
+- **[FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx) Banner**: Intercepts the `registered=true` query parameter and displays a success banner (`layout-auth-error` style with semantic green coloring) prompting the user to log in again. This elegantly forces all newly registered users into the exact same SMS MFA Enrollment loop that existing users follow without duplicating `RecaptchaVerifier` logic.
+- **Translations Injected**: The key `"registrationSuccess"` has been seamlessly added into all locale map JSON files in `messages/`.
+
+## Optimization: Social Login MFA Exemption
+- **Bypassed Forced SMS Enrollment**: Logic in [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx) ([handleLoginSuccess](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx#79-141)) has been refined to inspect `user.providerData`. If the user is logging in exclusively via a social provider (`google.com` or `github.com`), the application will no longer forcefully halt the login process to demand an SMS enrollment. Since Google and GitHub inherently manage their own rigorous security and 2FA protocols, this reduces friction while maintaining security for traditional Email/Password users.
+
+## Optimization: FormRegister UI
+- **Terms & Privacy Checkbox Relocation**: Moved the terms and privacy acceptance checkbox to the very beginning of the registration form, enforcing its visibility as the primary actionable item.
+- **New Authentication Dividers**: Added two new `<CardDivider>` elements to visually separate the form's logical steps.
+  - Added `Register.termsDivider` ("Prima cosa: Accetta Privacy & Condizioni") above the checkbox.
+  - Added `Register.registerDivider` ("Completa la registrazione") just before the final submission button.
+- **Styling Unification**: Modified the main submit button in [FormRegister.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx) to use the `variant="outline"` property. This aligns it with the thematic styling of [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx), ensuring a consistent, themed visual hierarchy across the entire authentication flow.
+- **Validation**: Conducted a full typescript check via `npm run build` which compiled cleanly with zero errors in 18 seconds.
+- **CardAuthSocials Detachment**: Safely extracted the Google and GitHub authentication buttons from the core [CardAuth.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx) component into a newly isolated `CardAuthSocials.tsx` component. This enabled injecting the social buttons directly into [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx) and [FormRegister.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx) exactly where desired—specifically placing them *after* the mandatory Privacy & Terms Checkbox on the registration flow.
+- **Social Login Suggestion**: Reorganized the layout within `CardAuthSocials.tsx` so that a dividing line and message appear *before* the Google and GitHub login options, correctly encouraging users to use social logins. Programmatically added the new `"socialDivider"` copy across all active languages ([it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json), [en.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/en.json), [es.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/es.json), [us.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/us.json), [fr.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/fr.json), [de.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/de.json)).
+
+## Feature: Semantic Button Components
+- **Refactored [Button.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Button.tsx)**: Completely rewrote the `buttonVariants` (cva) to include 7 discrete brand colors (`green`, `blue`, `yellow`, `fuchsia`, `violet`, `red`, `orange`) alongside explicit `light` and `dark` alternatives. Each of these supports multiple states natively (`Default`, `Muted`, `Readonly`, `Outline`).
+- **Legacy Compatibility**: Kept legacy mappings (`primary`, `secondary`, `destructive`, and standard `outline`) mapping directly to Tailwind utility variables so older components continue functioning seamlessly without manual refactoring.
+- **Dynamic Thematic Authentication**: Modified [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx), [FormRegister.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx), and [CardAuth.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/CardAuth.tsx) to directly inject the `next-themes` `useTheme()` hook via `resolvedTheme === "dark" ? "dark" : "light"`, entirely overriding the hardcoded `variant="outline"`. As a result, login and registration buttons dynamically flip to deep dark (`bg-zinc-950`) on dark themes, and stark white (`bg-white text-zinc-950`) on light themes cleanly differentiating them from the colored card backgrounds.
+- **Validation**: `npm run build` returned a clean compilation with exactly zero type or lint errors.

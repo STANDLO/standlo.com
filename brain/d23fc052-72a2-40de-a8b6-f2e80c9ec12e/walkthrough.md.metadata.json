@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary": "Walkthrough of the completed refactors (soft delete canvas nodes, batch operations on orchestrator, and wrapped choreography triggers with internal gateway/DLQ), confirming 0 linting and type errors.",
+  "updatedAt": "2026-03-12T20:01:52.614858Z",
+  "version": "62"
+}

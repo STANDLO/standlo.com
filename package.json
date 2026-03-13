@@ -1,6 +1,6 @@
 {
   "name": "standlo.com",
-  "version": "0.1.35",
+  "version": "0.1.36",
   "private": true,
   "scripts": {
     "dev": "rm -rf .next && rm -rf node_modules/.cache && next dev",
@@ -9,14 +9,14 @@
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "validate": "npm run lint && npm run build",
     "emulator": "npm run build --prefix functions && firebase emulators:start --config=firebase.emulator.json --import=./seed --export-on-exit=./seed",
-    "cloud": "npx tsx scripts/deploy.ts",
-    "cloud:firebase": "node scripts/DeployFirebase.mjs",
-    "cloud:validate": "npm run pentest:local && npx tsx scripts/deploy.ts --validate-only",
+    "cloud": "node scripts/SyncBrain.mjs push && npx tsx scripts/deploy.ts",
+    "cloud:firebase": "node scripts/SyncBrain.mjs push && node scripts/DeployFirebase.mjs",
+    "cloud:validate": "node scripts/SyncBrain.mjs push && npm run pentest:local && npx tsx scripts/deploy.ts --validate-only",
     "pentest:local": "node scripts/pentest.mjs --target http://localhost:3000",
     "pentest:prod": "node scripts/pentest.mjs --target https://standlo.com",
     "sync:local": "./scripts/sync-firestore.sh",
     "sync:production": "npx tsx scripts/sync-production.ts",
-    "development": "node scripts/offline.mjs"
+    "development": "node scripts/SyncBrain.mjs pull && node scripts/offline.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

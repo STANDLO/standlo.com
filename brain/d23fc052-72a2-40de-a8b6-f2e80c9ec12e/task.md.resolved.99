@@ -1,0 +1,42 @@
+## Current Objective
+Migrate all API and Function invocations within `src/*` away from `httpsCallable` or [fetch](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasCatalogSidebar.tsx#37-137) towards the centralized API client [src/lib/api.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts) (using `callGateway`), resolving `401` errors and `cloud:validate` failures.
+
+## Tasks
+- [x] Identify all usages of `httpsCallable` across the codebase.
+- [x] Identify direct [fetch](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasCatalogSidebar.tsx#37-137) calls to `/api/gateway` and similar API endpoints.
+- [x] Refactor `OrganizationUsersCreate.tsx` to use `callGateway`.
+- [x] Refactor `FormDetail.tsx` to use `callGateway` and resolve TypeScript errors.
+- [x] Refactor `FormLogin.tsx` to use `callGateway`.
+- [x] Refactor remaining form and onboarding components:
+  - [x] `CanvasOnboarding.tsx`
+  - [x] `FormCreate.tsx`
+  - [x] `FormOnboarding.tsx`
+  - [x] `FormList.tsx`
+- [x] Check for vulnerabilities and lint errors across `root`, `admin`, and `functions` without bypassing any of them.
+- [x] Configure Pentest Scripts to make Nice-To-Have tests into Must-Have DevSecOps policies.
+- [x] Run `npm run cloud:validate` and pass all DevSecOps verification, pentests, linting, and building steps with 0 errors.
+- [x] Fix Canvas Object Translation Drift (Decouple RigidBody and TransformControls hierarchies).
+- [x] Fix TransformControls Hover Interference (Pointer Events filtering).
+- [x] Refine Canvas Visual Snap Markers (Dynamic scaling, Z-fighting resolution with depthTest=false, color #2CFF05).
+- [x] Fix TransformControls Rotation Axis Muting (Lock CameraControls during TransformControls drag).
+
+## View Tools and Projections
+- [x] Fix text rotation on `ZUpGizmoViewcube: Destra/Fronte/Sinistra`
+- [x] Implement full localization for [ZUpGizmoViewcube](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/ZUpGizmoViewcube.tsx#203-227) using `messages/[locale].json`
+- [x] Add a Home button in [ZUpGizmoViewcube](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/ZUpGizmoViewcube.tsx#203-227) to reset camera position
+- [x] Add a new 'Proiezioni' tools block in [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#51-540) with `Perspective`, `Orthographic`, and `Ortho Faces` toggles
+  - [x] Localize all texts in [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#51-540) and [ZUpGizmoViewcube](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/ZUpGizmoViewcube.tsx#203-227) across `it, en, es` locales
+
+## VR Capabilities
+- [x] Wire the AR and VR buttons in CanvasTools to use `@react-three/xr` store methods for testing Meta Quest 3.
+- [x] Integrate [ErrorGuard.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/ErrorGuard.tsx) to handle `NotSupportedError` gracefully when clicking XR tools without hardware connected.
+
+## UI Restructuring
+- [x] Hide [BaseNavigator](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/base/BaseNavigator.tsx#30-196) completely when Canvas mode is active.
+- [x] Extract vital [BaseNavigator](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/base/BaseNavigator.tsx#30-196) functionalities (Locale, Theme, Support, Login/Logout) into a new "ACCOUNT" block inside [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#51-540).
+- [x] Fix missing translations in CanvasTools (`account`, `support`, `login`, `logout`) for IT, EN, ES, and correct IT projection translations.
+- [x] Center [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#51-540) horizontally on the screen by adjusting [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css)
+- [x] Deactivate "Move" action by default and ensure clicking outside deselects it in [Canvas.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/Canvas.tsx) & [store.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/store.ts)
+- [x] Update the translation for the 'Viste' block to 'REALITY' in IT, EN, ES translation files.
+- [x] Adjust the CanvasCatalogSidebar (Parts/Assembly sidebar) to start from `top-[128px]` and end at `bottom-[32px]`.
+- [x] Fix [SwitchTheme](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/SwitchTheme.tsx#12-68) icon visibility in light mode by removing double `.ui-canvas-tools-btn` wrapper from [CanvasTools](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx#51-540).

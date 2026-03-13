@@ -1,0 +1,64 @@
+# Firestore Gateway Refactoring Walkthrough
+
+## 1. Orchestrator Migrations
+* Complete audit of `orchestrator/assembly.ts`, `orchestrator/bundle.ts`, and `orchestrator/stand.ts`. Confirmed these have successfully been refactored to use `actionId: "batch"` via `firestore.run()`.
+* The `orchestrator` layer is completely free of any direct references to Firebase Admin SDK or direct object manipulation through `.set()`/`.update()`.
+
+## 2. Choreography Migrations
+* Refactored `choreography/canvas.ts` (`handleCanvasDeleteNode`): We replaced the hard delete logic against the Firestore Admin SDK with a robust `firestore.run` using `actionId: "soft_delete"`.
+* Refactored `choreography/auth.ts`: Replaced manual logic querying and deduplicating Auth events. It now uses the `list` action provided by `firestore.run` with standardized `createInternalRequest` filtering array syntax, followed by `actionId: "create"`.
+* Checked `choreography/correlator.ts`: Since this involves massive data aggregations across disparate collections (`arrayRemove`/`arrayUnion` on four segment subcollections), the most optimal approach relies heavily on the `admin.firestore.Firestore` object directly mapped to `.batch()`.
+* Checked DLQ wrapping: All available background queue handlers in `canvas.ts` correctly implement and use the `withDLQ()` wrapper passing their native Cloud Tasks `Request<T>`.
+
+## 3. Typings and Code Cleanliness
+* We ran the official CI pipelines locally over `functions/src`.
+* Both `npx tsc --noEmit` and `npm run lint` succeeded with exactly 0 typing incompatibilities and 0 ESLint warnings.
+* All `eslint-disable` or direct `any` bindings have been removed.
+
+All tests succeed and the migrations requested in the checklist have been successfully reviewed and resolved.
+
+## 4. Canvas Onboarding & Form Architecture (v4)
+* **Canvas Layout**: Implemented side-by-side full-height columns with theme-aware dotted backgrounds in `globals.css` (.ui-canvas-onboarding-container).
+* **Proxy Verification**: Verified that `src/proxy.ts` correctly permits guest access to `/[locale]/canvas`.
+
+### Step 2: Native Validation for Form Fields
+- Inspected the current `Input` component to verify that it correctly passes `required` and other native props down to the HTML element.
+- Added `required` property support to the following dynamic forms components to enable browser native validation on required schema fields:
+  - `FormCreate.tsx`: passed `required={fieldMeta.required}` on internal rendering inputs.
+  - `FormDetail.tsx`: passed `required={!readOnlyMode && fieldMeta.required}` to conditionally validate depending on the frozen state of the form.
+  - `InputLookup.tsx`: enhanced to inherit `required` within `InputLookupProps` and proxy it to its internal `<Input>` trigger.
+  - `OrganizationOnboarding.tsx`: Hardcoded native `required` values on all mandatory `<Input>` fields (Name, Birthday) alongside `<Select>` properties such as Role ID for the non-dynamic creation form.
+
+### Canvas Onboarding Refinements & Styling
+- **CSS Layout Adjustments (`globals.css`)**
+  - **Subtitle Container**: Implemented `.ui-canvas-onboarding-subtitle-container` with `max-w-3xl mx-auto pt-4 text-center` to centrally align the onboarding description and provide top padding.
+  - **Card Centering**: Updated `.ui-canvas-onboarding-card` to use `mx-auto` ensuring it remains perfectly centered across responsive breakpoints.
+  - **Layout Wrapper Optimization**: Added a new `.ui-canvas-onboarding-content` wrapper class with `flex flex-col items-center w-full mx-auto` to strictly center the Logo and Title components within the layout column. 
+  - **Logo Centering**: Set `.ui-canvas-onboarding-logo` to use `flex-col items-center justify-center my-4 mx-auto`, and its inner `ui-link` to display as a block with automated horizontal margins (`mx-auto`).
+
+### Organization Form Layout & Display Name
+- **New Display Name Field**: Added the `displayName` property to `OnboardingSchema` with translations mapped across `it.json` and `en.json`.
+- **Two-Column Grid Redesign**: Refactored the `OrganizationOnboarding` component into a responsive two-column grid layout.
+- **Field Reordering**: Successfully rearranged the input fields according to the requested specification:
+  - Row 1: VAT (left), Company Name (right)
+  - Row 2: Type (left), Role (right)
+  - Row 3: Display Name (left), Birthday (right)
+  - Row 4/5: Operational Headquarters and Company Logo (Full-width)
+- **UI Standardization**: Replaced the custom `CardOnboarding` component within the onboarding form with the global standard `Card` component exported from `src/components/ui/Card.tsx`.
+- **FormLogin Styling Parity**: Refactored the `<Card>` usage to use its props-based API (`title`, `footer`, `color`, `layout="auto"`) rather than inline elements like `<CardHeader>`, ensuring exact structural parity with `FormLogin.tsx`.
+- **Global Theme Stability**: Added `.theme-default` explicitly to `globals.css` to decouple the `color="default"` variant from the global `--primary` fallback (which defaults to green). Now, 'default' cards flawlessly adapt directly to standard white (`--card` in light) or dark grey (`--card` in dark) base hues.
+- **Firebase Auth Protection**: Added a `<div id="recaptcha-container"></div>` wrapper inside the form content to support potential Firebase Authentication MFA/App Check prompts natively. The obsolete `CardOnboarding.tsx` file was successfully removed.
+
+### Bug Fixes
+- **Translation Warnings Resolved**: Discovered `MISSING_MESSAGE` warnings in `logs/web.log` for roles missing their Italian translations within the `OrganizationOnboarding` form. Added the `roleOptions` translations map to the `Onboarding` namespace in `messages/it.json` to eliminate these runtime warnings.
+- **Project Stability Verified**: Executed a comprehensive `npm run build` directly via the terminal, successfully confirming all type checks and compilation.
+
+### Step 3: Global Build Verification
+- Addressed TypeScript error where `InputLookup` could not accept a new `required` property.
+- Build process execution confirmed zero resulting build and typescript errors (`npm run build` completed).
+* **Form Architecture**: 
+  - Renamed `FormOnboarding.tsx` to `OrganizationOnboarding.tsx`.
+  - Removed dependency on the legacy dynamic `getManifest` payload.
+  - Implemented standard `react-hook-form` and `@hookform/resolvers/zod` combined with `OrganizationCreateSchema` (extended with `birthday`).
+  - Utilized native custom UI components (`Input`, `InputVat`, `Select`, `InputPlace`, `Gallery`) to reconstruct the form UI.
+* **Cleanup**: Deleted legacy `DynamicSDUIForm.tsx` and validated that all other forms in `src/components/forms/*` (e.g., `FormCreate`, `FormDetail`, `OrganizationUsersCreate`) already use `react-hook-form` or native submission natively without requiring SDUI.

@@ -1,0 +1,45 @@
+# Refactoring API Client & DevSecOps Validation
+
+We successfully completed the migration of all `httpsCallable` and [fetch](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasCatalogSidebar.tsx#37-160) calls within the `src/*` directory to the newly centralized [src/lib/api.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts) client. Additionally, we've strengthened our deployment pipeline by rigorously passing DevSecOps validations across all three primary project parts (root, admin, functions).
+
+## Changes Made
+- Centralized the `callGateway` function within [src/lib/api.ts](file:///Users/cristiankalexai/Progetti/standlo.com/src/lib/api.ts) making sure it properly carries all payloads while typing Responses with `Record<string, unknown>`.
+- Refactored `OrganizationUsersCreate.tsx`, `FormDetail.tsx`, `FormLogin.tsx`, `CanvasOnboarding.tsx`, `FormCreate.tsx`, `FormOnboarding.tsx`, and `FormList.tsx` to standardize API usage via `callGateway`.
+- Resolved generic Typescript `any` errors ensuring pure typings, e.g. mapping `Response.data` structures directly.
+- Audited `root`, `admin`, and `functions` directories. They have been individually built, linted, and audited with **0 Vulnerabilities, 0 Errors, and 0 Warnings**.
+- Elevated the Level 4 DevSecOps Tests in `pentest.mjs` (Directory Traversal checks: `/.env`, [/.env.local](file:///Users/cristiankalexai/Progetti/standlo.com/.env.local), [/package.json](file:///Users/cristiankalexai/Progetti/standlo.com/package.json)) from "NICE-TO-HAVE" to "MUST-HAVE".
+
+## What Was Tested
+- Typescript build steps (`npm run build`) in [app](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/GenericPart.tsx#244-252), `admin`, and `functions`.
+- Vulnerability analyses via `npm audit` across all three codebases environments simultaneously with no bypassing.
+- The ISO 27001 automatic Pentest Script running against the active Next.js server locally confirming no Bypass leaks.
+- `npm run cloud:validate` end-to-end to replicate pre-deployment safety steps.
+
+## Validation Results
+All tests and validations have **PASSED**. The `cloud:validate` pipeline confirms no vulnerabilities and 100% security baseline success.
+
+```diff
+-        const gatewayFn = httpsCallable(functions, "canvas");
+-        const response = await gatewayFn({ actionId: "createCanvasSandbox", payload: { canvasType: "canvas", editPassword: autoPassword } });
+-        const data = response.data as any;
++        const data = await callGateway<Record<string, unknown>>("canvas", { actionId: "createCanvasSandbox", payload: { canvasType: "canvas", editPassword: autoPassword } });
+```
+
+# Intelligent Texture Variants System
+
+We have successfully implemented the "Intelligent Texture Variants System" as part of the Data-Driven Rendering Architecture (v2.0) upgrade. This logic allows textures (like different carpet colors or wood grains) to act as variants applied to core materials, making the Canvas UI smarter and the PDM more descriptive.
+
+## Changes Made
+- **Texture Schema ([functions/src/schemas/texture.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/schemas/texture.ts))**: Added a `compatibleMaterials` array so each texture can declare which Base Materials (e.g., "Moquette") it is meant to be applied to.
+- **PDM Textures UI ([admin/app/pdm/textures/page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/pdm/textures/page.tsx))**: Upgraded the texture editing interface to include a multi-select for `compatibleMaterials`. You can now select one or more basic materials that match the new variant.
+- **Part Schema ([functions/src/schemas/part.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/schemas/part.ts))**: Added `defaultTextureId` to let builders assign a default texture/variant directly at the catalog part level.
+- **PDM Parts UI ([admin/app/pdm/parts/page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/admin/app/pdm/parts/page.tsx))**: 
+  - Added a "Default Texture Variant" selector inside the "3D Properties / Geometric Inheritance" box.
+  - Automatically updates the Part `name` placeholder appending the chosen texture (e.g. `Moquette - 100x100 cm - Moquette Rossa`) when changed.
+- **Canvas Tool Intelligence ([src/components/layout/canvas/CanvasTools.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasTools.tsx))**:
+  - The aspect/palette popover now dynamically filters the list of available textures based on the `materialId` of the currently selected object. If a texture specifies `compatibleMaterials`, it will only appear if the object's material is in that list (or if the texture is a legacy/global texture with an empty compatible list).
+- **Canvas Sidebar Catalog ([src/components/layout/canvas/CanvasCatalogSidebar.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/canvas/CanvasCatalogSidebar.tsx))**: 
+  - Ensure `defaultTextureId` of the catalog part propagates properly down to the inserted node's `textureId` on the canvas when dragged and dropped.
+  
+## Next Steps
+The system is now fully functional and deployed locally. When creating new textures (like "Moquette Rossa" or "Moquette Grigio Scuro"), remember to select "Moquette" as their **Compatible Material**. Then when you assign the Moquette material to an object, only Moquette-related textures will be suggested.

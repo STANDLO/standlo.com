@@ -1,0 +1,107 @@
+#* [x] **Refactor CanvasOnboarding.tsx**
+  * `[x]` Move all text content from `CanvasOnboarding.tsx` to [messages/it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json) (and other languages) under a new `CanvasOnboarding` block.
+  * `[x]` Update `CanvasOnboarding.tsx` to use `useTranslations("CanvasOnboarding")`.
+  * `[x]` Remove all Tailwind CSS classes from `CanvasOnboarding.tsx`.
+  * `[x]` Create equivalent semantic CSS classes (e.g., `ui-canvas-onboarding-container`, `ui-canvas-onboarding-title`) in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) using `@apply`.
+  * `[x]` Implement the theme-aware dotted background using CSS variables (`--canvas-dot-color`) in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) for the `.ui-canvas-onboarding-overlay` class.
+  * `[x]` Add "The Global Factory" header above the onboarding content.
+  * `[x]` Insert the requested text block under "The Global Factory" using the consistent font/style as other subtitles.
+
+* [x] **Implement Interactive Tutorial**
+  * `[x]` Add a new `MockTutorialTools` component to `CanvasOnboarding.tsx` to simulate the Canvas tools.
+  * `[x]` Create simple tool icons (e.g., using `lucide-react` icons like `Square`, `Circle`, `Type`, [Image](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Gallery.tsx#150-169), etc.).
+  * `[x]` Use `useEffect` with `setInterval` to cycle through tools every 3 seconds.
+  * `[x]` Render an animated CSS popup for the active tool showing its tooltip.
+  * `[x]` Ensure tooltip strings are added to the translation files ([messages/it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json), etc.) under a new `CanvasOnboarding.tutorials` namespace or similar.
+
+* [x] **Fix CanvasOnboarding CSS Layout**
+  * `[x]` Make `ui-canvas-onboarding-container` full width/height so columns are side-by-side (flex-row).
+  * `[x]` Left column: in light theme, use light dotted background. In dark theme, use dark dotted background.
+  - [x] Modify [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to make `.ui-canvas-onboarding-container` a full-width/full-height flex container.
+  - [x] Add theme-aware dotted backgrounds for left and right columns.
+*- [x] Fix Canvas Onboarding Component Styling
+  - [x] Review [logs/web.log](file:///Users/cristiankalexai/Progetti/standlo.com/logs/web.log) for debugging and contextual information.
+  - [x] Add `padding-top: 16px` (`pt-4`) to `.ui-canvas-onboarding-subtitle-container` in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css).
+  - [x] Ensure text inside `.ui-canvas-onboarding-subtitle-container` is centered.
+  - [x] Update `.ui-canvas-onboarding-card` in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to be centered.
+  - [x] Ensure the Logo and title properly stay centered on desktop modes.
+- [x] Fix Missing Translations
+  - [x] Identify and add the missing Italian ([it](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/OrganizationOnboarding.tsx#82-150)) translations for `SystemRoleOptions` used in [OrganizationOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/OrganizationOnboarding.tsx) to [messages/it.json](file:///Users/cristiankalexai/Progetti/standlo.com/messages/it.json).
+- [x] Verification
+  - [x] Run `npm run build` to verify no related build errors persist.
+
+* [x] **Refactor OrganizationOnboarding Form Layout**
+  - [x] Extend `OnboardingSchema` to include `displayName` field.
+  - [x] Add `displayName` input field to the UI in [OrganizationOnboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/OrganizationOnboarding.tsx#38-292) component.
+  - [x] Refactor existing form fields into a 2-column grid (`grid-cols-1 md:grid-cols-2`).
+  - [x] Rearrange field order:
+    - Row 1: VAT (left), Name (right)
+    - Row 2: Type (left), Role (right)
+    - Row 3: DisplayName (left), Birthday (right)
+    - Row 4: Place (full width)
+    - Row 5: Gallery/Logo (full width)
+  - [x] Add Italian and English translations for `displayName` globally.
+  - [x] Replace `CardOnboarding` with the standard [Card](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/card.tsx#7-16) component to unify UI theming, removing `CardOnboarding.tsx` entirely.
+  - [x] Refactor [OrganizationOnboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/OrganizationOnboarding.tsx#38-292) to use the props-based `<Card />` structure, mirroring `FormLogin.tsx`.
+  - [x] Fix `Card.tsx` styles so that if passed `color="default"`, it assumes the active theme variables and still applies the `.card-post-it` glow effect accurately.
+  - [x] Add `<div id="recaptcha-container"></div>` to [OrganizationOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/OrganizationOnboarding.tsx), `FormRegister.tsx`, `FormAuthAction.tsx`, and `FormVerifyEmail.tsx` for full Firebase Auth Recaptcha support.
+
+* [x] **Refactor Onboarding Form Architecture**
+  - [x] Rename `FormOnboarding.tsx` to [OrganizationOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/OrganizationOnboarding.tsx).
+  - [x] Update [src/app/[locale]/(protected)/onboarding/page.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/%5Blocale%5D/%28protected%29/onboarding/page.tsx) to use the new [OrganizationOnboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/OrganizationOnboarding.tsx#38-292) component.
+  - [x] Refactor [OrganizationOnboarding](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/OrganizationOnboarding.tsx#38-292) to remove `callGateway` "getManifest" action.
+  - [x] Add the `required` attribute to input fields in [OrganizationOnboarding.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/OrganizationOnboarding.tsx) for native browser validation.
+  - [x] Identify all other legacy forms within `src/components/forms/` that do not have native validation implemented.
+  - [x] Add the `required` attribute to the relevant input fields in those forms to enable native browser validation.
+  - [x] Implement `react-hook-form` + `@hookform/resolvers/zod` with `OrganizationCreateSchema` (extended with `birthday`).
+  - [x] Delete legacy `DynamicSDUIForm.tsx` file.
+  - [x] Verify UI validation (Zod) is active for form fields.
+
+* [x] **Final Validation**
+  - [x] Wrap `src/app/[locale]/partner/layout.tsx` children in `ToolsOverlay`
+  - [x] Refactor `SwitchMode` to use `router.push('/...');` instead of deleting cookies and triggering a browser reload.
+
+* [x] **Phase 1: Addressing the Gallery Bug (#1 & #2)**
+  - [x] `src/components/ui/Gallery.tsx`: Fix the UI bug where the image goes behind the Dropzone box instead of inside it.
+  - [x] Apply standard semantic CSS (ui-gallery-*).
+  - [x] Fix dropzone rendering below uploaded images instead of inside.
+
+- [x] **Firebase Storage Permissions**
+  - [x] Investigate `storage/unauthorized` exception during logo upload.
+  - [x] Verify `OrganizationOnboarding.tsx` uses the correct internal path mapping `path="public/logos"`.
+  - [x] Verify Firebase Auth hydration race condition on `Gallery.tsx` and fix it by awaiting `auth.onAuthStateChanged`.
+
+- [x] **Local Emulator & Pipeline Seeding**
+  - [x] Create/update `scripts/seedLocalPipelines.ts` mapping all 5 pipelines.
+  - [x] Assure pipeline ID `auth-onboarding` is renamed conceptually to `organization-onboarding`.
+  - [x] Ensure custom pipelines run gracefully in the emulator layout (`scripts/offline.mjs`).
+  - [x] Create `scripts/seedLocalAISkills.mjs` with hardcoded existing AI skills.
+  - [x] Update `scripts/offline.mjs` to execute both seeders.
+
+- [x] **Optimizing VAT Validation with EU Locale Detection**
+  - [x] Added `euLocales` array to `functions/src/core/constants.ts` containing EU VAT prefixes.
+  - [x] Updated `InputVat.tsx` to conditionally bypass the `/api/vies` fetch if the selected country is Extra-EU.
+  - [x] Verified build integrity with `npm run validate`.
+
+- [x] **BaseNavigator UI Fixes**
+  - [x] Adjusted `globals.css` to remove nested `fixed` positioning and redundant extra backgrounds inside the navigator, ensuring `ui-tools-navigator` visually contains `ui-tools-navigator-menu`.
+  - [x] Removed `SwitchMode` from the public navigator variant to prevent layout shifting.
+
+- [x] **Card UI Fixes**
+  - [x] Added `max-w-2xl` to `.ui-card-layout-auto` in `globals.css` to prevent full-width stretching and ensure optimal layout for one or two columns.
+  - [x] Added `m-auto max-h-[90vh]` to `.ui-card` for central horizontal and vertical alignment with a max height constraint.
+  - [x] Added `overflow-y-auto` to `.ui-card-content` so content can scroll if it exceeds the card's maximum height.
+  - [x] Wrapped `OrganizationOnboarding` inside `.layout-main-body` (flex, min-h-screen) to guarantee perfect vertical centering.
+  - [x] Refactored the `Gallery` component structure so that the dashed dropzone acts as the outer container spanning full-width, elegantly satisfying the "container of images" requirement.
+
+* [x] **BaseVersion Component**
+  - [x] Create `src/components/layout/base/BaseVersion.tsx` representing package version.
+  - [x] Add `"support"` translation keys correctly in all locale files.
+  - [x] Create `src/app/[locale]/(public)/support/page.tsx` as a temporary placeholder.
+  - [x] Implement `.ui-base-version` semantic CSS class in `globals.css`.
+  - [x] Integrate `BaseVersion` into `src/app/[locale]/layout.tsx` beside `BaseNavigator`.
+
+* [x] **UI & Gallery Follow-up Fixes**
+  - [x] Fix `.ui-card` vertical and horizontal centering inside `OrganizationOnboarding` container by using `flex` on `.layout-main-body`.
+  - [x] Ensure `.ui-gallery-dropzone` properly envelops the grid content as a single full-width container (previously updated in Gallery structural refactor).
+  - [x] Fix Firebase Storage permission error `storage/unauthorized` by updating the upload path to `user/${auth.currentUser?.uid}/gallery` in `OrganizationOnboarding.tsx` and ensuring Next.js reactivity.

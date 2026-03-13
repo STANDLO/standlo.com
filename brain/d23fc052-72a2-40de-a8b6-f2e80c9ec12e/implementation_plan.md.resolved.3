@@ -1,0 +1,38 @@
+# Integrazione MFA SMS per Auth (Email/Password)
+
+Questo piano descrive i passaggi necessari per implementare l'obbligatorietà della Multi-Factor Authentication (MFA) tramite SMS per gli accessi via Email/Password, come richiesto, e l'integrazione del numero di telefono (`phoneNumber`) nei Firebase Custom Claims dell'utente in modo che sia sempre disponibile lato frontend tramite i token del backend.
+
+## 1. Firebase Identity Platform Configuration
+  * Verificare che l'MFA via SMS sia attivata all'interno del progetto Firebase Identity Platform in Google Cloud Console.
+  * Assicurarsi che l'app (Standlo) sia configurata per poter inviare messaggi SMS di verifica (richiedendo gli URL origin autorizzati per reCAPTCHA).
+
+## 2. Modifiche al Flusso di Login ([FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx))
+  * **Intercettazione MFA**: Quando un utente accede con `signInWithEmailAndPassword`, se l'MFA è attivato per l'utente, Firebase solleverà un errore specifico (`auth/multi-factor-auth-required`).
+  * **Gestione Interfaccia**: Il blocco `try/catch` nel metodo [onSubmit](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx#91-103) di [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx) deve rilevare questo errore. Se l'utente è già enrolato (ha registrato un numero), l'interfaccia deve nascondere `email/password` e mostrare l'input OTP, attivando il resolver Firebase con `getMultiFactorResolver()`.
+  * **Verifica Codice OTP**: Utilizzare `PhoneAuthProvider.credential()` assieme a un resolver per completare il login e ottenere il `userCredential`, procedendo poi con [handleLoginSuccess](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx#37-90).
+
+## 3. Gestione del Flusso di Enrollment (Registrazione Numero)
+  * Dal momento che stiamo rendendo obbligatorio l'MFA SMS (come indicato dalla nuova frase footer), gli utenti che accedono via email/password ma **non hanno un numero registrato** devono essere forzati a inserirlo prima di completare il login definitivo.
+  * **Forzatura Enrollment**: Se `userCredential.user.multiFactor.enrolledFactors.length === 0` dopo un login email/password andato a buon fine, il frontend deve congelare la sessione (o nascondere la prosecuzione) e mostrare un form per l'inserimento del `phoneNumber`.
+  * **Implementazione Firebase**: Generare una `multiFactorSession` per il nuovo utente, inviare un SMS usando Firebase reCAPTCHA verifier, e al completamento usare `multiFactor(user).enroll()` per legare definitivamente quel numero.
+
+## 4. Integrazione Telefono nei Custom Claims (Backend)
+  * Gli script legati all'orchestrazione dei ruoli (es. [functions/src/orchestrator/organization.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/organization.ts), [organizationUser.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/organizationUser.ts), [admin.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/admin.ts)) attualmente usano `admin.auth().setCustomUserClaims()` inviando claim specifici (come `roles`, `orgId`).
+  * **Obiettivo**: Garantire che in ogni aggiornamento dei claim venga inserito/passato il numero telefonico.
+  * Poiché Firebase Identity ha il `phoneNumber` a livello di `UserRecord`, i claim setter devono estrarre (se non già fatto) l'utente esistente con `admin.auth().getUser(uid)`, estrarne il `.phoneNumber`, e fonderlo assieme ai nuovi Custom Claims prima di salvarli (es. `newClaims.phone = userRecord.phoneNumber`).
+  * L'innesco primario: se possibile registrare un hook come `functions.auth.user().onCreate()` o `onUpdate()` per iniettare questi dati tempestivamente, anche se affidarsi all'Orchestrator è sufficiente se questo gestisce il provisioning dei tenant.
+
+> [!NOTE] 
+> La UI avrà bisogno del componente per il reCAPTCHA invisibile (richiesto da Firebase per l'invio degli SMS Auth). Potremmo creare un `<div id="recaptcha-verifier-container"></div>` invisibile nella Auth UI.
+
+## Proposte per Discussione / User Review Required
+1. L'enrolment **forzato** dell'MFA durante il primo accesso post-implementazione cambierà pesantemente l'UX. È confermato che debba scattare per TUTTI i ruoli e TUTTI gli utenti (anche Customer) e non solo per gli Account Amministrativi?
+2. La Firebase AppCheck è già attiva (in [FormLogin.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx)); il fallback al recaptcha potrebbe scontrarsi se non configurato correttamente su Firebase Auth. Potrai testarlo sui tuoi cloni del progetto locali/staging.
+
+## Verification Plan
+### Autenticazione 
+ - Avviare un login di test con una nuova email. Si aprirà il prompt di inserimento telefono.
+ - Simulare l'arrivo dell'OTP e completare l'enrollment SMS.
+
+### Analisi Token
+ - Interrogare in Console JS (`await auth.currentUser.getIdTokenResult(true)`) e verificare che dentro `.claims` ci sia il campo corretto del numero telefonico legato all'account appena autenticato.

@@ -1,0 +1,20 @@
+# Task Plan: Refactoring Button Component
+
+- [x] Rimuovi dal component Button le vecchie mappature per `primary`, `secondary`, `destructive`, `ghost`, `link` mantenendo solo un fallback all'outline.
+- [x] Verifica tutti gli utilizzi di `variant="primary"` o simili e sostituiscili preferibilmente col tema base `default` per non rompere il sito.
+- [x] Fai una passata per## Refactoring Execution
+- [x] Rimuovere tutte le classi Tailwind inline dal file [ToolsNavigator.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/tools/ToolsNavigator.tsx).
+- [x] Definire le corrispondenti classi semantiche in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) utilizzando il prefisso `ui-tools-navigator`.
+- [x] Assicurarsi che nessuna classe Tailwind rimanga in [ToolsNavigator.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/tools/ToolsNavigator.tsx).
+- [x] Applicare le nuove classi semantiche a tutti gli elementi per uno stile coerente.
+- [x] Verificare che il componente funzioni correttamente (inclusa la correzione dell'errore di sintassi).
+
+## Cleanup & Fix
+- [x] Risolvere gli errori di build di TailwindCSS causati da utilities sconosciute (`fade-in`, `zoom-in`, `animate-in`).
+- [x] Sostituire l'animazione `animate-in` nel dropdown con CSS keyframes nativi.
+- [x] Aggiungere l'effetto "glue" all'evento hover del bottone "Registrati" in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css), mantenendo il testo bianco.
+- [x] Verificare che il processo di build (`npm run build`) abbia successo.` component.
+- [x] Update [ToolsNavigator](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/layout/tools/ToolsNavigator.tsx#29-207) registration button to use the `green` variant.
+- [x] Refactor all color themes (`.theme-green` to `.green` etc) in [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to provide the complete set of structural layout CSS variables while centralizing actual HSL variables.
+- [x] Refactor all `ui-btn-[color]` classes to use semantic variables instead of hardcoded tailwind colors.
+- [x] Implemented `--glue` CSS variable per theme (black for light, white for dark/colors) and centralized translucency effect on buttons hover, logo glue, and post-it card header.

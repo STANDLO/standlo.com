@@ -1,0 +1,8 @@
+# Task Plan: Refactoring Button Component
+
+- [ ] Investigate current [Button.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Button.tsx) and [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) to determine semantic colors.
+- [ ] Create [implementation_plan.md](file:///Users/cristiankalexai/.gemini/antigravity/brain/d23fc052-72a2-40de-a8b6-f2e80c9ec12e/implementation_plan.md) for the new `buttonVariants`.
+- [ ] Refactor [Button.tsx](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Button.tsx) with `cva()` defining colors (7 colors + light + dark) and styles (Default, Muted, Readonly, Outline).
+- [ ] Add new semantic classes to [globals.css](file:///Users/cristiankalexai/Progetti/standlo.com/src/app/globals.css) if required by the new design.
+- [ ] Update [FormLogin](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormLogin.tsx#34-431) and [FormRegister](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/forms/FormRegister.tsx#15-187) to use light/dark variants based on theme.
+- [ ] Search and update all existing [Button](file:///Users/cristiankalexai/Progetti/standlo.com/src/components/ui/Button.tsx#32-37) usages in the project.

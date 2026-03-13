@@ -1,0 +1,77 @@
+# Entity Rename: Stand to Design
+
+This plan covers the system-wide refactoring required to update the "Stand" entity to "Design" to allow for multiple spatial design types.
+
+## Goal Description
+The objective is to rename the `stand` entity to `design` across the entire Standlo ecosystem (backend APIs, orchestrator, Firestore collections, and frontend Canvas app) to broaden its semantic scope. The new `Design` entity will include an enumerated `type` field (`"stand"`, `"bedroom"`, `"bathroom"`, `"kitchen"`, `"office"`) to denote the actual spatial design product being generated.
+
+## Proposed Changes
+
+### Backend Refactoring (`functions/src/`)
+---
+#### [RENAME] `schemas/stand.ts` -> `schemas/design.ts`
+- Change `StandSchema` to `DesignSchema`.
+- Add the new field: `type: z.enum(["stand", "bedroom", "bathroom", "kitchen", "office"])`.
+- Change ID prefix from `STA-` to `DES-` (if present in schema).
+
+#### [MODIFY] `schemas/index.ts`
+- Change `export * from "./stand";` to `export * from "./design";`.
+
+#### [MODIFY] `schemas/canvas.ts`
+- `CANVAS_TYPES`: replace `"stand"` with `"design"`.
+- `type`: update enum to accept `"design"` instead of `"stand"`.
+
+#### [RENAME] `orchestrator/stand.ts` -> `orchestrator/design.ts`
+- Rename variables, interfaces, and function signatures (e.g., `getStandDetailsEntity` -> `getDesignDetailsEntity`, `standId` -> `designId`).
+- Change collection paths `stand/${standId}/...` to `design/${designId}/...`.
+- Change `STA-` UUID generation prefix to `DES-`.
+
+#### [MODIFY] `gateways/orchestrator.ts`
+- Update conditionals matching `entityId === "stand"` to `"design"`.
+- Update imports from `../orchestrator/stand` to `../orchestrator/design`.
+
+#### [MODIFY] `gateways/entityRegistry.ts`
+- Replace `stand: { scope: "global", name: "stands", schema: schemas.StandSchema }` with `design: { scope: "global", name: "designs", schema: schemas.DesignSchema }`
+- Update `stand_part`, `stand_process`, `stand_assembly`, `stand_bundle` map keys to `design_*` mapping to the `"designs"` collection.
+- Update subcollection routing conditionals to check for `"design"` instead of `"stand"`.
+
+#### [MODIFY] `core/correlate.ts`
+- In `FK_DICTIONARY`, change the `standId: "stands"` mapping to `designId: "designs"`.
+
+### Frontend Refactoring (`src/`)
+---
+#### [RENAME] `components/layout/canvas/CanvasStand.tsx` -> `CanvasDesign.tsx`
+- Rename component inside the file and update internal text contexts.
+
+#### [MODIFY] `components/layout/canvas/store.ts`
+- Update `CanvasMode` type and entity `type` type to use `"design"` instead of `"stand"`.
+
+#### [MODIFY] `components/layout/canvas/Canvas.tsx`
+- Update `entityType === "stand" || entityId.startsWith("STA-")` to `"design"` and `"DES-"`.
+- Adjust casting to `"design"`.
+
+#### [MODIFY] `components/layout/canvas/CanvasHeader.tsx`
+- Update `startsWith("STA-")` to `startsWith("DES-")`.
+- Update UI labels if applicable.
+
+#### [MODIFY] `components/layout/canvas/CanvasTools.tsx`, `CanvasHeaderAdd.tsx`, `CanvasCreationWizard.tsx`, `CanvasCatalogSidebar.tsx`
+- Replace string literals `"stand"` with `"design"`.
+- Adjust labels like "Crea il tuo stand 3D" to "Crea il tuo design 3D" in onboarding/creation modals based on exact contexts.
+
+#### [MODIFY] `components/layout/canvas/GenericPart.tsx`, `InstancedPartGroup.tsx`, `CanvasHierarchyTree.tsx`
+- Update checks like `entity.type === 'stand'` to `entity.type === 'design'`.
+
+#### [MODIFY] `app/[locale]/partner/[roleId]/canvas/page.tsx`
+- Update import and usage of `<CanvasStand />` to `<CanvasDesign />`.
+- Check `mode === "stand"` to `mode === "design"`.
+
+## Verification Plan
+
+### Automated Tests
+- Run `npm run build` and `npm run lint` in both the `functions/` and root `standlo.com` directory to guarantee exactly 0 TypeScript compilation or linting issues post-rename.
+
+### Manual Verification
+- In the local dev environment or staging deployment, log into the frontend canvas route.
+- Open the creation wizard and verify the UI shows "Design" creation.
+- Upon completion, visually verify the canvas renders the new "Design" with correct mode active.
+- Verify through Firestore terminal or debug tools that a new document was generated inside the `designs` collection, rather than the old `stands` collection, containing the new `type: "stand"` (or whichever type user selected).
