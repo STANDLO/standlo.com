@@ -178,11 +178,17 @@
   "Canvas": {
     "title": "Editor 3D Canvas",
     "tools": {
-      "inserimento": "Inserimento",
-      "addPart": "Aggiungi Parte",
-      "addAssembly": "Aggiungi Assemblato",
-      "addBundle": "Aggiungi Bundle",
-      "addDesign": "Aggiungi Design",
+      "add": "Aggiungi",
+      "sketch": "Sketch",
+      "sketchDesc": "Disegna un volume libero associato a un materiale costruttivo.",
+      "part": "Parte",
+      "partDesc": "Aggiungi una singola parte o componente 3D al Canvas.",
+      "assembly": "Assieme",
+      "assemblyDesc": "Aggiungi un gruppo preconfigurato di parti.",
+      "bundle": "Bundle",
+      "bundleDesc": "Aggiungi un'intera combinazione pronta all'uso.",
+      "design": "Design",
+      "designDesc": "Unisci un intero progetto 3D esistente nella scena attuale.",
       "azioni": "Azioni",
       "move": "Sposta",
       "rotate": "Ruota",
@@ -293,7 +299,7 @@
       "description": "L'ambiente dedicato a questo ruolo è attualmente in fase di sviluppo. Stiamo creando strumenti su misura per ottimizzare il tuo flusso di lavoro. Torna a trovarci presto!"
     }
   },
-  "CanvasOnboarding": {
+  "DesignOnboarding": {
     "title": "The Global Factory",
     "subtitle1": "Designed by Cristian Mazzetti Mazzetti.",
     "description": "<bold>Sperimenta il Temporary Information Modeling</bold>. Crea il tuo design 3D in pochi secondi. Modifica in real-time, condividi ed esplora spazi infiniti con l'Intelligenza Artificiale.",

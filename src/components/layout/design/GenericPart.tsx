@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useMemo } from "react";
-import { CanvasEntity, useDesignStore } from "./store";
+import { CanvasEntity, useDesignStore } from "@/lib/zustand";
 import { ThreeEvent, useFrame, useLoader } from "@react-three/fiber";
 import { TransformControls, Sphere, Edges } from "@react-three/drei";
 import * as THREE from "three";
@@ -364,9 +364,39 @@ export default function GenericPart({ entity }: GenericPartProps) {
                 {/* The Visual Body */}
                 <group
                     onClick={handleClickWrapper}
+                    onPointerDown={(e) => {
+                        // Support native WebXR pointer dragging by hooking into pointer capture
+                        if (transformMode !== 'snap') {
+                            e.stopPropagation();
+                            (e.target as Element).setPointerCapture(e.pointerId);
+                            setIsDragging(true);
+                        }
+                    }}
+                    onPointerUp={(e) => {
+                        if (isDragging) {
+                            e.stopPropagation();
+                            (e.target as Element).releasePointerCapture(e.pointerId);
+                            setIsDragging(false);
+                            if (groupRef.current) {
+                                const newPos = groupRef.current.position;
+                                updateEntityPosition(entity.id, [newPos.x, newPos.y, newPos.z]);
+                            }
+                        }
+                    }}
                     onPointerMove={(e) => {
                         if (isFaded) return;
-                        if (isSelected && transformMode !== 'snap') return;
+                        if (isSelected && transformMode !== 'snap') {
+                            // If dragging via VR pointer (which triggers PointerMove with capture)
+                            if (isDragging && e.ray) {
+                                // Basic translation on the drag plane (this works automatically because pointer capture routes movement to this element,
+                                // but we need to translate the hit point.
+                                // In a more advanced VR setup you attach the object to the controller ray, but for now we follow the pointer ray intersection.
+                                if (groupRef.current) {
+                                    groupRef.current.position.copy(e.point);
+                                }
+                            }
+                            return;
+                        }
                         if (transformMode === 'snap') {
                             handleSnapInteractionMove(e);
                         }
@@ -442,19 +472,21 @@ export default function GenericPart({ entity }: GenericPartProps) {
                             <boxGeometry args={[renderDims[0], renderDims[2] ?? renderDims[1], renderDims[1] ?? renderDims[2]]} />
                             <meshPhysicalMaterial 
                                 color={
+                                    entity.type === 'sketch' ? '#22c55e' : // Green for Sketch
                                     entity.type === 'design' ? '#f43f5e' : // Rose for Design
                                     entity.type === 'bundle' ? '#a855f7' : // Purple for Bundle
                                     entity.type === 'assembly' ? '#3b82f6' : // Blue for Assembly
                                     '#10b981' // Emerald for Part / Mesh
-                                } 
-                                transparent={entity.type === 'design' || entity.type === 'bundle' || entity.type === 'assembly' || transparent} 
-                                opacity={entity.type === 'design' || entity.type === 'bundle' || entity.type === 'assembly' ? 0.15 : opacity} 
+                                }
+                                transparent={entity.type === 'sketch' || entity.type === 'design' || entity.type === 'bundle' || entity.type === 'assembly' || transparent} 
+                                opacity={entity.type === 'sketch' ? 0.3 : (entity.type === 'design' || entity.type === 'bundle' || entity.type === 'assembly' ? 0.15 : opacity)} 
                                 depthWrite={!transparent} 
                                 transmission={entity.type === 'design' || entity.type === 'bundle' || entity.type === 'assembly' ? 0.5 : 0}
                                 thickness={1}
                             />
                             <Edges 
                                 color={
+                                entity.type === 'sketch' ? '#15803d' : // Solid dark green edge
                                 entity.type === 'design' ? '#be123c' : 
                                 entity.type === 'bundle' ? '#7e22ce' :
                                 entity.type === 'assembly' ? '#1d4ed8' :

@@ -17,7 +17,7 @@ import {
   Glasses
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
-import { useDictionarySync } from "./useDictionarySync";
+import { useDesignDictionaries } from "./DesignDictionaries";
 
 // The mock tools array matching the translations
 const TUTORIAL_TOOLS = [
@@ -30,8 +30,8 @@ const TUTORIAL_TOOLS = [
   { id: "arVr", icon: Glasses },
 ];
 
-export function DesignOnboarding() {
-  const { isReady, error } = useDictionarySync();
+export function DesignOnboarding({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
+  const { isReady, error } = useDesignDictionaries();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const tBrand = useTranslations("Brand");
@@ -42,18 +42,22 @@ export function DesignOnboarding() {
     try {
       const autoPassword = Math.random().toString(36).slice(2, 8).toUpperCase();
       const data = await callGateway<Record<string, unknown>>("orchestrator", {
-        actionId: "createCanvasSandbox",
+        actionId: "createDesignSandbox",
         payload: {
-          canvasType: "design",
+          designType: "design",
           password: autoPassword
         }
       });
-      if (data?.canvasId) {
+      if (data?.designId) {
         const locale = window.location.pathname.split("/")[1] || "it";
-        router.push(`/${locale}/canvas/public/${data.canvasId}?key=${autoPassword}`);
+        if (isAuthenticated) {
+          router.push(`/${locale}/design/${data.designId}`);
+        } else {
+          router.push(`/${locale}/design/public/${data.designId}?key=${autoPassword}`);
+        }
       }
     } catch (err: unknown) {
-      console.error("Failed to start canvas sandbox", err);
+      console.error("Failed to start design sandbox", err);
     } finally {
       setLoading(false);
     }
@@ -116,7 +120,7 @@ export function DesignOnboarding() {
           </div>
 
         </div>
-        ƒ
+
         <div className="ui-design-onboarding-right-col">
           {TUTORIAL_TOOLS.map((tool) => {
             const Icon = tool.icon;

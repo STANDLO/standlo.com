@@ -3,7 +3,7 @@ import { Project, SyntaxKind } from "ts-morph";
 import path from "path";
 import fs from "fs/promises";
 
-const FUNCTIONS_INDEX = path.resolve(process.cwd(), "../functions/src/index.ts");
+const CONSTANTS_FILE = path.resolve(process.cwd(), "../functions/src/core/constants.ts");
 const MESSAGES_DIR = path.resolve(process.cwd(), "../messages");
 
 export const dynamic = "force-dynamic";
@@ -51,7 +51,7 @@ export async function GET() {
         });
 
         // 1. Extract Locales
-        const sourceFile = project.addSourceFileAtPath(FUNCTIONS_INDEX);
+        const sourceFile = project.addSourceFileAtPath(CONSTANTS_FILE);
         const localesVar = sourceFile.getVariableDeclarationOrThrow("systemLocales");
         const initializer = localesVar.getInitializerIfKindOrThrow(SyntaxKind.ArrayLiteralExpression);
 

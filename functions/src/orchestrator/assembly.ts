@@ -87,7 +87,7 @@ export async function createAssemblyEntity(uid: string, payload: Record<string, 
         isArchived: false
     };
 
-    const canvasData = {
+    const designData = {
         id: assemblyId,
         orgId: payload.orgId || null,
         name: payload.name || "Untitled Assembly",
@@ -96,7 +96,7 @@ export async function createAssemblyEntity(uid: string, payload: Record<string, 
 
     const operations: Record<string, unknown>[] = [
         { actionId: "create", entityId: "assembly", payload: { ...assemblyData, documentId: assemblyId } },
-        { actionId: "create", entityId: "canvas", payload: { ...canvasData, documentId: assemblyId } }
+        { actionId: "create", entityId: "design", payload: { ...designData, documentId: assemblyId } }
     ];
 
     if (Array.isArray(parts)) {
@@ -116,7 +116,7 @@ export async function createAssemblyEntity(uid: string, payload: Record<string, 
 
     return {
         status: "success",
-        message: "Assembly and Canvas document created successfully.",
+        message: "Assembly and Design document created successfully.",
         data: { id: assemblyId }
     };
 }
@@ -130,14 +130,14 @@ export async function updateAssemblyEntity(uid: string, assemblyId: string, payl
 
     const updateData = { ...restPayload };
 
-    const canvasUpdateData: Record<string, unknown> = {};
-    if (payload.name) canvasUpdateData.name = payload.name;
+    const designUpdateData: Record<string, unknown> = {};
+    if (payload.name) designUpdateData.name = payload.name;
 
     const operations: Record<string, unknown>[] = [
         { actionId: "update", entityId: "assembly", payload: { ...updateData, documentId: assemblyId } },
     ];
-    if (Object.keys(canvasUpdateData).length > 0) {
-        operations.push({ actionId: "update", entityId: "canvas", payload: { ...canvasUpdateData, documentId: assemblyId } });
+    if (Object.keys(designUpdateData).length > 0) {
+        operations.push({ actionId: "update", entityId: "design", payload: { ...designUpdateData, documentId: assemblyId } });
     }
 
     if (Array.isArray(parts)) {
@@ -157,7 +157,7 @@ export async function updateAssemblyEntity(uid: string, assemblyId: string, payl
 
     return {
         status: "success",
-        message: "Assembly and Canvas document updated successfully.",
+        message: "Assembly and Design document updated successfully.",
         data: { id: assemblyId }
     };
 }
@@ -168,7 +168,7 @@ export async function deleteAssemblyEntity(uid: string, assemblyId: string) {
 
     const operations: Record<string, unknown>[] = [
         { actionId: "delete", entityId: "assembly", payload: { documentId: assemblyId } },
-        { actionId: "delete", entityId: "canvas", payload: { documentId: assemblyId } }
+        { actionId: "delete", entityId: "design", payload: { documentId: assemblyId } }
     ];
 
     const batchReq = createInternalRequest({
@@ -181,7 +181,7 @@ export async function deleteAssemblyEntity(uid: string, assemblyId: string) {
 
     return {
         status: "success",
-        message: "Assembly and Canvas document deleted successfully.",
+        message: "Assembly and Design document deleted successfully.",
         data: { id: assemblyId }
     };
 }

@@ -1,0 +1,27 @@
+# Design Information Modelling (Part 6) - Walkthrough
+
+## 1. Architecture & Library Refactoring (Phase 6.1)
+The data layer has been cleaned up and consolidated:
+- Migrated the central [store.ts](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/functions/src/gateways/firestore.ts) to [src/lib/zustand.ts](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/lib/zustand.ts).
+- Renamed the legacy dictionary hook to [useDesignDictionaries](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignDictionaries.ts#15-72).
+- Eradicated obsolete UI files: [DesignPart.tsx](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignPart.tsx), [DesignDesign.tsx](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignDesign.tsx), [DesignCreationWizard.tsx](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignCreationWizard.tsx), [DesignCatalogSidebar.tsx](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignCatalogSidebar.tsx), and [DesignAssembly.tsx](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignAssembly.tsx).
+- Renamed [AssemblyTimeline.tsx](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/AssemblyTimeline.tsx) to `DesignTimeline.tsx`.
+
+## 2. DesignTools & DesignAdd Refactoring (Phase 6.2)
+The authoring interface now reflects the true PDM architecture:
+- [DesignTools](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignTools.tsx#57-560) constants in the backend have been updated to export the core entities: **Sketch, Part, Assembly, Bundle, and Design**.
+- A central `<DesignAdd />` wrapper component has been built to replace the old Sidebar.
+- Scaffolded 5 distinct sub-interfaces for inserting elements: [DesignSketchAdd](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignSketchAdd.tsx#1-11), [DesignPartAdd](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignPartAdd.tsx#1-11), [DesignAssemblyAdd](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignAssemblyAdd.tsx#1-11), [DesignBundleAdd](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignBundleAdd.tsx#1-11), [DesignDesignMerge](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignDesignMerge.tsx#1-11).
+- The [DesignTools.tsx](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignTools.tsx) HUD toolbar dynamically loops through the backend `PDMTools` constant to render the insertion buttons perfectly matching the schema.
+
+## 3. Advanced DesignTerminal CLI v2 (Phase 6.3)
+The terminal has been fundamentally rewritten with a robust AST (Abstract Syntax Tree) parsing engine.
+- **Entity Selection** (`@`): Typing `@` brings up a live search dropdown querying the local `entities` store. Mouse clicks on the 3D scene also auto-populate `@id` in the prompt.
+- **Tool Mapping** (`#`): Typing `#` suggests tools (`#move`, `#add`, `#delete`, etc) matching the new PDM constants.
+- **Axis Operations** (`/`): Implemented parametric support for modifying vectors directly (e.g. `/x+1`, `/y-1.5`, `/z20`).
+- **Interactive Numeric Scrubbing**: With the cursor hovering over a numeric parameter in the CLI, pressing the **Arrow Up / Arrow Down** keys will continuously scrub the 3D value by `0.001` increments (or `1.0` if holding `Shift`).
+- **Keyboard Navigation**: Implemented full `Up/Down` arrow and `Enter/Tab` selection for the Autocomplete popover.
+
+## Validation
+- The `npm run build` process succeeds cleanly with `0` errors, confirming correct refactoring of Zustand imports and removal of legacy dependencies.
+- The UI maintains strict typing compliance with the newly extended [CanvasMode](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/lib/zustand.ts#66-67) union type (`"sketch"` added).

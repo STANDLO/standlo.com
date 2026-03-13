@@ -9,13 +9,13 @@ export const BuildSchema = BaseSchema.extend({
 });
 export type Build = z.infer<typeof BuildSchema>;
 // --- SUBCOLLECTION SCHEMAS ---
-export const BuildCanvasNodeSchema = z.object({
+export const BuildDesignNodeSchema = z.object({
     entityId: z.string().describe("Can be a Part ID or an Assembly ID"),
     entityType: z.enum(['part', 'assembly']),
     position: z.tuple([z.number(), z.number(), z.number()]),
     rotation: z.tuple([z.number(), z.number(), z.number(), z.number()])
 });
-export type BuildCanvasNode = z.infer<typeof BuildCanvasNodeSchema>;
+export type BuildDesignNode = z.infer<typeof BuildDesignNodeSchema>;
 export const BuildAssemblyNodeSchema = z.object({
     assemblyId: z.string(),
     quantity: z.number()

@@ -1,6 +1,6 @@
 "use client";
 
-import { useDesignStore } from "./store";
+import { useDesignStore } from "@/lib/zustand";
 import { Button } from "@/components/ui/Button";
 import { X, ChevronRight, Check } from "lucide-react";
 

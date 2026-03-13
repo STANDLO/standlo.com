@@ -1,6 +1,7 @@
 
-import { useDesignStore } from "@/components/layout/design/store";
+import { useDesignStore } from "@/lib/zustand";
 import { callGateway } from "@/lib/api";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * A standalone script representing an AI Skill or external logic 
@@ -49,18 +50,18 @@ export const runInstancingStressTest = async (count: number = 500, radius: numbe
             if (type === "part") {
                 baseEntityId = isBox ? "parametric_box" : "parametric_cylinder";
             } else if (type === "mesh") {
-                baseEntityId = `MSH-${crypto.randomUUID().substring(0, 4).toUpperCase()}`;
+                baseEntityId = `MSH-${uuidv4().substring(0, 4).toUpperCase()}`;
                 const geos = ["box", "sphere", "cylinder"];
                 geometry = geos[Math.floor(Math.random() * geos.length)];
             } else if (type === "assembly") {
-                baseEntityId = `ASS-${crypto.randomUUID().substring(0, 4).toUpperCase()}`;
+                baseEntityId = `ASS-${uuidv4().substring(0, 4).toUpperCase()}`;
             } else if (type === "bundle") {
-                baseEntityId = `BUN-${crypto.randomUUID().substring(0, 4).toUpperCase()}`;
+                baseEntityId = `BUN-${uuidv4().substring(0, 4).toUpperCase()}`;
             } else if (type === "design") {
-                baseEntityId = `STA-${crypto.randomUUID().substring(0, 4).toUpperCase()}`;
+                baseEntityId = `STA-${uuidv4().substring(0, 4).toUpperCase()}`;
             }
 
-            const id = `ai-stress-${crypto.randomUUID().substring(0, 8)}`;
+            const id = `ai-stress-${uuidv4().substring(0, 8)}`;
             
             let argsToPass = [dimX, dimY, dimZ];
             if (geometry === "sphere") argsToPass = [dimX / 2, 32, 32];
@@ -121,4 +122,62 @@ export const runInstancingStressTest = async (count: number = 500, radius: numbe
     }
     
     console.log(`[Canvas AI] Stress Test generation complete!`);
+};
+
+/**
+ * Automates testing of spatial actions like Move and Rotate to verify 
+ * performance and collision handling under rapid successive updates.
+ */
+export const runSpatialQATest = async (loops: number = 50, delayMs: number = 50) => {
+    console.log(`[Canvas AI] Starting Spatial QA Sequence: ${loops} loops...`);
+    const state = useDesignStore.getState();
+    const entityIds = Object.keys(state.entities);
+    
+    if (entityIds.length === 0) {
+        console.warn("[Canvas AI] Cannot run QA Sequence: No entities on canvas.");
+        return;
+    }
+
+    const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+    for (let i = 0; i < loops; i++) {
+        // Randomly pick an entity
+        const randId = entityIds[Math.floor(Math.random() * entityIds.length)];
+        const entity = state.entities[randId];
+        
+        if (!entity) continue;
+
+        // Select it
+        state.selectEntity(randId);
+        await delay(delayMs);
+
+        // Move it slightly
+        const moveAction = Math.random();
+        if (moveAction > 0.5) {
+            const dx = (Math.random() - 0.5) * 2;
+            const dz = (Math.random() - 0.5) * 2;
+            const newPos: [number, number, number] = [
+                entity.position[0] + dx,
+                entity.position[1],
+                entity.position[2] + dz
+            ];
+            state.updateEntityPosition(randId, newPos);
+        } else {
+            // Rotate it
+            const newQ: [number, number, number, number] = [0, Math.sin(Math.random() * Math.PI), 0, Math.cos(Math.random() * Math.PI)];
+            state.updateEntityRotation(randId, newQ);
+        }
+
+        await delay(delayMs);
+        
+        // Randomly deselect
+        if (Math.random() > 0.7) {
+            state.selectEntity(null);
+            await delay(delayMs);
+        }
+    }
+
+    // Final cleanup
+    state.selectEntity(null);
+    console.log(`[Canvas AI] Spatial QA Sequence complete!`);
 };

@@ -43,38 +43,57 @@
 ## Part 2: Data-Driven Rendering (v2.0)
 
 ### Phase 1: Data Foundations & Caching
-- [ ] Implement `GET /api/design/dictionaries` endpoint with `?v=` version caching.
-- [ ] Setup `idb-keyval` for async IndexedDB storage.
-- [ ] Implement rendering block and offline fallback in `DesignOnboarding.tsx`.
-- [ ] Inject registries into Zustand `store.ts` and refactor UI readers.
-- [ ] Implement `useDictionarySync` for background updates.
+- [x] Implement `GET /api/design/dictionaries` endpoint with `?v=` version caching.
+- [x] Setup `idb-keyval` for async IndexedDB storage.
+- [x] Implement rendering block and offline fallback in `DesignOnboarding.tsx`.
+- [x] Inject registries into Zustand `store.ts` and refactor UI readers.
+- [x] Implement `useDictionarySync` for background updates.
 
 ### Phase 2: Communication Proxy
-- [ ] Create `useDesignOrchestrator` to hit `/api/gateway?target=orchestrator`.
-- [ ] Remove all direct Firestore `onSnapshot` usages in the 3D client.
-- [ ] Implement paginated chunking (`listDesignNodesPaginated`) in the Orchestrator.
-- [ ] Adapt Zustand store for progressive visual streaming.
+- [x] Create `useDesignOrchestrator` to hit `/api/gateway?target=orchestrator`.
+- [x] Remove all direct Firestore `onSnapshot` usages in the 3D client.
+- [x] Implement paginated chunking (`listDesignNodesPaginated`) in the Orchestrator.
+- [x] Adapt Zustand store for progressive visual streaming.
 
 ### Phase 3: Core 3D Architecture
-- [ ] Integrate `three-mesh-bvh` for optimized raycasting geometry octrees.
-- [ ] Implement `organizeRenderGroups` in Zustand for `InstancedMesh` / `BatchedMesh` routing.
-- [ ] Implement dynamic selection extraction (Instanced -> Mesh + TransformControls -> Instanced).
-- [ ] Replace `Rapier` with AABB collision math for drag-and-drop validation.
+- [x] Integrate `three-mesh-bvh` for optimized raycasting geometry octrees.
+- [x] Implement `organizeRenderGroups` in Zustand for `InstancedMesh` / `BatchedMesh` routing.
+- [x] Implement dynamic selection extraction (Instanced -> Mesh + TransformControls -> Instanced).
+- [x] Replace `Rapier` with AABB collision math for drag-and-drop validation.
 
 ### Phase 4: Graphics & Photorealism
-- [ ] Map PBR metadata (`clearcoat`, `sheen`, `transmission`) to `MeshPhysicalMaterial`.
-- [ ] Parameterize texture tiling (`repeatX`, `repeatY`).
-- [ ] Setup `@react-three/postprocessing` outline strictly for the selected object.
-- [ ] Optimize shadows via `ContactShadows` or static ambient occlusion on heavy geometry.
+- [x] Map PBR metadata (`clearcoat`, `sheen`, `transmission`) to `MeshPhysicalMaterial`.
+- [x] Parameterize texture tiling (`repeatX`, `repeatY`).
+- [x] Setup `@react-three/postprocessing` outline strictly for the selected object.
+- [x] Optimize shadows via `ContactShadows` or static ambient occlusion on heavy geometry.
 - [ ] Develop background Cloud Function for 3-tier LOD mesh generation upon upload.
 
 ### Phase 5: PDM Updates
 - [ ] Add `compatibleMaterials` array to `Texture` schema.
 - [ ] Implement multi-selector in `/admin/pdm/textures`.
 - [ ] Add `defaultTextureId` selector in `/admin/pdm/parts`.
-- [ ] Extend `Material` schema with PBR physics params.
 - [ ] Add `ADVANCED PHOTOREALISM` tab in `/admin/pdm/materials` with live sliders.
+
+## Part 3: WebXR (Meta Quest 3) Integration
+- [x] Fix `enterVR` button flow (Consolidated into `DesignTools.tsx`).
+- [x] Setup XR Controllers (Moved `<XR>` wrapper to Scene Root allowing automatic v6 Controllers).
+- [x] Implement Locomotion/Teleportation (`<TeleportTarget>` added to Floor Grid).
+- [ ] Implement Grab & Move mechanics using specific VR raycaster grabs.
+- [ ] Build Spatial UI (3D Dashboards & Wrist-Anchored Menus).
+
+## Part 4: The `Sketch` Entity
+- [x] Create `functions/src/schemas/sketch.ts` and update `entityRegistry.ts`.
+- [x] Fix missing PDM schemas in Visual IDE.
+- [x] Create `DesignTools` constants inside `functions/src/core/constants.ts`.
+- [x] Implement 3D visual representation (`THREE.Group` + Green Box).
+
+## Part 5: Command, Control, and Debugging
+- [x] Rename `DesignAI.tsx` to `DesignTerminal.tsx` and implement CLI node interaction logic.
+- [x] Finalize `DesignCatalogSidebar.tsx` connecting it fully to IndexedDB registries and `DesignTools`.
+- [x] Expand `DesignDebug.tsx` to include an automated sequence testing all spatial actions (Move, Rotate, Snap) recursively.
+- [x] Update `functions/src/core/constants.ts` -> `systemLocales` adding full EU + `gb, ae, cn, tr, in, jp, au, mx, id, my, th, ar, br` (strict ISO Country Codes, `us` fallback).
+- [x] Update admin `http://localhost:3001/i18n` to read `systemLocales` from the new `constants.ts` path.
 
 ## Validation
 - [x] Verify Monorepo Builds (`npm run build`).
-- [ ] Ensure end-to-end `design` workflow runs cleanly via Emulator without legacy `canvas` references blocking state.
+- [x] Ensure end-to-end `design` workflow runs cleanly via Emulator without legacy `canvas` references blocking state.

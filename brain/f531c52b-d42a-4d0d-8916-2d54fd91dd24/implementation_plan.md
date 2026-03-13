@@ -81,3 +81,55 @@ It merges the codebase-wide entity migration (`Canvas` -> `Design`) with the adv
 2. **Photorealistic PDM Admin Update**:
    - Add PBR physics parameters to `functions/src/schemas/material.ts`.
    - Add an "ADVANCED PHOTOREALISM" tab/section in `/admin/pdm/materials` with live preview sliders.
+
+---
+
+## Part 3: WebXR (Meta Quest 3) Integration
+*Goal: Evolve the authoring experience to the Spatial Computing era by fully supporting Immersive VR on Meta Quest 3 with 1:1 scale representation.*
+
+### 3.1 Basic VR Entry and Controllers (Must-Have)
+1. **Unify XR Button**: Fix the enter VR flow in `DesignHeaderViewerXR.tsx` so the user can easily trigger `xrStore.enterVR()`.
+2. **Setup Controllers**: Inject `<Controllers />` (or pointer equivalents) from `@react-three/xr` inside the `<XR>` provider in `Design.tsx` to enable laser pointers.
+
+### 3.2 Immersive Interactivity (Must-Have)
+1. **Teleportation**: Implement locomotion/teleportation mechanics to navigate large stands without real-world physical constraints.
+2. **Grab & Move**: Integrate traditional 2D Gizmos/TransformControls with native VR grabbing mechanics allowing users to physically move walls using the controller grip triggers.
+
+### 3.3 Spatial UI (Must-Have)
+1. **3D Dashboards**: Build `DesignTools3D.tsx` to project essential UI (Catalog, Toolbar) onto floating 3D panels accessible within the VR headset (e.g., using `@react-three/uikit` or interactive `HTML` planes).
+2. **Wrist-Anchored Menus**: Anchor quick-access palettes (undo/redo, delete) to the user's non-dominant VR controller/wrist for instant access without losing visual focus on the 3D stand.
+
+### 3.4 Future Spatial Capabilities (Nice-to-Have)
+- **Hand Tracking**: Allow manipulation using bare hands without joypads.
+- **Mixed Reality (Passthrough)**: Blend the virtual stand with the user's real office environment.
+- **Co-Design Multiplayer**: See avatars and collaborate in real-time.
+- **Real-World Measurement**: Visual tools indicating exact meters contextually.
+- **Voice Commands (AI Terminal)**: Link the `DesignTerminal` to the Quest's microphone to allow spoken commands ("Spawn sketch 3 by 3 meters").
+
+3. Include translation access keys (e.g., `i18nKey: "tools.sketch"`) to ensure uniform localization across both the Node.js backend pipelines and the React 3D Interface.
+
+### 4.3 3D Architecture
+1. **Visual Representation**: Render as a `THREE.Group`. Its default visualization should be a standard BoxGeometry with `MeshPhysicalMaterial` (semi-transparent, `color: "green"`, `opacity: 0.5`, `transparent: true`).
+2. **Containment**: As a Group, it must structurally accept children nodes (Meshes, Parts, Assemblies, Bundles, Designs) dropped inside its volume.
+
+---
+
+## Part 5: Command, Control, and Automated Debugging (Completed)
+*Goal: Provide programmatic, visual, and automated quality-control tools for the 3D ecosystem.*
+
+### 5.1 `DesignTerminal` (formerly `DesignAI`)
+1. **[x] Rename & Refactor**: `src/components/layout/design/DesignAI.tsx` -> `DesignTerminal.tsx`.
+2. **[x] Functionality**: Evolve the prompt input into a pseudo-CLI environment where advanced users (or AI bots) can execute spatial commands (e.g., `/move`, `/delete`, `/spawn`), hooking directly into the Zustand `store.ts`.
+
+### 5.2 `DesignSidebar` Completion
+1. **[x] Completion**: Finalize the `DesignCatalogSidebar.tsx` to fully read from the new IndexedDB caching logic via Zustand instead of making unnecessary API roundtrips.
+2. **[x] Integration**: Ensure the sidebar components dispatch actions seamlessly according to the strict `DesignTools` constants defined in Part 4.
+
+### 5.3 Automated Action Debugging (`DesignDebug.tsx`)
+1. **[x] Expand Testing**: Enhance the existing `DesignDebug.tsx` script and `design-ai-stress-test.ts`.
+2. **[x] Action Automation**: Implemented `runSpatialQATest` to recursively trigger spatial actions (Move, Rotate, Select) to simulate and measure rapid user interactions and Physics/AABB collision speeds without manual QA.
+
+### 5.4 Admin i18n Locales Fix & Expansion (`/admin/i18n`)
+1. **[x] Strict 2-char ISO Country Codes Expansion**: Update `systemLocales` inside `functions/src/core/constants.ts` enforcing a strict ISO 3166-1 alpha-2 **Country Code** policy.
+2. **[x] Path Correction**: Fixed the Admin interface managing translations (`http://localhost:3001/i18n`).
+3. **[x] Update Admin Route**: Refactored the backend/API endpoints powering this page.

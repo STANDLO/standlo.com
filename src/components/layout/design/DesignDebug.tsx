@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Bug, Play, Trash2, Database, Download } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
 import { DesignController } from "@/lib/design";
-import { runInstancingStressTest } from "@/scripts/design-ai-stress-test";
-import { useDesignStore } from "@/components/layout/design/store";
+import { runInstancingStressTest, runSpatialQATest } from "@/scripts/design-ai-stress-test";
+import { useDesignStore } from "@/lib/zustand";
 import { useParams } from "next/navigation";
 
 export function DesignDebug() {
     const [isOpen, setIsOpen] = useState(false);
     const [isTesting, setIsTesting] = useState(false);
+    const [isQATesting, setIsQATesting] = useState(false);
     const [syncDb, setSyncDb] = useState(false);
 
     const params = useParams();
@@ -79,6 +80,14 @@ export function DesignDebug() {
             downloadZustandState();
 
             if (!syncDb) setIsOpen(false);
+        }, 100);
+    };
+
+    const runQATest = async () => {
+        setIsQATesting(true);
+        setTimeout(async () => {
+            await runSpatialQATest(50, 50); // 50 loops, 50ms delay
+            setIsQATesting(false);
         }, 100);
     };
 
@@ -160,6 +169,15 @@ export function DesignDebug() {
                             <Trash2 className="w-3.5 h-3.5" />
                         </button>
                     </div>
+
+                    <button
+                        className="w-full flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 px-3 rounded shadow-sm shadow-indigo-500/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+                        onClick={runQATest}
+                        disabled={isQATesting || isTesting}
+                    >
+                        <Play className="w-3 h-3" />
+                        {isQATesting ? "QA in progress..." : "Run Spatial QA Sequence"}
+                    </button>
                 </div>
 
                 {/* State Dump Section */}

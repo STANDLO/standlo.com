@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useMemo, useEffect } from "react";
-import { CanvasEntity, useDesignStore } from "./store";
+import { CanvasEntity, useDesignStore } from "@/lib/zustand";
 import { useLoader, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -100,6 +100,39 @@ export default function InstancedPartGroup({ entities }: InstancedPartGroupProps
             ref={meshRef}
             args={[undefined, undefined, entities.length]}
             onClick={handleClick}
+            onPointerDown={(e) => {
+                // Instanced Mesh dragging requires lifting the single grouped entity's pos
+                e.stopPropagation();
+                if (e.instanceId !== undefined) {
+                    const store = useDesignStore.getState();
+                    if (store.transformMode !== 'snap') {
+                        (e.target as Element).setPointerCapture(e.pointerId);
+                        store.setIsDragging(true);
+                    }
+                }
+            }}
+            onPointerUp={(e) => {
+                const store = useDesignStore.getState();
+                if (store.isDragging) {
+                    e.stopPropagation();
+                    (e.target as Element).releasePointerCapture(e.pointerId);
+                    store.setIsDragging(false);
+                    // Single mesh drop updating matrix logic is complex for instanced meshes.
+                    // Usually we isolate dragged elements out of InstancedMesh (done via DesignStore removing it from "grouped") 
+                    // and let GenericPart handle it. Here we just release capture safely.
+                }
+            }}
+            onPointerMove={(e) => {
+                const store = useDesignStore.getState();
+                if (store.isDragging && e.ray && e.instanceId !== undefined) {
+                    e.stopPropagation();
+                    const clickedEntity = entities[e.instanceId];
+                    if (clickedEntity && store.selectedEntityId === clickedEntity.id) {
+                         // Dragging an instanced part updates it's isolated position
+                         store.updateEntityPosition(clickedEntity.id, [e.point.x, e.point.y, e.point.z]);
+                    }
+                }
+            }}
             onPointerOver={(e) => {
                 e.stopPropagation();
                 document.body.style.cursor = 'pointer';

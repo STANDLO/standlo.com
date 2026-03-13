@@ -80,12 +80,13 @@ if (typeof window !== "undefined") {
     const shouldConnectEmulator = isAdminApp ? isEmulatorCookie : useEmulatorEnv;
 
     if (shouldConnectEmulator) {
-        console.warn("⚠️ Firebase Emulators: Connecting to local emulators");
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
-        connectAuthEmulator(auth, "http://127.0.0.1:9099");
+        console.warn("⚠️ Firebase Emulators: Connecting to local emulators at " + window.location.hostname);
+        const host = window.location.hostname;
+        connectFunctionsEmulator(functions, host, 5001);
+        connectAuthEmulator(auth, `http://${host}:9099`);
         // Connettiamo Firestore esplicitamente al database "standlo"
-        connectFirestoreEmulator(db, "127.0.0.1", 8080);
-        connectStorageEmulator(storage, "127.0.0.1", 9199);
+        connectFirestoreEmulator(db, host, 8080);
+        connectStorageEmulator(storage, host, 9199);
     }
 }
 

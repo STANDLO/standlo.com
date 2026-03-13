@@ -119,8 +119,10 @@ export { correlateRoot, correlateSub } from "./choreography/correlator";
 // BACKGROUND TASK QUEUES
 // ============================================================================
 export {
-    choreographyCanvasCreateSandbox,
-    choreographyCanvasCreateNode,
-    choreographyCanvasUpdateNode,
-    choreographyCanvasDeleteNode
-} from "./choreography/canvas";
+    choreographyDesignCreateSandbox,
+    choreographyDesignCreateNode,
+    choreographyDesignUpdateNode,
+    choreographyDesignDeleteNode
+} from "./choreography/design";
+
+export { choreographyMeshGenerateLOD } from "./choreography/mesh";

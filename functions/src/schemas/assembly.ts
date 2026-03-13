@@ -11,8 +11,8 @@ export const AssemblySchema = BaseSchema.extend({
     price: z.number().optional().describe("External standard price"),
     gltfUrl: z.string().optional().describe("URL to a pre-baked .glb representation of this assembly (optional)"),
     useCases: z.array(z.object({
-        canvasType: z.string(),
-        canvasLayer: z.string()
+        designType: z.string(),
+        designLayer: z.string()
     })).default([]),
     sockets: z.array(z.object({
         id: z.string(),

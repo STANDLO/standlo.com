@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { BaseSchema } from "./base";
 /**
- * Node Schema (Represents a single block in the React Flow canvas)
+ * Node Schema (Represents a single block in the React Flow design)
  */
 export const PipelineNodeSchema = z.object({
     id: z.string().min(1),

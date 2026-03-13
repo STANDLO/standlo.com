@@ -1,17 +1,20 @@
 "use client";
 
-import { useDesignStore } from "@/components/layout/design/store";
+import { useDesignStore } from "@/lib/zustand";
 import { useTranslations } from "next-intl";
 import { xrStore } from "./xrStore";
+import { DesignTools as PDMTools } from "../../../../functions/src/core/constants";
+
 import {
+    Box,
+    Boxes,
+    Package,
+    Building2,
     Layers,
     Move3d,
     Rotate3d,
     Magnet,
     Share2,
-    Component,
-    House,
-    Group,
     RectangleGoggles,
     Glasses,
     Axis3D,
@@ -125,7 +128,7 @@ export function DesignTools() {
                 newMeta.color = matObj.baseColor;
                 newMeta.roughness = matObj.roughness;
                 newMeta.metalness = matObj.metalness;
-                
+
                 // Advanced PBR Properties
                 if (matObj.clearcoat !== undefined) newMeta.clearcoat = matObj.clearcoat;
                 if (matObj.clearcoatRoughness !== undefined) newMeta.clearcoatRoughness = matObj.clearcoatRoughness;
@@ -173,44 +176,44 @@ export function DesignTools() {
 
     return (
         <div className="ui-design-tools">
-            {/* INSERIMENTO BLOCK */}
-            <div className="ui-design-tools-block">
-                <div className="ui-design-tools-title">{t("inserimento")}</div>
-                <div className="ui-design-tools-group">
-                    <button
-                        className="ui-design-tools-btn h-10 w-10 px-0"
-                        data-active={mode === "part"}
-                        onClick={() => setMode("part")}
-                        title={t("addPart")}
-                    >
-                        <Component className="ui-design-tools-icon" />
-                    </button>
-                    <button
-                        className="ui-design-tools-btn h-10 w-10 px-0"
-                        data-active={mode === "assembly"}
-                        onClick={() => setMode("assembly")}
-                        title={t("addAssembly")}
-                    >
-                        <Group className="ui-design-tools-icon" />
-                    </button>
-                    <button
-                        className="ui-design-tools-btn h-10 w-10 px-0"
-                        data-active={mode === "bundle"}
-                        onClick={() => setMode("bundle")}
-                        title={t("addBundle")}
-                    >
-                        <Layers className="ui-design-tools-icon" />
-                    </button>
-                    <button
-                        className="ui-design-tools-btn h-10 w-10 px-0"
-                        data-active={mode === "design"}
-                        onClick={() => setMode("design")}
-                        title={t("addDesign")}
-                    >
-                        <House className="ui-design-tools-icon" />
-                    </button>
+            {/* DYNAMIC GROUPS */}
+            {Object.entries(
+                Object.values(PDMTools).reduce((acc, tool) => {
+                    if (!tool.active) return acc;
+                    if (!acc[tool.group]) acc[tool.group] = [];
+                    acc[tool.group].push(tool);
+                    return acc;
+                }, {} as Record<string, typeof PDMTools[keyof typeof PDMTools][]>)
+            ).map(([groupName, mapTools]) => (
+                <div key={groupName} className="ui-design-tools-block">
+                    <div className="ui-design-tools-title">{t(groupName, { fallback: groupName.toUpperCase() })}</div>
+                    <div className="ui-design-tools-group">
+                        {mapTools.map((tool) => {
+                            let IconComponent = Layers;
+                            switch (tool.icon as string) {
+                                case "Box": IconComponent = Box as typeof Layers; break;
+                                case "Boxes": IconComponent = Boxes as typeof Layers; break;
+                                case "Layers": IconComponent = Layers as typeof Layers; break;
+                                case "Package": IconComponent = Package as typeof Layers; break;
+                                case "Building2": IconComponent = Building2 as typeof Layers; break;
+                            }
+                            
+                            return (
+                                <button
+                                    key={tool.id}
+                                    className="ui-design-tools-btn h-10 w-10 px-0"
+                                    data-active={mode === tool.id}
+                                    data-group={tool.group}
+                                    onClick={() => setMode(tool.id as "sketch" | "part" | "assembly" | "bundle" | "design" | null)}
+                                    title={t(tool.name.split('.').pop() || tool.id)}
+                                >
+                                    <IconComponent className="ui-design-tools-icon " />
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
-            </div>
+            ))}
 
             {/* AZIONI BLOCK */}
             <div className="ui-design-tools-block">

@@ -70,12 +70,12 @@ emu.stdout.on('data', (data) => {
         }
 
         console.log('\n🌐 Starting Web (Next.js) on port 3000...');
-        const web = spawn('npm', ['run', 'dev'], { cwd: process.cwd(), env });
+        const web = spawn('npm', ['run', 'dev', '--', '-H', '0.0.0.0'], { cwd: process.cwd(), env });
         web.stdout.pipe(webOut);
         web.stderr.pipe(webOut);
 
         console.log('⚙️ Starting Admin on port 3001...');
-        const admin = spawn('npm', ['run', 'dev'], { cwd: path.join(process.cwd(), 'admin'), env });
+        const admin = spawn('npm', ['run', 'dev', '--', '-H', '0.0.0.0'], { cwd: path.join(process.cwd(), 'admin'), env });
         admin.stdout.pipe(adminOut);
         admin.stderr.pipe(adminOut);
 

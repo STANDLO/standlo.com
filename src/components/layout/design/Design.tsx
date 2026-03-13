@@ -10,8 +10,7 @@ import {
     GizmoHelper,
     Bvh
 } from "@react-three/drei";
-import { Physics } from "@react-three/rapier";
-import { XR } from "@react-three/xr";
+import { XR, TeleportTarget } from "@react-three/xr";
 import { EffectComposer, N8AO, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from "three-mesh-bvh";
@@ -24,17 +23,18 @@ THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree as any;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 import { partsTunnel } from "./tunnel";
-import { useDesignStore, CanvasEntity } from "./store";
+import { useDesignStore, CanvasEntity } from "@/lib/zustand";
 import GenericPart from "./GenericPart";
 import InstancedPartGroup from "./InstancedPartGroup";
 import { ZUpGizmoViewcube } from "./ZUpGizmoViewcube";
 import { useTheme } from "@/providers/ThemeProvider";
+import { DesignAdd } from "./DesignAdd";
 import { xrStore } from "./xrStore";
-import { DesignCatalogSidebar } from "./DesignCatalogSidebar";
 import { DesignTour } from "./DesignTour";
 import { DesignTools } from "./DesignTools";
-import { DesignAI } from "./DesignAI";
-import { useDictionarySync } from "./useDictionarySync";
+import { DesignTerminal } from "./DesignTerminal";
+import { useDesignDictionaries } from "./DesignDictionaries";
+import { SpatialUI } from "./SpatialUI";
 
 function ScaledMarker({ type, isActive }: { type: 'corner' | 'origin' | 'midpoint', isActive: boolean }) {
     const ref = useRef<THREE.Mesh>(null!);
@@ -139,7 +139,7 @@ interface StandloCanvasProps {
 }
 
 export default function StandloCanvas({ entityId, entityType, active = true, isOverlay = false }: StandloCanvasProps) {
-    useDictionarySync();
+    useDesignDictionaries();
     const { theme: resolvedTheme } = useTheme();
     const tGizmo = useTranslations("Canvas.tools.gizmo");
     const viewMode = useDesignStore((state) => state.viewMode);
@@ -179,7 +179,6 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
     const dirLightIntensity = 1.5;
     const aoIntensity = 1.5;
     const bloomThreshold = 1.0;
-    const debugPhysics = false;
 
     // React to viewMode changes to animate camera
     useEffect(() => {
@@ -280,38 +279,58 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                                 } else {
                                     try {
 
-                                        const resultsData = await callGateway("orchestrator", {
-                                            actionId: "list",
-                                            entityId: `${targetSchema}/${entityId}/objects`, // Fetching the subcollection
-                                            payload: {}
-                                        });
-                                        // Safe type unwrapping using any to bypass strict checks that caused build failures
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        let actualList: any[] = [];
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        const resultsAny = resultsData as any;
-                                        const objectsList = resultsAny.data || resultsAny;
-                                        actualList = objectsList.data || objectsList;
+                                        let hasMore = true;
+                                        let currentCursor: string | undefined = undefined;
+                                        const CHUNK_SIZE = 500;
 
-                                        if (Array.isArray(actualList)) {
-                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                            actualList.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
-
-                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                            actualList.forEach((obj: any) => {
-                                                addEntity({
-                                                    id: obj.id as string,
-                                                    baseEntityId: obj.baseEntityId as string,
-                                                    type: obj.type as "mesh" | "part" | "assembly" | "bundle" | "design",
-                                                    parentId: obj.parentId as string | undefined, // Restore hierarchical parent
-                                                    position: (obj.position as [number, number, number]) || [0, 0, 0],
-                                                    rotation: (obj.rotation as [number, number, number, number]) || [0, 0, 0, 1],
-                                                    sockets: [],
-                                                    order: (obj.order as number) || 0,
-                                                    metadata: obj.metadata as CanvasEntity["metadata"],
-                                                    meshOverrides: obj.meshOverrides as CanvasEntity["meshOverrides"]
-                                                });
+                                        while (hasMore && isMounted) {
+                                            const resultsData = await callGateway("orchestrator", {
+                                                actionId: "list",
+                                                entityId: `${targetSchema}/${entityId}/objects`, // Fetching the subcollection
+                                                payload: {
+                                                    limit: CHUNK_SIZE,
+                                                    cursor: currentCursor
+                                                }
                                             });
+                                            
+                                            // Safe type unwrapping using any to bypass strict checks that caused build failures
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            let actualList: any[] = [];
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            const resultsAny = resultsData as any;
+                                            const objectsList = resultsAny.data || resultsAny;
+                                            actualList = objectsList.data || objectsList;
+
+                                            if (Array.isArray(actualList) && actualList.length > 0) {
+                                                // Pre-sort chunk if needed, though they stream in order of creation if no sort is specified.
+                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                actualList.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+
+                                                // Inject progressively into Zustand
+                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                actualList.forEach((obj: any) => {
+                                                    addEntity({
+                                                        id: obj.id as string,
+                                                        baseEntityId: obj.baseEntityId as string,
+                                                        type: obj.type as "mesh" | "part" | "assembly" | "bundle" | "design",
+                                                        parentId: obj.parentId as string | undefined,
+                                                        position: (obj.position as [number, number, number]) || [0, 0, 0],
+                                                        rotation: (obj.rotation as [number, number, number, number]) || [0, 0, 0, 1],
+                                                        sockets: [],
+                                                        order: (obj.order as number) || 0,
+                                                        metadata: obj.metadata as CanvasEntity["metadata"],
+                                                        meshOverrides: obj.meshOverrides as CanvasEntity["meshOverrides"]
+                                                    });
+                                                });
+
+                                                if (actualList.length === CHUNK_SIZE) {
+                                                    currentCursor = actualList[actualList.length - 1].id;
+                                                } else {
+                                                    hasMore = false;
+                                                }
+                                            } else {
+                                                hasMore = false;
+                                            }
                                         }
                                     } catch (subErr) {
                                         console.error("Failed to fetch Canvas Objects subcollection:", subErr);
@@ -380,36 +399,45 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                 }}
             >
                 <Suspense fallback={null}>
-                    <partsTunnel.Out />
+                    <XR store={xrStore}>
+                        <partsTunnel.Out />
 
-                    {/* Lighting & Environment */}
-                    <ambientLight intensity={ambientIntensity} />
-                    <directionalLight
-                        castShadow
-                        position={[10, 20, 10]}
-                        intensity={dirLightIntensity}
-                        shadow-mapSize={[2048, 2048]}
-                    />
-                    <Environment preset="city" />
+                        {/* Lighting & Environment */}
+                        <ambientLight intensity={ambientIntensity} />
+                        <directionalLight
+                            castShadow
+                            position={[10, 20, 10]}
+                            intensity={dirLightIntensity}
+                            shadow-mapSize={[2048, 2048]}
+                        />
+                        <Environment preset="city" />
 
-                    {/* Ground Plane & Grid */}
-                    <Grid
-                        cellSize={0.1}
-                        cellThickness={1}
-                        cellColor={resolvedTheme === "dark" ? "#3f3f46" : "hsl(220, 13%, 65%)"}
-                        sectionSize={1}
-                        sectionThickness={1.5}
-                        sectionColor={resolvedTheme === "dark" ? "#52525b" : "hsl(220, 13%, 75%)"}
-                        fadeDistance={50}
-                        fadeStrength={1}
-                        followCamera={false}
-                        infiniteGrid={true}
-                    />
+                        {/* Ground Plane & Grid */}
+                        <TeleportTarget>
+                            <Grid
+                                cellSize={0.1}
+                                cellThickness={1}
+                                cellColor={resolvedTheme === "dark" ? "#3f3f46" : "hsl(220, 13%, 65%)"}
+                                sectionSize={1}
+                                sectionThickness={1.5}
+                                sectionColor={resolvedTheme === "dark" ? "#52525b" : "hsl(220, 13%, 75%)"}
+                                fadeDistance={50}
+                                fadeStrength={1}
+                                followCamera={false}
+                                infiniteGrid={true}
+                            />
+                            {/* Invisible plane for XR Teleport Ray Intersections */}
+                            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} visible={false}>
+                                <planeGeometry args={[100, 100]} />
+                                <meshBasicMaterial transparent opacity={0} />
+                            </mesh>
+                        </TeleportTarget>
 
-                    <MutedAxes />
+                        <MutedAxes />
+                        <SpatialUI />
 
-                    {/* World Origin Snap Target */}
-                    {transformMode === "snap" && (
+                        {/* World Origin Snap Target */}
+                        {transformMode === "snap" && (
                         <group
                             position={[0, 0, 0]}
                             onClick={(e) => {
@@ -490,13 +518,9 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                         />
                     </GizmoHelper>
 
-                    {/* XR Session Wrapper */}
-                    <XR store={xrStore}>
-                        {/* Entities injected here from Zustand with Physics & optimized Raycasting */}
+                        {/* Entities injected here from Zustand with optimized Raycasting */}
                         <Bvh firstHitOnly>
-                            <Physics debug={debugPhysics} gravity={[0, -9.81, 0]}>
-                                <CanvasEntitiesRenderer />
-                            </Physics>
+                            <CanvasEntitiesRenderer />
                         </Bvh>
 
                         {/* Premium Visuals Processing - Disabled in XR to fix black screen issue */}
@@ -510,10 +534,11 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                 </Suspense>
             </Canvas>
 
-            <DesignCatalogSidebar entityId={entityId} entityType={entityType} />
+            {/* Central PDM Add Wrapper */}
+            <DesignAdd />
             <DesignTour />
             <DesignTools />
-            <DesignAI />
+            <DesignTerminal />
         </div>
     );
 }

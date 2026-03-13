@@ -33,8 +33,9 @@ export * from "./apikey";
 export * from "./call";
 export * from "./product";
 export * from "./rent";
-export * from "./canvas";
+
 export * from "./texture";
 export * from "./material";
 export * from "./mesh";
 export * from "./aiSkill";
+export * from "./sketch";

@@ -10,13 +10,13 @@ export const EmergencySchema = BaseSchema.extend({
 });
 export type Emergency = z.infer<typeof EmergencySchema>;
 // --- SUBCOLLECTION SCHEMAS ---
-export const EmergencyCanvasNodeSchema = z.object({
+export const EmergencyDesignNodeSchema = z.object({
     entityId: z.string().describe("Can be a Part ID or an Assembly ID"),
     entityType: z.enum(['part', 'assembly']),
     position: z.tuple([z.number(), z.number(), z.number()]),
     rotation: z.tuple([z.number(), z.number(), z.number(), z.number()])
 });
-export type EmergencyCanvasNode = z.infer<typeof EmergencyCanvasNodeSchema>;
+export type EmergencyDesignNode = z.infer<typeof EmergencyDesignNodeSchema>;
 export const EmergencyAssemblyNodeSchema = z.object({
     assemblyId: z.string(),
     quantity: z.number()

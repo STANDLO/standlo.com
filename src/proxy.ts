@@ -7,7 +7,7 @@ import { authConfig } from "./core/auth-edge";
 const intlMiddleware = createMiddleware(routing);
 
 // I file public che non richiedono login (es. /auth/login, landing, etc.)
-const PUBLIC_PATHS = ['/auth/login', '/auth/create', '/auth/action', '/privacy', '/terms', '/canvas'];
+const PUBLIC_PATHS = ['/auth/login', '/auth/create', '/auth/action', '/privacy', '/terms', '/design/public'];
 
 export async function proxy(request: NextRequest) {
     // 1. JWT Parsing & Role Redirection
@@ -76,8 +76,8 @@ export async function proxy(request: NextRequest) {
                 const requestedArea = areaMatch[1];
                 const roleArea = areaMatch[2]; // ex: 'customer' inside /it/partner/customer
 
-                // If they are accessing a generic area outside partner, only auth, debug, profile, onboarding, pending, users, canvas are allowed
-                if (requestedArea !== 'partner' && requestedArea !== 'auth' && requestedArea !== 'debug' && requestedArea !== 'onboarding' && requestedArea !== 'profile' && requestedArea !== 'pending' && requestedArea !== 'users' && requestedArea !== 'canvas') {
+                // If they are accessing a generic area outside partner, only auth, debug, profile, onboarding, pending, users, design are allowed
+                if (requestedArea !== 'partner' && requestedArea !== 'auth' && requestedArea !== 'debug' && requestedArea !== 'onboarding' && requestedArea !== 'profile' && requestedArea !== 'pending' && requestedArea !== 'users' && requestedArea !== 'design') {
                     url.pathname = `/${locale}/partner/${role}`;
                     return NextResponse.redirect(url);
                 }

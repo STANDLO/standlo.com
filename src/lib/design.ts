@@ -1,4 +1,4 @@
-import { useDesignStore } from "@/components/layout/design/store";
+import { useDesignStore } from "@/lib/zustand";
 import { v4 as uuidv4 } from "uuid";
 
 /**

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { DesignCard } from "@/components/ui/DesignCard";
 import { AlignLeft, ChevronRight, ChevronDown, Box, Layers, Cuboid } from "lucide-react";
 
-import { useDesignStore } from "./store";
+import { useDesignStore } from "@/lib/zustand";
 
 export interface TreeNodeType {
     id: string;

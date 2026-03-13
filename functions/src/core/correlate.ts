@@ -8,16 +8,26 @@ import { FieldValue } from "firebase-admin/firestore";
  * to any NoSQL document referencing these keys.
  */
 export const FK_DICTIONARY: Record<string, string> = {
+    // BASE
+    orgId: "organizations",
+    //
+    projectId: "projects",
+    taskId: "tasks",
+    // PDM
     meshId: "meshes",
+    sketchId: "sketches",
     partId: "parts",
     assemblyId: "assemblies",
     bundleId: "bundles",
-    processId: "processes",
     designId: "designs",
-    fairId: "fairs",
-    projectId: "projects",
-    orgId: "organizations",
-    materialId: "materials"
+    // MRP
+    warehouseId: "warehouses",
+    workcenterId: "workcenters",
+    shelfId: "shelves",
+    processId: "processes",
+    toolId: "tools",
+    // EXHIBITIONS VERTICALS
+    fairId: "fairs"
 };
 
 /**

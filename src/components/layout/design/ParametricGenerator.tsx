@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useDesignStore, SocketDefinition } from "./store";
+import { useDesignStore, SocketDefinition } from "@/lib/zustand";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";

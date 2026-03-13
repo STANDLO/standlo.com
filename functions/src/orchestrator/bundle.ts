@@ -87,7 +87,7 @@ export async function createBundleEntity(uid: string, payload: Record<string, un
         isArchived: false
     };
 
-    const canvasData = {
+    const designData = {
         id: bundleId,
         orgId: payload.orgId || null,
         name: payload.name || "Untitled Bundle",
@@ -96,7 +96,7 @@ export async function createBundleEntity(uid: string, payload: Record<string, un
 
     const operations: Record<string, unknown>[] = [
         { actionId: "create", entityId: "bundle", payload: { ...bundleData, documentId: bundleId } },
-        { actionId: "create", entityId: "canvas", payload: { ...canvasData, documentId: bundleId } }
+        { actionId: "create", entityId: "design", payload: { ...designData, documentId: bundleId } }
     ];
 
     if (Array.isArray(parts)) {
@@ -116,7 +116,7 @@ export async function createBundleEntity(uid: string, payload: Record<string, un
 
     return {
         status: "success",
-        message: "Bundle and Canvas document created successfully.",
+        message: "Bundle and Design document created successfully.",
         data: { id: bundleId }
     };
 }
@@ -130,12 +130,12 @@ export async function updateBundleEntity(uid: string, bundleId: string, payload:
 
     const updateData = { ...restPayload };
 
-    const canvasUpdateData: Record<string, unknown> = {};
-    if (payload.name) canvasUpdateData.name = payload.name;
+    const designUpdateData: Record<string, unknown> = {};
+    if (payload.name) designUpdateData.name = payload.name;
 
     const operations: Record<string, unknown>[] = [
         { actionId: "update", entityId: "bundle", payload: { ...updateData, documentId: bundleId } },
-        { actionId: "update", entityId: "canvas", payload: { ...canvasUpdateData, documentId: bundleId } }
+        { actionId: "update", entityId: "design", payload: { ...designUpdateData, documentId: bundleId } }
     ];
 
     if (Array.isArray(parts)) {
@@ -155,7 +155,7 @@ export async function updateBundleEntity(uid: string, bundleId: string, payload:
 
     return {
         status: "success",
-        message: "Bundle and Canvas document updated successfully.",
+        message: "Bundle and Design document updated successfully.",
         data: { id: bundleId }
     };
 }
@@ -166,7 +166,7 @@ export async function deleteBundleEntity(uid: string, bundleId: string) {
 
     const operations: Record<string, unknown>[] = [
         { actionId: "delete", entityId: "bundle", payload: { documentId: bundleId } },
-        { actionId: "delete", entityId: "canvas", payload: { documentId: bundleId } }
+        { actionId: "delete", entityId: "design", payload: { documentId: bundleId } }
     ];
 
     const batchReq = createInternalRequest({
@@ -179,7 +179,7 @@ export async function deleteBundleEntity(uid: string, bundleId: string) {
 
     return {
         status: "success",
-        message: "Bundle and Canvas document deleted successfully.",
+        message: "Bundle and Design document deleted successfully.",
         data: { id: bundleId }
     };
 }

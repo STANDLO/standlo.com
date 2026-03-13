@@ -90,7 +90,7 @@ export async function createStandEntity(uid: string, payload: Record<string, unk
         isArchived: false
     };
 
-    const canvasData = {
+    const designData = {
         id: standId,
         orgId: payload.orgId || null,
         ownId: uid,
@@ -106,7 +106,7 @@ export async function createStandEntity(uid: string, payload: Record<string, unk
     const parentRef = firestore.collection("stands").doc(standId);
 
     batch.set(parentRef, standData);
-    batch.set(firestore.collection("canvas").doc(standId), canvasData);
+    batch.set(firestore.collection("design").doc(standId), designData);
 
     if (Array.isArray(parts)) {
         await syncSubcollection(batch, parentRef, "parts", parts, uid, now);
@@ -125,7 +125,7 @@ export async function createStandEntity(uid: string, payload: Record<string, unk
 
     return {
         status: "success",
-        message: "Stand and Canvas document created successfully.",
+        message: "Stand and Design document created successfully.",
         data: { id: standId }
     };
 }
@@ -142,11 +142,11 @@ export async function updateStandEntity(uid: string, standId: string, payload: R
         updatedBy: uid
     };
 
-    const canvasUpdateData: Record<string, unknown> = {
+    const designUpdateData: Record<string, unknown> = {
         updatedAt: now,
         updatedBy: uid
     };
-    if (payload.name) canvasUpdateData.name = payload.name;
+    if (payload.name) designUpdateData.name = payload.name;
 
     const batch = firestore.batch();
     const parentRef = firestore.collection("stands").doc(standId);
@@ -157,7 +157,7 @@ export async function updateStandEntity(uid: string, standId: string, payload: R
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     batch.update(parentRef, updateData as Record<string, any>);
-    batch.update(firestore.collection("canvas").doc(standId), canvasUpdateData);
+    batch.update(firestore.collection("design").doc(standId), designUpdateData);
 
     if (Array.isArray(parts)) {
         await syncSubcollection(batch, parentRef, "parts", parts, uid, now);
@@ -176,7 +176,7 @@ export async function updateStandEntity(uid: string, standId: string, payload: R
 
     return {
         status: "success",
-        message: "Stand and Canvas document updated successfully.",
+        message: "Stand and Design document updated successfully.",
         data: { id: standId }
     };
 }
@@ -185,12 +185,12 @@ export async function deleteStandEntity(uid: string, standId: string) {
     // Note: deleting subcollections recursively should ideally be done by a background function or looping
     await Promise.all([
         firestore.collection("stands").doc(standId).delete(),
-        firestore.collection("canvas").doc(standId).delete()
+        firestore.collection("design").doc(standId).delete()
     ]);
 
     return {
         status: "success",
-        message: "Stand and Canvas document deleted successfully.",
+        message: "Stand and Design document deleted successfully.",
         data: { id: standId }
     };
 }

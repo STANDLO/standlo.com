@@ -143,8 +143,8 @@ export function generateNavigationManifest(roleId: RoleId): NavItemManifest[] {
                     matchPattern: `/partner/${roleId}/dashboard`,
                 },
                 {
-                    labelKey: "canvas",
-                    path: `/partner/${roleId}/canvas`,
+                    labelKey: "design",
+                    path: `/partner/${roleId}/design`,
                     icon: "Cuboid",
                 },
             ];

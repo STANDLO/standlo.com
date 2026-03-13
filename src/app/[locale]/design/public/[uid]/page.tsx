@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { useDesignStore } from "@/components/layout/design/store";
+import { useDesignStore } from "@/lib/zustand";
 
 export default function PublicCanvasPage() {
   const searchParams = useSearchParams();

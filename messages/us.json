@@ -177,11 +177,17 @@
   "Canvas": {
     "title": "Canvas 3D Editor",
     "tools": {
-      "inserimento": "Insert",
-      "addPart": "Add Part",
-      "addAssembly": "Add Assembly",
-      "addBundle": "Add Bundle",
-      "addDesign": "Add Design",
+      "add": "Add",
+      "sketch": "Sketch",
+      "sketchDesc": "Draw a free volume attached to a building material.",
+      "part": "Part",
+      "partDesc": "Add a single 3D component or part to the Canvas.",
+      "assembly": "Assembly",
+      "assemblyDesc": "Add a preconfigured group of parts.",
+      "bundle": "Bundle",
+      "bundleDesc": "Add a ready-to-use combination of assemblies.",
+      "design": "Design",
+      "designDesc": "Merge an entire existing 3D project into the current scene.",
       "azioni": "Actions",
       "move": "Move",
       "rotate": "Rotate",
@@ -215,7 +221,11 @@
       "projections": "Projections",
       "perspective": "Perspective",
       "orthographic": "Orthographic",
-      "ortho_faces": "Mixed Perspective"
+      "ortho_faces": "Mixed Perspective",
+      "account": "Account",
+      "support": "Support",
+      "login": "Log in",
+      "logout": "Log out"
     }
   },
   "components": {
@@ -263,7 +273,7 @@
       "description": "The environment dedicated to this role is currently under development. We are creating tailor-made tools to optimize your workflow. Check back soon!"
     }
   },
-  "CanvasOnboarding": {
+  "DesignOnboarding": {
     "title": "The Global Factory",
     "subtitle1": "Designed by Cristian Mazzetti Mazzetti.",
     "description": "<bold>Experience Temporary Information Modeling</bold>. Create your 3D design in seconds. Edit in real-time, share, and explore endless spaces with Artificial Intelligence.",

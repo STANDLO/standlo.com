@@ -44,8 +44,6 @@ export const Registry: Record<string, EntityConfig> = {
     call: { scope: "global", name: "apicalls", schema: schemas.CallSchema },
     alert: { scope: "global", name: "admin/security/alerts", schema: schemas.AlertSchema },
     product: { scope: "tenant", name: "products", schema: schemas.ProductSchema },
-    canvas: { scope: "global", name: "canvases", schema: schemas.CanvasSchema },
-    canvas_object: { scope: "global", name: "canvases", schema: schemas.CanvasObjectSchema },
     material: { scope: "global", name: "materials", schema: schemas.MaterialSchema },
     texture: { scope: "global", name: "textures", schema: schemas.TextureSchema },
     mesh: { scope: "global", name: "meshes", schema: schemas.MeshSchema },
@@ -53,33 +51,51 @@ export const Registry: Record<string, EntityConfig> = {
     pipeline: { scope: "global", name: "pipelines", schema: schemas.PipelineSchema },
     pipeline_execution: { scope: "global", name: "pipelines_executions", schema: schemas.PipelineExecutionSchema },
     ai_skill: { scope: "global", name: "ai_skills", schema: schemas.AISkillSchema },
+    sketch: { scope: "global", name: "sketches", schema: schemas.SketchSchema },
 
     // Subcollection Elements for Hierarchical PDM (Parts, Processes, Assemblies, Bundles)
     bundle_part: { scope: "global", name: "bundles", schema: schemas.PartSchema },
     bundle_process: { scope: "global", name: "bundles", schema: schemas.ProcessSchema },
+    bundle_assembly: { scope: "global", name: "bundles", schema: schemas.AssemblySchema },
+    bundle_bundle: { scope: "global", name: "bundles", schema: schemas.BundleSchema },
+
     assembly_part: { scope: "global", name: "assemblies", schema: schemas.PartSchema },
     assembly_process: { scope: "global", name: "assemblies", schema: schemas.ProcessSchema },
+    assembly_assembly: { scope: "global", name: "assemblies", schema: schemas.AssemblySchema },
+    assembly_bundle: { scope: "global", name: "assemblies", schema: schemas.BundleSchema },
+
     design_part: { scope: "global", name: "designs", schema: schemas.PartSchema },
     design_process: { scope: "global", name: "designs", schema: schemas.ProcessSchema },
     design_assembly: { scope: "global", name: "designs", schema: schemas.AssemblySchema },
     design_bundle: { scope: "global", name: "designs", schema: schemas.BundleSchema },
+    design_design: { scope: "global", name: "designs", schema: schemas.DesignSchema },
+    design_mesh: { scope: "global", name: "designs", schema: schemas.MeshSchema },
+
+    // Sketch Hierarchy
+    sketch_mesh: { scope: "global", name: "sketches", schema: schemas.SketchMeshNodeSchema },
+    sketch_part: { scope: "global", name: "sketches", schema: schemas.SketchPartNodeSchema },
+    sketch_assembly: { scope: "global", name: "sketches", schema: schemas.SketchAssemblyNodeSchema },
+    sketch_bundle: { scope: "global", name: "sketches", schema: schemas.SketchBundleNodeSchema },
+    sketch_design: { scope: "global", name: "sketches", schema: schemas.SketchDesignNodeSchema },
 };
 
 export function getEntityConfig(entityId: string): EntityConfig {
     const parts = entityId.split("/");
     let rootEntity = parts[0];
     
-    // Special routing for canvas objects subcollection to use CanvasObjectSchema
-    if (parts.length === 3 && parts[0] === "canvas" && (parts[2] === "objects" || parts[2] === "parts" || parts[2] === "assemblies" || parts[2] === "bundles" || parts[2] === "designs" || parts[2] === "meshes")) {
-        rootEntity = "canvas_object";
+    // Special routing for design objects subcollection to use DesignObjectSchema
+    if (parts.length === 3 && parts[0] === "design" && (parts[2] === "objects" || parts[2] === "parts" || parts[2] === "assemblies" || parts[2] === "bundles" || parts[2] === "designs" || parts[2] === "meshes")) {
+        rootEntity = "design_object";
     }
 
     // Special routing for PDM subcollections (parts, processes, assemblies, bundles)
-    if (parts.length === 3 && (parts[0] === "bundle" || parts[0] === "assembly" || parts[0] === "design")) {
+    if (parts.length === 3 && (parts[0] === "bundle" || parts[0] === "assembly" || parts[0] === "design" || parts[0] === "sketch")) {
         if (parts[2] === "parts") rootEntity = `${parts[0]}_part`;
         if (parts[2] === "processes") rootEntity = `${parts[0]}_process`;
         if (parts[2] === "assemblies") rootEntity = `${parts[0]}_assembly`;
         if (parts[2] === "bundles") rootEntity = `${parts[0]}_bundle`;
+        if (parts[2] === "designs") rootEntity = `${parts[0]}_design`;
+        if (parts[2] === "meshes") rootEntity = `${parts[0]}_mesh`;
     }
 
     const config = Registry[rootEntity];
@@ -96,7 +112,7 @@ export function buildCollectionPath(entityId: string, orgId?: string): string {
 
     let basePath = "";
     if (config.scope === "global") {
-        basePath = config.name; // config.name is 'canvases'
+        basePath = config.name; // config.name is 'designs'
     } else if (config.scope === "tenant") {
         if (!orgId) {
             throw new Error(`[EntityRegistry] orgId is REQUIRED to access tenant-scoped entity '${rootEntity}'.`);
@@ -107,7 +123,7 @@ export function buildCollectionPath(entityId: string, orgId?: string): string {
     }
 
     if (parts.length === 3) {
-        // e.g., "canvas/id/objects" -> "canvases/id/objects" // config.name is "canvases"
+        // e.g., "design/id/objects" -> "designs/id/objects" // config.name is "designs"
         return `${basePath}/${parts[1]}/${parts[2]}`;
     }
 

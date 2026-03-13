@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardColor, CardDivider } from "@/components/ui/Card";
 import { CardAuthSocials } from "@/components/ui/CardAuthSocials";
-import { useBrandColor } from "@/hooks/useBrandColor";
 import { Link } from "@/i18n/routing";
 type MfaStep = "login" | "sms_prompt" | "enroll_prompt" | "enroll_verify";
 
@@ -40,8 +39,6 @@ export function FormLogin() {
     const btnVariant = resolvedTheme === "dark" ? "dark" : "light";
 
     const tBrand = useTranslations("Brand");
-    const { color } = useBrandColor();
-    const activeColor = color === "default" ? "green" : color;
 
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
@@ -302,7 +299,7 @@ export function FormLogin() {
 
     return (
         <Card
-            color={activeColor as CardColor}
+            color={"default" as CardColor}
             layout="auto"
             title="The Global Factory"
             footer={footer}

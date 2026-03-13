@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { GatewayRequest } from "../types";
-import { saveCanvasEntity } from "../choreography/canvas";
+import { saveDesignEntity } from "../choreography/design";
 
 export const choreography = onCall({
     region: "europe-west4",
@@ -20,22 +20,22 @@ export const choreography = onCall({
 
     console.log(`[Choreography][${correlationId || 'no-corr-id'}] Queuing Async Action: ${actionId} on Entity: ${entityId}`);
 
-    if (actionId === "save_canvas") {
+    if (actionId === "save_design") {
         const docId = payload?.id;
         if (!docId) {
             throw new HttpsError("invalid-argument", "Payload must contain an 'id' property representing the document ID.");
         }
 
         // Extract the objects array. In the legacy pipeline it was called 'nodes'.
-        // This will be mapped to the objects sub-collection by saveCanvasEntity.
+        // This will be mapped to the objects sub-collection by saveDesignEntity.
         const objectsArray = payload.objects && Array.isArray(payload.objects) ? payload.objects : [];
 
         // Wait for the save; typical async functions in GC terminate if not awaited or not using pub/sub
-        await saveCanvasEntity(request.auth.uid, entityId as string, docId as string, resolvedOrgId as string, objectsArray);
+        await saveDesignEntity(request.auth.uid, entityId as string, docId as string, resolvedOrgId as string, objectsArray);
 
         return {
             status: "success",
-            message: "Canvas saved successfully.",
+            message: "Design saved successfully.",
             actionId,
         };
     }

@@ -13,7 +13,7 @@ export const orchestrator = onCall({
     const data = request.data as GatewayRequest;
     const { correlationId, idempotencyKey, orgId, userId, roleId, entityId, actionId, payload } = data;
 
-    const publicActions = ["list", "read", "createCanvasSandbox", "claimCanvasSandbox", "createNode", "updateNode", "deleteNode"];
+    const publicActions = ["list", "read", "createDesignSandbox", "claimDesignSandbox", "createNode", "updateNode", "deleteNode"];
     if (!request.auth && !publicActions.includes(actionId)) {
         throw new HttpsError("unauthenticated", `User must be authenticated to access Orchestrator action: ${actionId}`);
     }
@@ -58,8 +58,8 @@ export const orchestrator = onCall({
     }
 
     if (
-        actionId === "createCanvasSandbox" || 
-        actionId === "claimCanvasSandbox" ||
+        actionId === "createDesignSandbox" || 
+        actionId === "claimDesignSandbox" ||
         actionId === "createNode" ||
         actionId === "updateNode" ||
         actionId === "deleteNode" ||
@@ -68,18 +68,18 @@ export const orchestrator = onCall({
         actionId === "generateInstructions"
     ) {
         const { 
-            createCanvasSandbox, 
-            claimCanvasSandbox, 
+            createDesignSandbox, 
+            claimDesignSandbox, 
             createNode, 
             updateNode, 
             deleteNode,
             validateStructure,
             extractBOM,
             generateInstructions
-        } = await import("../orchestrator/canvas");
+        } = await import("../orchestrator/design");
         
-        if (actionId === "createCanvasSandbox") return createCanvasSandbox(data, request.auth);
-        if (actionId === "claimCanvasSandbox") return claimCanvasSandbox(data, request.auth);
+        if (actionId === "createDesignSandbox") return createDesignSandbox(data, request.auth);
+        if (actionId === "claimDesignSandbox") return claimDesignSandbox(data, request.auth);
         if (actionId === "createNode") return createNode(data, request.auth);
         if (actionId === "updateNode") return updateNode(data, request.auth);
         if (actionId === "deleteNode") return deleteNode(data);

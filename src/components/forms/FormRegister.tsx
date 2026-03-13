@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/Input";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Card, CardColor, CardDivider } from "@/components/ui/Card";
 import { CardAuthSocials } from "@/components/ui/CardAuthSocials";
-import { useBrandColor } from "@/hooks/useBrandColor";
 
 export function FormRegister() {
     const t = useTranslations("Auth");
@@ -20,8 +19,6 @@ export function FormRegister() {
     const btnVariant = resolvedTheme === "dark" ? "dark" : "light";
 
     const tBrand = useTranslations("Brand");
-    const { color } = useBrandColor();
-    const activeColor = color === "default" ? "green" : color;
 
     const [name, setName] = React.useState("");
     const [email, setEmail] = React.useState("");
@@ -120,7 +117,7 @@ export function FormRegister() {
 
     return (
         <Card
-            color={activeColor as CardColor}
+            color={"default" as CardColor}
             layout="auto"
             title="The Global Factory"
             footer={footer}

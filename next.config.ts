@@ -43,10 +43,11 @@ const nextConfig: NextConfig = {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains',
           },
-          {
+          // Only apply strict COOP in production, development needs to allow LAN IP access
+          ...(process.env.NODE_ENV === 'production' ? [{
             key: 'Cross-Origin-Opener-Policy',
             value: 'same-origin-allow-popups',
-          }
+          }] : [])
         ],
       },
     ];
