@@ -4,7 +4,7 @@ export function BaseVersion() {
 
     return (
         <div className="ui-base-version">
-            STANDLO v. <strong>{pkg.version}</strong> by Kalex AI Inc.
+            STANDLO v. <b>{pkg.version}</b> | Kalex AI Inc. | All rights reserved.
         </div>
     );
 }

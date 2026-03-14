@@ -1,0 +1,758 @@
+[
+  {
+    "id": "sketch-create",
+    "orgId": "system",
+    "ownId": "system",
+    "name": "Sketch Create AI Pipeline",
+    "isActive": true,
+    "nodes": [
+      {
+        "id": "trigger",
+        "type": "trigger",
+        "position": {
+          "x": 100,
+          "y": 200
+        },
+        "data": {
+          "triggerType": "firestore_event",
+          "collection": "sketchs",
+          "triggerEvent": "create"
+        }
+      },
+      {
+        "id": "act_ai_metadata",
+        "type": "action",
+        "position": {
+          "x": 400,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_metadata",
+          "payload": "{\n  \"document\": \"{{ data }}\",\n  \"type\": \"sketch\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_dcode",
+        "type": "action",
+        "position": {
+          "x": 700,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_dcode",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_metadata.output.result }}\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_vectorize",
+        "type": "action",
+        "position": {
+          "x": 1000,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_vectorize",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_dcode.output.result }}\"\n}"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "trigger",
+        "target": "act_ai_metadata"
+      },
+      {
+        "id": "e2",
+        "source": "act_ai_metadata",
+        "target": "act_ai_dcode"
+      },
+      {
+        "id": "e3",
+        "source": "act_ai_dcode",
+        "target": "act_ai_vectorize"
+      }
+    ],
+    "createdAt": "2026-03-14T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedAt": "2026-03-14T00:00:00.000Z",
+    "updatedBy": "system",
+    "deletedAt": null,
+    "isArchived": false
+  },
+  {
+    "id": "part-create",
+    "orgId": "system",
+    "ownId": "system",
+    "name": "Part Create AI Pipeline",
+    "isActive": true,
+    "nodes": [
+      {
+        "id": "trigger",
+        "type": "trigger",
+        "position": {
+          "x": 100,
+          "y": 200
+        },
+        "data": {
+          "triggerType": "firestore_event",
+          "collection": "parts",
+          "triggerEvent": "create"
+        }
+      },
+      {
+        "id": "act_ai_metadata",
+        "type": "action",
+        "position": {
+          "x": 400,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_metadata",
+          "payload": "{\n  \"document\": \"{{ data }}\",\n  \"type\": \"part\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_dcode",
+        "type": "action",
+        "position": {
+          "x": 700,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_dcode",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_metadata.output.result }}\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_vectorize",
+        "type": "action",
+        "position": {
+          "x": 1000,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_vectorize",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_dcode.output.result }}\"\n}"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "trigger",
+        "target": "act_ai_metadata"
+      },
+      {
+        "id": "e2",
+        "source": "act_ai_metadata",
+        "target": "act_ai_dcode"
+      },
+      {
+        "id": "e3",
+        "source": "act_ai_dcode",
+        "target": "act_ai_vectorize"
+      }
+    ],
+    "createdAt": "2026-03-14T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedAt": "2026-03-14T00:00:00.000Z",
+    "updatedBy": "system",
+    "deletedAt": null,
+    "isArchived": false
+  },
+  {
+    "id": "assembly-create",
+    "orgId": "system",
+    "ownId": "system",
+    "name": "Assembly Create AI Pipeline",
+    "isActive": true,
+    "nodes": [
+      {
+        "id": "trigger",
+        "type": "trigger",
+        "position": {
+          "x": 100,
+          "y": 200
+        },
+        "data": {
+          "triggerType": "firestore_event",
+          "collection": "assemblies",
+          "triggerEvent": "create"
+        }
+      },
+      {
+        "id": "act_ai_metadata",
+        "type": "action",
+        "position": {
+          "x": 400,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_metadata",
+          "payload": "{\n  \"document\": \"{{ data }}\",\n  \"type\": \"assembly\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_dcode",
+        "type": "action",
+        "position": {
+          "x": 700,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_dcode",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_metadata.output.result }}\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_vectorize",
+        "type": "action",
+        "position": {
+          "x": 1000,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_vectorize",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_dcode.output.result }}\"\n}"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "trigger",
+        "target": "act_ai_metadata"
+      },
+      {
+        "id": "e2",
+        "source": "act_ai_metadata",
+        "target": "act_ai_dcode"
+      },
+      {
+        "id": "e3",
+        "source": "act_ai_dcode",
+        "target": "act_ai_vectorize"
+      }
+    ],
+    "createdAt": "2026-03-14T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedAt": "2026-03-14T00:00:00.000Z",
+    "updatedBy": "system",
+    "deletedAt": null,
+    "isArchived": false
+  },
+  {
+    "id": "bundle-create",
+    "orgId": "system",
+    "ownId": "system",
+    "name": "Bundle Create AI Pipeline",
+    "isActive": true,
+    "nodes": [
+      {
+        "id": "trigger",
+        "type": "trigger",
+        "position": {
+          "x": 100,
+          "y": 200
+        },
+        "data": {
+          "triggerType": "firestore_event",
+          "collection": "bundles",
+          "triggerEvent": "create"
+        }
+      },
+      {
+        "id": "act_ai_metadata",
+        "type": "action",
+        "position": {
+          "x": 400,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_metadata",
+          "payload": "{\n  \"document\": \"{{ data }}\",\n  \"type\": \"bundle\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_dcode",
+        "type": "action",
+        "position": {
+          "x": 700,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_dcode",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_metadata.output.result }}\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_vectorize",
+        "type": "action",
+        "position": {
+          "x": 1000,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_vectorize",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_dcode.output.result }}\"\n}"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "trigger",
+        "target": "act_ai_metadata"
+      },
+      {
+        "id": "e2",
+        "source": "act_ai_metadata",
+        "target": "act_ai_dcode"
+      },
+      {
+        "id": "e3",
+        "source": "act_ai_dcode",
+        "target": "act_ai_vectorize"
+      }
+    ],
+    "createdAt": "2026-03-14T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedAt": "2026-03-14T00:00:00.000Z",
+    "updatedBy": "system",
+    "deletedAt": null,
+    "isArchived": false
+  },
+  {
+    "id": "design-create",
+    "orgId": "system",
+    "ownId": "system",
+    "name": "Design Create AI Pipeline",
+    "isActive": true,
+    "nodes": [
+      {
+        "id": "trigger",
+        "type": "trigger",
+        "position": {
+          "x": 100,
+          "y": 200
+        },
+        "data": {
+          "triggerType": "firestore_event",
+          "collection": "designs",
+          "triggerEvent": "create"
+        }
+      },
+      {
+        "id": "act_ai_metadata",
+        "type": "action",
+        "position": {
+          "x": 400,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_metadata",
+          "payload": "{\n  \"document\": \"{{ data }}\",\n  \"type\": \"design\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_dcode",
+        "type": "action",
+        "position": {
+          "x": 700,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_dcode",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_metadata.output.result }}\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_vectorize",
+        "type": "action",
+        "position": {
+          "x": 1000,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_vectorize",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_dcode.output.result }}\"\n}"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "trigger",
+        "target": "act_ai_metadata"
+      },
+      {
+        "id": "e2",
+        "source": "act_ai_metadata",
+        "target": "act_ai_dcode"
+      },
+      {
+        "id": "e3",
+        "source": "act_ai_dcode",
+        "target": "act_ai_vectorize"
+      }
+    ],
+    "createdAt": "2026-03-14T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedAt": "2026-03-14T00:00:00.000Z",
+    "updatedBy": "system",
+    "deletedAt": null,
+    "isArchived": false
+  },
+  {
+    "id": "process-create",
+    "orgId": "system",
+    "ownId": "system",
+    "name": "Process Create AI Pipeline",
+    "isActive": true,
+    "nodes": [
+      {
+        "id": "trigger",
+        "type": "trigger",
+        "position": {
+          "x": 100,
+          "y": 200
+        },
+        "data": {
+          "triggerType": "firestore_event",
+          "collection": "processes",
+          "triggerEvent": "create"
+        }
+      },
+      {
+        "id": "act_ai_metadata",
+        "type": "action",
+        "position": {
+          "x": 400,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_metadata",
+          "payload": "{\n  \"document\": \"{{ data }}\",\n  \"type\": \"process\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_dcode",
+        "type": "action",
+        "position": {
+          "x": 700,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_dcode",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_metadata.output.result }}\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_vectorize",
+        "type": "action",
+        "position": {
+          "x": 1000,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_vectorize",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_dcode.output.result }}\"\n}"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "trigger",
+        "target": "act_ai_metadata"
+      },
+      {
+        "id": "e2",
+        "source": "act_ai_metadata",
+        "target": "act_ai_dcode"
+      },
+      {
+        "id": "e3",
+        "source": "act_ai_dcode",
+        "target": "act_ai_vectorize"
+      }
+    ],
+    "createdAt": "2026-03-14T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedAt": "2026-03-14T00:00:00.000Z",
+    "updatedBy": "system",
+    "deletedAt": null,
+    "isArchived": false
+  },
+  {
+    "id": "tool-create",
+    "orgId": "system",
+    "ownId": "system",
+    "name": "Tool Create AI Pipeline",
+    "isActive": true,
+    "nodes": [
+      {
+        "id": "trigger",
+        "type": "trigger",
+        "position": {
+          "x": 100,
+          "y": 200
+        },
+        "data": {
+          "triggerType": "firestore_event",
+          "collection": "tools",
+          "triggerEvent": "create"
+        }
+      },
+      {
+        "id": "act_ai_metadata",
+        "type": "action",
+        "position": {
+          "x": 400,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_metadata",
+          "payload": "{\n  \"document\": \"{{ data }}\",\n  \"type\": \"tool\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_dcode",
+        "type": "action",
+        "position": {
+          "x": 700,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_dcode",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_metadata.output.result }}\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_vectorize",
+        "type": "action",
+        "position": {
+          "x": 1000,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_vectorize",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_dcode.output.result }}\"\n}"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "trigger",
+        "target": "act_ai_metadata"
+      },
+      {
+        "id": "e2",
+        "source": "act_ai_metadata",
+        "target": "act_ai_dcode"
+      },
+      {
+        "id": "e3",
+        "source": "act_ai_dcode",
+        "target": "act_ai_vectorize"
+      }
+    ],
+    "createdAt": "2026-03-14T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedAt": "2026-03-14T00:00:00.000Z",
+    "updatedBy": "system",
+    "deletedAt": null,
+    "isArchived": false
+  },
+  {
+    "id": "task-create",
+    "orgId": "system",
+    "ownId": "system",
+    "name": "Task Create AI Pipeline",
+    "isActive": true,
+    "nodes": [
+      {
+        "id": "trigger",
+        "type": "trigger",
+        "position": {
+          "x": 100,
+          "y": 200
+        },
+        "data": {
+          "triggerType": "firestore_event",
+          "collection": "tasks",
+          "triggerEvent": "create"
+        }
+      },
+      {
+        "id": "act_ai_metadata",
+        "type": "action",
+        "position": {
+          "x": 400,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_metadata",
+          "payload": "{\n  \"document\": \"{{ data }}\",\n  \"type\": \"task\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_dcode",
+        "type": "action",
+        "position": {
+          "x": 700,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_dcode",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_metadata.output.result }}\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_vectorize",
+        "type": "action",
+        "position": {
+          "x": 1000,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_vectorize",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_dcode.output.result }}\"\n}"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "trigger",
+        "target": "act_ai_metadata"
+      },
+      {
+        "id": "e2",
+        "source": "act_ai_metadata",
+        "target": "act_ai_dcode"
+      },
+      {
+        "id": "e3",
+        "source": "act_ai_dcode",
+        "target": "act_ai_vectorize"
+      }
+    ],
+    "createdAt": "2026-03-14T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedAt": "2026-03-14T00:00:00.000Z",
+    "updatedBy": "system",
+    "deletedAt": null,
+    "isArchived": false
+  },
+  {
+    "id": "project-create",
+    "orgId": "system",
+    "ownId": "system",
+    "name": "Project Create AI Pipeline",
+    "isActive": true,
+    "nodes": [
+      {
+        "id": "trigger",
+        "type": "trigger",
+        "position": {
+          "x": 100,
+          "y": 200
+        },
+        "data": {
+          "triggerType": "firestore_event",
+          "collection": "projects",
+          "triggerEvent": "create"
+        }
+      },
+      {
+        "id": "act_ai_metadata",
+        "type": "action",
+        "position": {
+          "x": 400,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_metadata",
+          "payload": "{\n  \"document\": \"{{ data }}\",\n  \"type\": \"project\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_dcode",
+        "type": "action",
+        "position": {
+          "x": 700,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_dcode",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_metadata.output.result }}\"\n}"
+        }
+      },
+      {
+        "id": "act_ai_vectorize",
+        "type": "action",
+        "position": {
+          "x": 1000,
+          "y": 200
+        },
+        "data": {
+          "actionType": "brain",
+          "targetPath": "ai_vectorize",
+          "payload": "{\n  \"document\": \"{{ nodes.act_ai_dcode.output.result }}\"\n}"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "trigger",
+        "target": "act_ai_metadata"
+      },
+      {
+        "id": "e2",
+        "source": "act_ai_metadata",
+        "target": "act_ai_dcode"
+      },
+      {
+        "id": "e3",
+        "source": "act_ai_dcode",
+        "target": "act_ai_vectorize"
+      }
+    ],
+    "createdAt": "2026-03-14T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedAt": "2026-03-14T00:00:00.000Z",
+    "updatedBy": "system",
+    "deletedAt": null,
+    "isArchived": false
+  }
+]

@@ -56,9 +56,10 @@ async function generateSyncSubcollectionOperations(
         const isUpdate = existingIds.has(itemId);
 
         operations.push({
-            actionId: isUpdate ? "update" : "create",
+            type: isUpdate ? "update" : "create",
             entityId: entityIdStr,
-            payload: { ...item, id: itemId, documentId: itemId }
+            id: itemId,
+            data: { ...item, id: itemId, documentId: itemId }
         });
 
         if (isUpdate) existingIds.delete(itemId);
@@ -66,9 +67,9 @@ async function generateSyncSubcollectionOperations(
 
     for (const idToDelete of existingIds) {
         operations.push({
-            actionId: "delete",
+            type: "delete",
             entityId: entityIdStr,
-            payload: { documentId: idToDelete }
+            id: idToDelete
         });
     }
 }
@@ -90,7 +91,7 @@ export async function createDesignEntity(uid: string, payload: Record<string, un
     };
 
     const operations: Record<string, unknown>[] = [
-        { actionId: "create", entityId: "design", payload: { ...designData, documentId: designId } }
+        { type: "create", entityId: "design", data: { ...designData, documentId: designId } }
     ];
 
     if (Array.isArray(parts)) await generateSyncSubcollectionOperations(operations, `design/${designId}/parts`, parts, uid);
@@ -123,7 +124,7 @@ export async function updateDesignEntity(uid: string, designId: string, payload:
     const updateData = { ...restPayload };
 
     const operations: Record<string, unknown>[] = [
-        { actionId: "update", entityId: "design", payload: { ...updateData, documentId: designId } }
+        { type: "update", entityId: "design", id: designId, data: { ...updateData, documentId: designId } }
     ];
 
     if (Array.isArray(parts)) await generateSyncSubcollectionOperations(operations, `design/${designId}/parts`, parts, uid);
@@ -151,7 +152,7 @@ export async function deleteDesignEntity(uid: string, designId: string) {
     const { createInternalRequest } = await import("../gateways/internal");
 
     const operations: Record<string, unknown>[] = [
-        { actionId: "delete", entityId: "design", payload: { documentId: designId } }
+        { type: "delete", entityId: "design", id: designId }
     ];
 
     const batchReq = createInternalRequest({

@@ -1,0 +1,90 @@
+# Standlo AI Skills & Pipelines Architecture
+
+## Core Philosophy: The Declarative PDM
+In Standlo, **we never block the client to process complex business logic or AI generation.**
+
+Instead, the UI simply **saves the raw document** (e.g., `part`, `assembly`, `design`) to Firestore via the Orchestrator. 
+All heavy lifting, AI generation, D-CODE translation, vectorization, and side-effects are completely decoupled and managed asynchronously by the **Declarative Pipeline Engine**.
+
+---
+
+## 1. The Pipeline Action Loop (Triggers)
+Pipelines are connected to entity events (currently triggered via Choreography hooks listening to Firestore creates/updates).
+
+When a user creates a new `part`:
+1. The raw `part` document is saved to Firestore.
+2. The UI instantly completes its job.
+3. The Choreography gateway fires a `trigger` event.
+4. The Pipeline Orchestrator (`functions/src/orchestrator/pipeline.ts`) finds the corresponding pipeline (e.g., `part-create`).
+5. The pipeline executes its nodes sequentially or in parallel based on edge connections.
+
+### 1.1 Trigger Types
+- `trigger_firestore`: Activated by document `create` / `update` / `delete`. (e.g., "When a Part is created").
+- `trigger_webhook`: External API calls.
+- `trigger_manual`: Manual invocation directly from the Admin Portal.
+- `trigger_cron`: Scheduled tasks.
+
+---
+
+## 2. The Node Processor (Actions vs. Brains)
+
+Inside the `pipeline.ts` executor, the nodes array dictates the work:
+
+### `nodeType === "action"`
+These are deterministic backend operations executed natively bypassing the UI.
+- Example: `orchestrator_create`, `orchestrator_update`, `http_request`, `send_email`.
+
+### `nodeType === "brain"`
+This is the **Standlo AI Gateway**. When a pipeline hits a Brain node:
+1. It reads the `skillId` from the node data.
+2. It fetches the dynamically configured AI Skill from the `ai_skills` collection.
+3. It passes the current `inputContext` (e.g., the newly created `part` and its properties) resolving `{{ handlebars }}` variables.
+4. It calls **Genkit** (`dynamicFlow.ts` / `brain.ts`) to execute the LLM.
+5. It outputs a strictly validated JSON (thanks to `outputSchemaJson`) into the pipeline context.
+6. Downstream `action` nodes can use `{{ nodes.act_ai_metadata.output.result }}` to write the AI-generated data back into Firestore via `orchestrator_update`.
+
+---
+
+## 3. The AI Skill Component (`ai_skills` Collection)
+
+An AI Skill is an atomic, dynamic Genkit prompt managed exclusively from the Admin Portal (`/admin/app/ai-skills`). 
+Changing a prompt NEVER requires a backend deployment.
+
+**Properties of an AI Skill:**
+- `skillId`: Unique identifier (e.g., `ai_metadata`).
+- `modelName`: LLM Router selection (e.g., `googleai/gemini-3.0-pro-preview` for complex CAD logic, `googleai/gemini-2.5-flash` for fast classification).
+- `outputFormat`: Enforces structured adherence (`json` vs `text`).
+- `prompt`: The system prompt supporting `{{ data.document }}` context injection.
+- `inputSchemaJson`: Zod-equivalent JSON constraint for variables passed to the LLM.
+- `outputSchemaJson`: Critical JSON extraction schema used by Genkit to parse the AI output before returning it to the pipeline.
+
+---
+
+## 4. The 3-Step AI Procedural Engine
+To transform a simple PDM creation into a fully vector-ready procedural asset, we use a chained flow:
+
+### Step 1: `ai_metadata` (Enrichment)
+- **Input:** Raw `part` or `assembly` document (`dimension`, `position`, `rotation`).
+- **Logic:** The AI infers its physical properties, names, bounding box volumes.
+- **Output:** Multi-language `LocalizedNameSchema`, SEO `tags`, cleaned physical descriptions.
+
+### Step 2: `ai_dcode` (Procedural Translation)
+- **Input:** The enriched entity from Step 1.
+- **Logic:** Translates the React/Three.js state into a strict sequence of Standlo Standard D-CODE strings (`@gen_wall1 #add /type_wall /x0 /y4 /z0`).
+- **Output:** An array of `D-CODE` commands that represent the structural truth of the object.
+
+### Step 3: `ai_vectorize` (Embeddings & Cataloging)
+- **Input:** The final `D-CODE` and `metadata`.
+- **Logic:** Renders a payload ready for the Vector Database.
+- **Output:** Insert into Vector DB (Pinecone/Vertex) so the core `standlo_design` Chat Agent can fetch it later to build complete stands from conversational prompts.
+
+## 5. Genkit Sandbox & Local Testing
+The Admin Portal includes a built-in **Genkit Sandbox** (`/admin/app/ai-skills`) to allow Instant execution of the saved skills before they're triggered in real pipelines.
+
+- **`mockPayloadJson`:** Every AI Skill features an integrated mock payload stored alongside the schema. This provides the context (the `{{ data.document }}`) out of the box so the prompt can be tested with 1 click.
+- **API Key Injection:** Local testing is strictly powered by `/functions/.secret.local` storing the `GEMINI_API_KEY` to simulate the Cloud Secret Manager environment via the Firebase Emulator.
+
+---
+
+## Architectural Rule of Thumb
+**"If it takes more than 500ms, or it uses unpredictable AI generation, it belongs in a Pipeline, not an Orchestrator direct call."**

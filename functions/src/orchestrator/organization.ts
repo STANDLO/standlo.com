@@ -133,9 +133,9 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
 
         const operations: Record<string, unknown>[] = [
             {
-                actionId: "create",
+                type: "create",
                 entityId: "organization",
-                payload: {
+                data: {
                     ...sanitizedData,
                     documentId: orgRootId,
                     active: isActive,
@@ -143,9 +143,10 @@ export async function onboardOrganization(uid: string, orgData: Record<string, u
                 }
             },
             {
-                actionId: "update",
+                type: "update",
                 entityId: "user",
-                payload: userUpdatePayload
+                id: uid,
+                data: userUpdatePayload
             }
         ];
 

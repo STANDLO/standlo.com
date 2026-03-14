@@ -1,15 +1,28 @@
 import React, { useState, useRef, useEffect, KeyboardEvent } from "react";
-import { Terminal, Command } from "lucide-react";
+import { Terminal, Command, X } from "lucide-react";
 import { DesignController } from "@/lib/design";
 import { useDesignStore } from "@/lib/zustand";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import pkg from "../../../../package.json";
 import { DesignTools as PDMTools } from "../../../../functions/src/core/constants";
 
+type LocalPDMTool = {
+    id: string;
+    name: string;
+    group: string;
+    terminalCommand?: string;
+    description: string;
+    order?: number;
+    [key: string]: unknown;
+};
+
 export function DesignTerminal() {
-    const t = useTranslations("Canvas.tools");
+    const t = useTranslations("Design.tools");
+    const tHelp = useTranslations("Design.terminalHelp");
     const [promptText, setPromptText] = useState("");
     const [history, setHistory] = useState<string[]>([]);
+    const [isHelpExpanded, setIsHelpExpanded] = useState(false);
     
     // Autocomplete UI State
     const [suggestions, setSuggestions] = useState<{label: string; value: string}[]>([]);
@@ -22,17 +35,46 @@ export function DesignTerminal() {
 
     const entities = useDesignStore(state => state.entities);
     const selectedEntityId = useDesignStore(state => state.selectedEntityId);
+    const liveCommand = useDesignStore(state => state.liveCommand);
     const selectEntity = useDesignStore(state => state.selectEntity);
     const selectedEntity = selectedEntityId ? entities[selectedEntityId] : null;
+
+    // Auto-sync liveCommand into the input box to show "Ghost Typing"
+    useEffect(() => {
+        if (liveCommand) {
+            setPromptText(liveCommand);
+        }
+    }, [liveCommand]);
+
+    // Clear terminal if clicking outside and no entity selected
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (!selectedEntityId && promptText && !inputRef.current?.contains(e.target as Node)) {
+                // Ensure we don't clear if they are clicking a suggestion
+                const target = e.target as HTMLElement;
+                if (!target.closest('.ui-design-terminal-suggestions-container')) {
+                    setPromptText("");
+                }
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [selectedEntityId, promptText]);
 
     // Populate prompt when clicking entity in 3D
     useEffect(() => {
         if (selectedEntityId && !promptText.includes(`@${selectedEntityId}`)) {
-            if (promptText === "" || promptText.endsWith(" ")) {
-                setPromptText(prev => prev + `@${selectedEntityId} `);
-            }
+            setPromptText(prev => {
+                // If there's already an @target, replace the FIRST one found
+                if (prev.includes('@')) {
+                    return prev.replace(/@[^\s]+/, `@${selectedEntityId}`);
+                }
+                // Otherwise prepend it
+                return `@${selectedEntityId} ${prev}`.trim();
+            });
         }
-    }, [selectedEntityId, promptText]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedEntityId]);
 
     // Value Scrubbing + Dropdown Navigation
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -114,17 +156,23 @@ export function DesignTerminal() {
             setSuggestions(matched.slice(0, 5));
             setShowSuggestions(matched.length > 0);
             setSuggestionIndex(0);
-        } else if (lastWord.startsWith("#")) {
+        } else if (lastWord.startsWith("#") || lastWord.startsWith("&")) {
+            const prefix = lastWord[0];
+            
             const search = lastWord.slice(1).toLowerCase();
-            const tools = Object.values(PDMTools).map(t => ({ label: t.name.split('.').pop() || t.id, value: `#${t.id}` }));
-            const actions = [
-                { label: "Move Entity", value: "#move" },
-                { label: "Rotate Entity", value: "#rotate" },
-                { label: "Delete Entity", value: "#delete" },
-                { label: "Add/Spawn", value: "#add" },
-            ];
-            const all = [...actions, ...tools].filter(t => t.value.toLowerCase().includes(search));
-            setSuggestions(all.slice(0, 5));
+            
+            // & triggers all tools that are not 'edit', # triggers 'edit' 
+            const filterFn = (t: LocalPDMTool) => prefix === "&" ? t.group !== "edit" : t.group === "edit";
+
+            const tools = Object.values(PDMTools)
+                .filter(filterFn)
+                .map((t: LocalPDMTool) => ({ 
+                    label: t.name.split('.').pop() || t.id, 
+                    value: `${prefix}${t.terminalCommand || t.id}` 
+                }));
+                
+            const all = tools.filter(t => t.value.toLowerCase().includes(search));
+            setSuggestions(all.slice(0, 25));
             setShowSuggestions(all.length > 0);
             setSuggestionIndex(0);
         } else {
@@ -142,9 +190,22 @@ export function DesignTerminal() {
 
         // V2 Syntax AST Parser
         for (const token of tokens) {
-            if (token.startsWith("@")) {
-                targets.push(token.substring(1));
-            } else if (token.startsWith("#")) {
+            if (token === "--help") {
+                action = "--help";
+            } else if (token.startsWith("@")) {
+                const targetNameOrId = token.substring(1);
+                // Try matching exact ID first, then try name match (case-insensitive partial)
+                if (entities[targetNameOrId]) {
+                    targets.push(targetNameOrId);
+                } else {
+                    const matchedEntity = Object.values(entities).find(e => 
+                        e.id.toLowerCase().includes(targetNameOrId.toLowerCase()) || 
+                        (e.metadata?.name && String(e.metadata.name).toLowerCase().includes(targetNameOrId.toLowerCase()))
+                    );
+                    if (matchedEntity) targets.push(matchedEntity.id);
+                    else targets.push(targetNameOrId); // Fallback: keep original if not found
+                }
+            } else if (token.startsWith("#") || token.startsWith("&")) {
                 action = token.substring(1).toLowerCase();
             } else if (token.startsWith("/")) {
                 // e.g. /x+1, /y-0.5, /name_chair
@@ -163,6 +224,18 @@ export function DesignTerminal() {
         }
 
         try {
+            const matchedTool = Object.values(PDMTools).find((t: LocalPDMTool) => 
+                (t.terminalCommand?.toLowerCase() === action || t.id.toLowerCase() === action)
+            );
+
+            // Automatically execute UI tool dispatcher if mapped, EXCEPT for 'move' and 'delete'
+            // where the Terminal has special multi-target numeric math capability.
+            if (matchedTool && !["move", "delete"].includes(action)) {
+                DesignController.executeToolCommand(matchedTool.id, designId as string);
+                setHistory(prev => [...prev, `[OK] Triggered ${t(matchedTool.name.split('.').pop() || matchedTool.id)}`]);
+                return;
+            }
+
             switch (action) {
                 case "select":
                 case "sel": {
@@ -232,33 +305,40 @@ export function DesignTerminal() {
                     // Usage e.g., #add @part /name_chair
                     const type = targets.length > 0 ? targets[0] : "part";
                     const query = paramMap['name'] || "generic";
-                    setHistory(prev => [...prev, `[WARNING] #add pending catalog ElasticSearch query for: ${query} of type ${type}`]);
+                    setHistory(prev => [...prev, `[WARNING] #add pending catalog Vector Search query for: ${query} of type ${type}`]);
                     break;
                 }
-                case "help":
-                case "?": {
-                    setHistory(prev => [...prev, `STANDLO Design Terminal v2`]);
-                    setHistory(prev => [...prev, `Syntax: @[target] #[action] /[param]`]);
+                case "--help": {
+                    setIsHelpExpanded(true);
+                    setHistory(prev => [...prev, tHelp("header", { version: pkg.version })]);
+                    setHistory(prev => [...prev, tHelp("syntax")]);
                     setHistory(prev => [...prev, ``]);
-                    setHistory(prev => [...prev, `[ACTIONS]`]);
-                    setHistory(prev => [...prev, `  #move   - Muove l'entità (/x, /y, /z)`]);
-                    setHistory(prev => [...prev, `  #rotate - Ruota l'entità (/x, /y, /z)`]);
-                    setHistory(prev => [...prev, `  #delete - Rimuove l'entità selezionata`]);
-                    setHistory(prev => [...prev, `  #add    - Genera una nuova entità`]);
+                    setHistory(prev => [...prev, tHelp("actionsHeader")]);
+                    setHistory(prev => [...prev, `  ${tHelp("actionMove")}`]);
+                    setHistory(prev => [...prev, `  ${tHelp("actionDelete")}`]);
                     setHistory(prev => [...prev, ``]);
-                    setHistory(prev => [...prev, `[TOOLS]`]);
-                    Object.values(PDMTools).forEach(tool => {
-                        const toolName = t(tool.name.split('.').pop() || tool.id);
-                        const descKey = tool.description.split('.').pop() || "";
-                        const desc = descKey ? t(descKey) : tool.description;
-                        setHistory(prev => [...prev, `  #${tool.id.padEnd(8)} - ${toolName}: ${desc}`]);
+                    setHistory(prev => [...prev, tHelp("dynamicToolsHeader")]);
+                    Object.values(PDMTools)
+                        .sort((a, b) => ((a as LocalPDMTool).order || 0) - ((b as LocalPDMTool).order || 0))
+                        .forEach(pdmTool => {
+                        const tool = pdmTool as LocalPDMTool;
+                        const translationKeyName = tool.name.split('.').pop() || tool.id;
+                        const descTranslationKey = tool.description.split('.').pop() || "";
+                        
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const toolName = t(translationKeyName as any);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const desc = descTranslationKey ? t(descTranslationKey as any) : tool.description;
+                        
+                        const prefix = tool.group === "edit" ? "#" : "&";
+                        const cmd = tool.terminalCommand || tool.id;
+                        setHistory(prev => [...prev, `  **${prefix}${cmd.padEnd(10)}** - ${toolName}: ${desc}`]);
                     });
                     setHistory(prev => [...prev, ``]);
-                    setHistory(prev => [...prev, `[EXAMPLES]`]);
-                    setHistory(prev => [...prev, `  @uuid #move /x+1 /y-0.5  -> Movimento relativo (Z-Up supportato)`]);
-                    setHistory(prev => [...prev, `  @uuid #move /z10         -> Imposta la Z assoluta a 10`]);
-                    setHistory(prev => [...prev, `  #add @part /name_table   -> Genera p. catalog cercando 'table'`]);
-                    setHistory(prev => [...prev, `  (Puoi usare Freccia SU/GIÙ per scorrere i valori numerici live)`]);
+                    setHistory(prev => [...prev, tHelp("examplesHeader")]);
+                    setHistory(prev => [...prev, `  ${tHelp("exampleMove")}`]);
+                    setHistory(prev => [...prev, `  ${tHelp("exampleSketch")}`]);
+                    setHistory(prev => [...prev, `  ${tHelp("exampleScroll")}`]);
                     break;
                 }
                 default: {
@@ -286,10 +366,24 @@ export function DesignTerminal() {
     return (
         <div className="ui-design-terminal">
             {history.length > 0 && (
-                <div className="ui-design-terminal-history">
-                    {history.slice(-15).map((line, i) => (
-                        <div key={i} className={`${line.startsWith('>') ? 'ui-design-terminal-history-item-echo' : line.includes('[ERROR]') ? 'ui-design-terminal-history-item-error' : line.includes('[OK]') ? 'ui-design-terminal-history-item-success' : line.includes('[WARNING]') ? 'ui-design-terminal-history-item-warning' : 'ui-design-terminal-history-item'}`}>
-                            {line}
+                <div className={`ui-design-terminal-history relative pointer-events-auto transition-all duration-300 ${isHelpExpanded ? '!max-h-[calc(100vh-16rem)]' : ''}`}>
+                    {isHelpExpanded && (
+                        <button 
+                            type="button"
+                            className="absolute top-2 right-4 p-1 rounded-full bg-background/80 hover:bg-muted border border-border/50 text-foreground/50 hover:text-foreground shadow-sm z-10 transition-colors cursor-pointer"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsHelpExpanded(false);
+                                setHistory(prev => [...prev, "[OK] Trigger Help"]);
+                            }}
+                            title="Close Help"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
+                    {history.slice(isHelpExpanded ? -50 : -1).map((line, i) => (
+                        <div key={i} className={`${line.startsWith('>') ? 'ui-design-terminal-history-item-echo' : line.includes('[ERROR]') ? 'ui-design-terminal-history-item-error' : line.includes('[OK]') ? 'ui-design-terminal-history-item-success' : line.includes('[WARNING]') ? 'ui-design-terminal-history-item-warning' : 'ui-design-terminal-history-item'} whitespace-nowrap overflow-hidden text-ellipsis block max-w-full`}>
+                            {line.split('**').map((part, idx) => idx % 2 === 1 ? <strong key={idx}>{part}</strong> : part)}
                         </div>
                     ))}
                 </div>
@@ -297,28 +391,28 @@ export function DesignTerminal() {
 
             {selectedEntity && (
                 <div className="ui-design-terminal-target">
-                    <div className="flex items-center gap-2">
+                    <div className="ui-design-terminal-target-wrapper">
                         <div className="ui-design-terminal-target-badge">
                             TARGET: {selectedEntity.metadata?.name || selectedEntity.baseEntityId} (ID: {selectedEntity.id.split('-')[0]})
                         </div>
                         <div className="ui-design-terminal-target-pos">
-                            POS: [{selectedEntity.position.map(n => n.toFixed(2)).join(', ')}]
+                            POS: [{selectedEntity.position.map(n => n.toFixed(3)).join(', ')}]
                         </div>
                     </div>
                 </div>
             )}
             
-            <div className="relative">
+            <div className="ui-design-terminal-input-wrapper">
                 {showSuggestions && suggestions.length > 0 && (
                     <div className="ui-design-terminal-suggestions-container">
                         {suggestions.map((s, i) => (
                             <button
                                 key={s.value}
                                 type="button"
-                                className={`ui-design-terminal-suggestion ${i === suggestionIndex ? 'ui-design-terminal-suggestion-active' : 'text-popover-foreground'}`}
+                                className={`ui-design-terminal-suggestion ${i === suggestionIndex ? 'ui-design-terminal-suggestion-active' : 'ui-design-terminal-suggestion-inactive'}`}
                                 onClick={() => applySuggestion(s.value)}
                             >
-                                <span className="font-semibold">{s.value}</span> <span className="opacity-50 ml-2">{s.label}</span>
+                                <span className="ui-design-terminal-suggestion-value">{s.value}</span> <span className="ui-design-terminal-suggestion-label">{s.label}</span>
                             </button>
                         ))}
                     </div>
@@ -333,7 +427,7 @@ export function DesignTerminal() {
                         value={promptText}
                         onChange={handleTextChange}
                         onKeyDown={handleKeyDown}
-                        placeholder={selectedEntity ? "Command @id #move /z+1" : "Type a syntax command or /help..."}
+                        placeholder={selectedEntity ? "Command @id #move /z+1" : "Type a syntax command or --help..."}
                         className="ui-design-terminal-input"
                         spellCheck={false}
                         autoComplete="off"

@@ -4,7 +4,9 @@ import path from "path";
 import crypto from "crypto";
 import { TextureCreateSchema, TextureUpdateSchema } from "../../../../../../functions/src/schemas/texture";
 
-const REGISTRY_PATH = path.join(process.cwd(), "..", "src", "core", "constants", "canvas_textures.json");
+const REGISTRY_PATH = path.resolve(process.cwd(), "..", "src", "core", "constants", "design_textures.json");
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
     try {

@@ -57,6 +57,30 @@ export default function PipelinesAdminPage() {
         }
     };
 
+    const handleSeedData = async () => {
+        if (!confirm("Warning: This will reload the local static seed for Pipelines into Firestore, overwriting existing matching documents. Proceed?")) return;
+        setLoading(true);
+        try {
+            const res = await fetch('/api/seed', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target: 'pipelines' })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("Pipelines Seeded Successfully!");
+                loadData();
+            } else {
+                alert("Failed to seed Pipelines: " + data.error);
+                setLoading(false);
+            }
+        } catch (error) {
+            console.error("Failed to execute seed", error);
+            alert("Execution failed.");
+            setLoading(false);
+        }
+    };
+
     const [isSyncing, setIsSyncing] = useState<string | null>(null);
 
     const handleSyncToCloud = async (id: string) => {
@@ -132,6 +156,9 @@ export default function PipelinesAdminPage() {
                             <p className="ui-canvas-panel-subtitle">{"Collection: `pipelines`"}</p>
                         </div>
                         <div className="flex gap-2">
+                            <button onClick={handleSeedData} className="ui-canvas-btn-secondary border-purple-200 text-purple-600 hover:bg-purple-50 dark:border-purple-900/50 dark:hover:bg-purple-900/20">
+                                <CloudUpload className="w-4 h-4 mr-2" /> Seed Local Pipelines
+                            </button>
                             <button onClick={() => openEditor(null)} className="ui-canvas-btn-primary">
                                 <Plus className="w-4 h-4 mr-2" /> Create Pipeline
                             </button>

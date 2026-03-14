@@ -14,6 +14,7 @@ interface AISkillDocument {
     inputSchemaJson: string;
     outputSchemaJson: string;
     modelName: string;
+    mockPayloadJson?: string;
     outputFormat?: 'text' | 'json' | 'media';
 }
 
@@ -79,8 +80,10 @@ export default function AISkillsPage() {
             modelName: 'googleai/gemini-2.5-flash',
             outputFormat: 'json',
             inputSchemaJson: '{\n  "type": "object",\n  "properties": {}\n}',
-            outputSchemaJson: '{\n  "type": "object",\n  "properties": {}\n}'
+            outputSchemaJson: '{\n  "type": "object",\n  "properties": {}\n}',
+            mockPayloadJson: '{\n  "input": "test"\n}'
         });
+        setTestPayload('{\n  "input": "test"\n}');
         setIsEditing(true);
     };
 
@@ -92,7 +95,7 @@ export default function AISkillsPage() {
 
         try {
             // Auto-correct legacy model names on save
-            const payloadToSave = { ...activeSkill };
+            const payloadToSave = { ...activeSkill, mockPayloadJson: testPayload };
             if (payloadToSave.modelName === 'googleai/gemini-3.0-pro-preview') {
                 payloadToSave.modelName = 'googleai/gemini-3.1-pro-preview';
             }
@@ -122,6 +125,30 @@ export default function AISkillsPage() {
         } catch (error) {
             console.error("Failed to delete skill", error);
             alert("Failed to delete skill");
+        }
+    };
+
+    const handleSeedData = async () => {
+        if (!confirm("Warning: This will reload the local static seed for AI Skills into Firestore, overwriting existing matching documents. Proceed?")) return;
+        setLoading(true);
+        try {
+            const res = await fetch('/api/seed', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target: 'ai_skills' })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("AI Skills Seeded Successfully!");
+                fetchSkills();
+            } else {
+                alert("Failed to seed AI Skills: " + data.error);
+                setLoading(false);
+            }
+        } catch (error) {
+            console.error("Failed to execute seed", error);
+            alert("Execution failed.");
+            setLoading(false);
         }
     };
 
@@ -415,9 +442,14 @@ export default function AISkillsPage() {
                         Manage dynamic Genkit prompts and schemas for the Standlo Pipeline Engine.
                     </p>
                 </div>
-                <Button onClick={handleCreateNew} className="flex items-center gap-2">
-                    <Plus className="w-4 h-4" /> New AI Skill
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={handleSeedData} className="flex items-center gap-2 border-purple-200 text-purple-600 hover:bg-purple-50 dark:border-purple-900/50 dark:hover:bg-purple-900/20">
+                        <CloudUpload className="w-4 h-4" /> Seed Local Skills
+                    </Button>
+                    <Button onClick={handleCreateNew} className="flex items-center gap-2">
+                        <Plus className="w-4 h-4" /> New AI Skill
+                    </Button>
+                </div>
             </header>
 
             <div className="flex-1 bg-card rounded-xl border border-border overflow-hidden p-6">
@@ -435,7 +467,7 @@ export default function AISkillsPage() {
                                         <button onClick={(e) => handleSyncToCloud(e, skill.id)} disabled={isSyncing === skill.id} className="hover:text-blue-600 transition-colors" title="Sync to Production Cloud">
                                             {isSyncing === skill.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CloudUpload className="w-4 h-4" />}
                                         </button>
-                                        <button onClick={() => { setActiveSkill(skill); setIsEditing(true); }} className="hover:text-purple-600 transition-colors">
+                                        <button onClick={() => { setActiveSkill(skill); setIsEditing(true); if (skill.mockPayloadJson) setTestPayload(skill.mockPayloadJson); else setTestPayload('{\n  "input": "test"\n}'); }} className="hover:text-purple-600 transition-colors">
                                             <Edit className="w-4 h-4" />
                                         </button>
                                         <button onClick={() => handleDelete(skill.id)} className="hover:text-red-600 transition-colors">

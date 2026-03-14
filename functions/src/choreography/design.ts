@@ -5,6 +5,7 @@ import { withDLQ } from "./utils/dlq";
 import { DesignObjectSchema } from "../schemas/design";
 import { CallableRequest } from "firebase-functions/v2/https";
 import { GatewayRequest } from "../types";
+import { normalizeVector3 } from "../core/utils";
 import { DecodedIdToken } from "firebase-admin/auth";
 // Omit ExpressRequest; we'll cast rawRequest appropriately
 
@@ -232,16 +233,11 @@ export async function handleDesignCreateNode(payload: Record<string, unknown>) {
             type: type as string,
             parentId: (parentId as string) || null,
             layerId: (layerId as string) || "strutture",
-            position: (position as number[]) || [0, 0, 0],
-            rotation: (rotation as number[]) || [0, 0, 0], // Note: DesignObject uses Euler [x,y,z], we adjust if quaternion passed
+            position: normalizeVector3((position as [number, number, number]) || [0, 0, 0]),
+            rotation: normalizeVector3((rotation as [number, number, number]) || [0, 0, 0]), // Note: DesignObject uses Euler [x,y,z]
             metadata: (metadata as Record<string, unknown>) || {}
         }
     };
-
-    // If rotation is passed as a 4D quaternion, just truncate to 3D for Zod Schema (BaseNode expects Euler for position mapping)
-    if (Array.isArray(requestData.payload.rotation) && requestData.payload.rotation.length === 4) {
-        requestData.payload.rotation = [requestData.payload.rotation[0], requestData.payload.rotation[1], requestData.payload.rotation[2]];
-    }
 
     try {
         // We invoke the internal logic of the Firestore gateway directly using `.run()`.
@@ -271,8 +267,8 @@ export async function handleDesignUpdateNode(payload: Record<string, unknown>) {
 
     // Only include provided updates
     const updates: Record<string, unknown> = { id: nodeId as string };
-    if (position !== undefined) updates.position = position;
-    if (rotation !== undefined) updates.rotation = rotation;
+    if (position !== undefined) updates.position = normalizeVector3(position as [number, number, number]);
+    if (rotation !== undefined) updates.rotation = normalizeVector3(rotation as [number, number, number]);
     if (metadata !== undefined) updates.metadata = metadata;
     if (parentId !== undefined) updates.parentId = parentId;
 
@@ -282,10 +278,6 @@ export async function handleDesignUpdateNode(payload: Record<string, unknown>) {
         orgId: (authOrgId as string) || "system",
         payload: updates
     };
-
-    if (Array.isArray(requestData.payload.rotation) && requestData.payload.rotation.length === 4) {
-        requestData.payload.rotation = [requestData.payload.rotation[0], requestData.payload.rotation[1], requestData.payload.rotation[2]];
-    }
 
     try {
         await firestore.run(createInternalRequest(requestData, authUserId as string, authOrgId as string));

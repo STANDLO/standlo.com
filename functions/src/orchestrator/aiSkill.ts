@@ -57,9 +57,13 @@ export async function deleteAISkillEntity(userId: string, id: string) {
     const { createInternalRequest } = await import("../gateways/internal");
 
     const req = createInternalRequest({
-        actionId: "delete",
+        actionId: "batch",
         entityId: "ai_skill",
-        payload: { documentId: id }
+        payload: {
+            operations: [
+                { type: "delete", entityId: "ai_skill", id }
+            ]
+        }
     }, userId);
 
     await firestore.run(req);

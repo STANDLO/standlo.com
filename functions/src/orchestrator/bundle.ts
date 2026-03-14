@@ -56,9 +56,10 @@ async function generateSyncSubcollectionOperations(
         const isUpdate = existingIds.has(itemId);
 
         operations.push({
-            actionId: isUpdate ? "update" : "create",
+            type: isUpdate ? "update" : "create",
             entityId: entityIdStr,
-            payload: { ...item, id: itemId, documentId: itemId }
+            id: itemId,
+            data: { ...item, id: itemId, documentId: itemId }
         });
 
         if (isUpdate) existingIds.delete(itemId);
@@ -66,9 +67,9 @@ async function generateSyncSubcollectionOperations(
 
     for (const idToDelete of existingIds) {
         operations.push({
-            actionId: "delete",
+            type: "delete",
             entityId: entityIdStr,
-            payload: { documentId: idToDelete }
+            id: idToDelete
         });
     }
 }
@@ -95,8 +96,8 @@ export async function createBundleEntity(uid: string, payload: Record<string, un
     };
 
     const operations: Record<string, unknown>[] = [
-        { actionId: "create", entityId: "bundle", payload: { ...bundleData, documentId: bundleId } },
-        { actionId: "create", entityId: "design", payload: { ...designData, documentId: bundleId } }
+        { type: "create", entityId: "bundle", data: { ...bundleData, documentId: bundleId } },
+        { type: "create", entityId: "design", data: { ...designData, documentId: bundleId } }
     ];
 
     if (Array.isArray(parts)) {
@@ -134,8 +135,8 @@ export async function updateBundleEntity(uid: string, bundleId: string, payload:
     if (payload.name) designUpdateData.name = payload.name;
 
     const operations: Record<string, unknown>[] = [
-        { actionId: "update", entityId: "bundle", payload: { ...updateData, documentId: bundleId } },
-        { actionId: "update", entityId: "design", payload: { ...designUpdateData, documentId: bundleId } }
+        { type: "update", entityId: "bundle", id: bundleId, data: { ...updateData, documentId: bundleId } },
+        { type: "update", entityId: "design", id: bundleId, data: { ...designUpdateData, documentId: bundleId } }
     ];
 
     if (Array.isArray(parts)) {
@@ -165,8 +166,8 @@ export async function deleteBundleEntity(uid: string, bundleId: string) {
     const { createInternalRequest } = await import("../gateways/internal");
 
     const operations: Record<string, unknown>[] = [
-        { actionId: "delete", entityId: "bundle", payload: { documentId: bundleId } },
-        { actionId: "delete", entityId: "design", payload: { documentId: bundleId } }
+        { type: "delete", entityId: "bundle", id: bundleId },
+        { type: "delete", entityId: "design", id: bundleId }
     ];
 
     const batchReq = createInternalRequest({

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { normalizeVector3 } from "../../functions/src/core/utils";
 
 export type Vector3Tuple = [number, number, number];
 export type QuaternionTuple = [number, number, number, number];
@@ -73,8 +74,10 @@ interface DesignState {
     selectedEntityId: string | null;
     playbackStep: number | null; // Null means 'show all' (default editing mode). Number means simulate assembly.
     editPassword: string | null;
+    liveCommand: string | null; // Realtime D-CODE sync for Terminal
 
     // Actions
+    setLiveCommand: (cmd: string | null) => void;
     setEditPassword: (password: string | null) => void;
     setMode: (mode: CanvasMode) => void;
     setViewMode: (viewMode: ViewMode) => void;
@@ -131,6 +134,7 @@ export const useDesignStore = create<DesignState>((set, get) => ({
     viewMode: "3D", // default view mode
     entities: {},
     selectedEntityId: null,
+    liveCommand: null,
     playbackStep: null,
     transformMode: null,
     isDragging: false,
@@ -148,6 +152,7 @@ export const useDesignStore = create<DesignState>((set, get) => ({
 
     setDictionaries: (materials, textures) => set({ materialsRegistry: materials, texturesRegistry: textures }),
 
+    setLiveCommand: (liveCommand) => set({ liveCommand }),
     setEditPassword: (password) => set({ editPassword: password }),
     setMode: (mode) => set({ mode }),
     setViewMode: (viewMode) => set({ viewMode }),
@@ -162,7 +167,13 @@ export const useDesignStore = create<DesignState>((set, get) => ({
     setSnapSource: (snapSource) => set({ snapSource }),
 
     addEntity: (entity) => set((state) => ({
-        entities: { ...state.entities, [entity.id]: entity }
+        entities: { 
+            ...state.entities, 
+            [entity.id]: {
+                ...entity,
+                position: normalizeVector3(entity.position)
+            } 
+        }
     })),
 
     updateEntityPosition: (id, position) => set((state) => {
@@ -171,7 +182,7 @@ export const useDesignStore = create<DesignState>((set, get) => ({
         return {
             entities: {
                 ...state.entities,
-                [id]: { ...entity, position }
+                [id]: { ...entity, position: normalizeVector3(position) }
             }
         };
     }),

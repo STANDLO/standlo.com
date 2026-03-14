@@ -5,7 +5,9 @@ import crypto from "crypto";
 import { MaterialCreateSchema, MaterialUpdateSchema } from "../../../../../../functions/src/schemas/material";
 
 // Resolve path pointing back to the main app repository
-const REGISTRY_PATH = path.join(process.cwd(), "..", "src", "core", "constants", "canvas_materials.json");
+const REGISTRY_PATH = path.resolve(process.cwd(), "..", "src", "core", "constants", "design_materials.json");
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
     console.log("Forcing Turbopack cache bust - materials");

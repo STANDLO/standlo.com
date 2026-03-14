@@ -18,6 +18,7 @@ export default function GenericPart({ entity }: GenericPartProps) {
     const updateEntityPosition = useDesignStore((state) => state.updateEntityPosition);
     const updateEntityRotation = useDesignStore((state) => state.updateEntityRotation);
     const playbackStep = useDesignStore((state) => state.playbackStep);
+    const setLiveCommand = useDesignStore((state) => state.setLiveCommand);
 
     const transformMode = useDesignStore((state) => state.transformMode);
     const shadingMode = useDesignStore((state) => state.shadingMode);
@@ -527,8 +528,33 @@ export default function GenericPart({ entity }: GenericPartProps) {
                     object={groupRef}
                     mode={transformMode === 'rotate' ? 'rotate' : 'translate'}
                     onMouseDown={() => setIsDragging(true)}
+                    onChange={() => {
+                        if (groupRef.current) {
+                            const pos = groupRef.current.position;
+                            const rot = groupRef.current.rotation; 
+                            const action = transformMode === 'rotate' ? '#rotate' : '#move';
+                            const target = entity.metadata?.name ? entity.metadata.name.replace(/\s+/g, '_') : entity.id.substring(0, 8);
+                            
+                            const px = (Math.round(pos.x * 1000) / 1000);
+                            const py = (Math.round(pos.y * 1000) / 1000);
+                            const pz = (Math.round(pos.z * 1000) / 1000);
+
+                            const rx = (Math.round(THREE.MathUtils.radToDeg(rot.x) * 1000) / 1000);
+                            const ry = (Math.round(THREE.MathUtils.radToDeg(rot.y) * 1000) / 1000);
+                            const rz = (Math.round(THREE.MathUtils.radToDeg(rot.z) * 1000) / 1000);
+
+                            let cmd = `@${target} ${action} `;
+                            if (transformMode === 'rotate') {
+                                cmd += `/x${rx} /y${ry} /z${rz}`;
+                            } else {
+                                cmd += `/x${px} /y${py} /z${pz}`;
+                            }
+                            setLiveCommand(cmd);
+                        }
+                    }}
                     onMouseUp={() => {
                         setIsDragging(false);
+                        setLiveCommand(null); // Clear the live stream to let the terminal input persist if needed
                         handleMouseUp();
                     }}
                     // Snap to grid of 0.05 units for finer movement, similar to admin interface

@@ -21,8 +21,8 @@ export async function createPartEntity(uid: string, payload: Record<string, unkn
     };
 
     const operations: Record<string, unknown>[] = [
-        { actionId: "create", entityId: "part", payload: { ...partData, documentId: partId } },
-        { actionId: "create", entityId: "design", payload: { ...designData, documentId: partId } }
+        { type: "create", entityId: "part", data: { ...partData, documentId: partId } },
+        { type: "create", entityId: "design", data: { ...designData, documentId: partId } }
     ];
 
     const batchReq = createInternalRequest({
@@ -52,10 +52,10 @@ export async function updatePartEntity(uid: string, partId: string, payload: Rec
     if (payload.name) designUpdateData.name = payload.name;
 
     const operations: Record<string, unknown>[] = [
-        { actionId: "update", entityId: "part", payload: { ...updateData, documentId: partId } }
+        { type: "update", entityId: "part", id: partId, data: { ...updateData, documentId: partId } }
     ];
     if (Object.keys(designUpdateData).length > 0) {
-        operations.push({ actionId: "update", entityId: "design", payload: { ...designUpdateData, documentId: partId } });
+        operations.push({ type: "update", entityId: "design", id: partId, data: { ...designUpdateData, documentId: partId } });
     }
 
     const batchReq = createInternalRequest({
@@ -78,8 +78,8 @@ export async function deletePartEntity(uid: string, partId: string) {
     const { createInternalRequest } = await import("../gateways/internal");
 
     const operations: Record<string, unknown>[] = [
-        { actionId: "delete", entityId: "part", payload: { documentId: partId } },
-        { actionId: "delete", entityId: "design", payload: { documentId: partId } }
+        { type: "delete", entityId: "part", id: partId },
+        { type: "delete", entityId: "design", id: partId }
     ];
 
     const batchReq = createInternalRequest({

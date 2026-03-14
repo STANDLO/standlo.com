@@ -270,6 +270,7 @@ export async function runPipeline(uid: string, pipelineId: string, inputContext:
                         
                         const res = await firestore.run(req);
                         output.result = { status: "success", data: res.data };
+
                     } else if (actionType === "http_request") {
                         // Placeholder for external fetch
                         output.result = `Simulated HTTP request to ${targetPath}`;

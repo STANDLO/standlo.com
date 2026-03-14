@@ -62,8 +62,10 @@ export const euLocales = [
 ];
 
 export const DesignTools = {
+    // ADD GROUP
     SKETCH: {
         id: "sketch",
+        terminalCommand: "sketch",
         name: "tools.sketch",
         icon: "BoxSelect", 
         defaultColor: "green",
@@ -71,10 +73,13 @@ export const DesignTools = {
         description: "tools.sketchDesc",
         group: "add",
         mobile: false,
-        active: true
+        active: true,
+        order: 10,
+        guest: true
     },
     PART: {
         id: "part",
+        terminalCommand: "part",
         name: "tools.part",
         icon: "Box",
         defaultColor: "blue",
@@ -82,10 +87,13 @@ export const DesignTools = {
         description: "tools.partDesc",
         group: "add",
         mobile: false,
-        active: true
+        active: true,
+        order: 20,
+        guest: true
     },
     ASSEMBLY: {
         id: "assembly",
+        terminalCommand: "assembly",
         name: "tools.assembly",
         icon: "Boxes",
         defaultColor: "purple",
@@ -93,10 +101,13 @@ export const DesignTools = {
         description: "tools.assemblyDesc",
         group: "add",
         mobile: false,
-        active: true
+        active: true,
+        order: 30,
+        guest: true
     },
     BUNDLE: {
         id: "bundle",
+        terminalCommand: "bundle",
         name: "tools.bundle",
         icon: "Layers",
         defaultColor: "orange",
@@ -104,10 +115,13 @@ export const DesignTools = {
         description: "tools.bundleDesc",
         group: "add",
         mobile: false,
-        active: true
+        active: true,
+        order: 40,
+        guest: true
     },
     DESIGN: {
         id: "design",
+        terminalCommand: "design",
         name: "tools.design",
         icon: "Building2",
         defaultColor: "teal",
@@ -115,6 +129,307 @@ export const DesignTools = {
         description: "tools.designDesc",
         group: "add",
         mobile: true,
-        active: true
+        active: true,
+        order: 50,
+        guest: true
+    },
+    // EDIT GROUP
+    EDIT_MOVE: {
+        id: "edit_move",
+        terminalCommand: "move",
+        name: "tools.editMove",
+        icon: "Move3d",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.editMoveDesc",
+        group: "edit",
+        mobile: true,
+        active: true,
+        order: 100,
+        guest: true
+    },
+    EDIT_ROTATE: {
+        id: "edit_rotate",
+        terminalCommand: "rotate",
+        name: "tools.editRotate",
+        icon: "Rotate3d",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.editRotateDesc",
+        group: "edit",
+        mobile: true,
+        active: true,
+        order: 110,
+        guest: true
+    },
+    EDIT_SNAP: {
+        id: "edit_snap",
+        terminalCommand: "snap",
+        name: "tools.editSnap",
+        icon: "Magnet",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.editSnapDesc",
+        group: "edit",
+        mobile: true,
+        active: true,
+        order: 120,
+        guest: true
+    },
+    EDIT_PAINT: {
+        id: "edit_paint",
+        terminalCommand: "paint",
+        name: "tools.editPaint",
+        icon: "Palette",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.editPaintDesc",
+        group: "edit",
+        mobile: true,
+        active: true,
+        order: 130,
+        guest: true
+    },
+    EDIT_DUPLICATE: {
+        id: "edit_duplicate",
+        terminalCommand: "duplicate",
+        name: "tools.editDuplicate",
+        icon: "Copy",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.editDuplicateDesc",
+        group: "edit",
+        mobile: true,
+        active: true,
+        order: 140,
+        guest: true
+    },
+    EDIT_DELETE: {
+        id: "edit_delete",
+        terminalCommand: "delete",
+        name: "tools.editDelete",
+        icon: "Trash2",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.editDeleteDesc",
+        group: "edit",
+        mobile: true,
+        active: true,
+        order: 150,
+        guest: true
+    },
+    // MRP GROUP
+    MRP_BOM: {
+        id: "mrp_bom",
+        terminalCommand: "bom",
+        name: "tools.mrpBom",
+        icon: "LayoutList",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.mrpBomDesc",
+        group: "mrp",
+        mobile: false,
+        active: true,
+        order: 200,
+        guest: false
+    },
+    MRP_BOP: {
+        id: "mrp_bop",
+        terminalCommand: "bop",
+        name: "tools.mrpBop",
+        icon: "GanttChart",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.mrpBopDesc",
+        group: "mrp",
+        mobile: false,
+        active: true,
+        order: 210,
+        guest: false
+    },
+    // VIEW GROUP
+    VIEW_2D: {
+        id: "view_2d",
+        terminalCommand: "2d",
+        name: "tools.view2d",
+        icon: "ScanEye",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.view2dDesc",
+        group: "view",
+        mobile: false,
+        active: true,
+        order: 300,
+        guest: true
+    },
+    VIEW_3D: {
+        id: "view_3d",
+        terminalCommand: "3d",
+        name: "tools.view3d",
+        icon: "Axis3D",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.view3dDesc",
+        group: "view",
+        mobile: true,
+        active: true,
+        order: 310,
+        guest: true
+    },
+    VIEW_XR: {
+        id: "view_xr",
+        terminalCommand: "xr",
+        name: "tools.viewXr",
+        icon: "RectangleGoggles",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.viewXrDesc",
+        group: "view",
+        mobile: true,
+        active: true,
+        order: 320,
+        guest: true
+    },
+    // SHARE GROUP
+    SHARE_CODESIGN: {
+        id: "share_codesign",
+        terminalCommand: "codesign",
+        name: "tools.shareCodesign",
+        icon: "Share2", // will be replaced in rendering possibly
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.shareCodesignDesc",
+        group: "share",
+        mobile: false,
+        active: true,
+        order: 400,
+        guest: false
+    },
+    SHARE_LINK: {
+        id: "share_link",
+        terminalCommand: "link",
+        name: "tools.shareLink",
+        icon: "Link2",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.shareLinkDesc",
+        group: "share",
+        mobile: true,
+        active: true,
+        order: 410,
+        guest: true
+    },
+    SHARE_LINKEDIN: {
+        id: "share_linkedin",
+        terminalCommand: "linkedin",
+        name: "tools.shareLinkedin",
+        icon: "Linkedin",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.shareLinkedinDesc",
+        group: "share",
+        mobile: false,
+        active: true,
+        order: 420,
+        guest: true
+    },
+    SHARE_INSTAGRAM: {
+        id: "share_instagram",
+        terminalCommand: "instagram",
+        name: "tools.shareInstagram",
+        icon: "Instagram",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.shareInstagramDesc",
+        group: "share",
+        mobile: false,
+        active: true,
+        order: 430,
+        guest: true
+    },
+    // GENERAL GROUP
+    GENERAL_MESSAGE: {
+        id: "general_message",
+        terminalCommand: "message",
+        name: "tools.generalMessage",
+        icon: "MessageSquare",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.generalMessageDesc",
+        group: "general",
+        mobile: false,
+        active: true,
+        order: 500,
+        guest: false
+    },
+    GENERAL_MODE: {
+        id: "general_mode",
+        terminalCommand: "debug",
+        name: "tools.generalMode",
+        icon: "LayoutDashboard",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.generalModeDesc",
+        group: "general",
+        mobile: false,
+        active: true,
+        order: 510,
+        guest: true
+    },
+    GENERAL_LOCALE: {
+        id: "general_locale",
+        terminalCommand: "locale",
+        name: "tools.generalLocale",
+        icon: "Globe", // Placeholder, will use SwitchLocale
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.generalLocaleDesc",
+        group: "general",
+        mobile: true,
+        active: true,
+        order: 520,
+        guest: true
+    },
+    GENERAL_THEME: {
+        id: "general_theme",
+        terminalCommand: "theme",
+        name: "tools.generalTheme",
+        icon: "Sun", // Placeholder, will use SwitchTheme
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.generalThemeDesc",
+        group: "general",
+        mobile: false,
+        active: true,
+        order: 530,
+        guest: true
+    },
+    GENERAL_SUPPORT: {
+        id: "general_support",
+        terminalCommand: "support",
+        name: "tools.generalSupport",
+        icon: "Headset",
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.generalSupportDesc",
+        group: "general",
+        mobile: false,
+        active: true,
+        order: 540,
+        guest: true
+    },
+    GENERAL_ACCOUNT: {
+        id: "general_account",
+        terminalCommand: "account",
+        name: "tools.generalAccount",
+        icon: "User", // Will be login/logout/avatar dynamically
+        defaultColor: "transparent",
+        isVolumetric: false,
+        description: "tools.generalAccountDesc",
+        group: "general",
+        mobile: true,
+        active: true,
+        order: 550,
+        guest: true
     }
 } as const;

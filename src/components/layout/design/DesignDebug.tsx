@@ -102,7 +102,7 @@ export function DesignDebug() {
                 <button
                     className="ui-design-tools-btn h-10 w-10 flex items-center justify-center p-0 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                     data-active={isOpen}
-                    title="Canvas Debug & Stress Test"
+                    title="Design Debug & Stress Test"
                 >
                     <Bug className="w-5 h-5 text-orange-500" />
                 </button>
@@ -115,7 +115,7 @@ export function DesignDebug() {
                 {/* Header */}
                 <div className="flex items-center gap-2 p-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-white/10">
                     <Bug className="w-4 h-4 text-orange-500" />
-                    <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 uppercase tracking-wide">Canvas Debug</div>
+                    <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 uppercase tracking-wide">Design Debug</div>
                 </div>
 
                 {/* Stress Test Section */}

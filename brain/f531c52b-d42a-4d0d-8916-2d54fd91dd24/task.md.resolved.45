@@ -1,0 +1,121 @@
+# Design Information Modelling (DIM) Task List
+
+## Part 1: Entity Migration (Canvas -> Design)
+
+### Backend (Functions)
+- [x] Rename `functions/src/schemas/canvas.ts` to [design.ts](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/lib/design.ts)
+  - [x] Rename `CanvasSchema`, `CanvasCreateSchema`, `CanvasUpdateSchema` to their [Design](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/components/layout/design/DesignAdd.tsx#15-67) equivalents.
+  - [x] Replace `canvas_id` with `design_id`.
+  - [x] Change references to `canvases` collection to `designs`.
+- [x] Update [functions/src/schemas/index.ts](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/functions/src/schemas/index.ts) to export [design.ts](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/lib/design.ts) instead of `canvas.ts`.
+- [x] Rename `functions/src/choreography/canvas.ts` to [design.ts](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/lib/design.ts)
+  - [x] Update function names (`choreographyCanvasCreateSandbox` -> `choreographyDesignCreateSandbox`, etc.).
+  - [x] Update document triggers from `canvases/{designId}` to `designs/{designId}`.
+- [x] Rename `functions/src/orchestrator/canvas.ts` to [design.ts](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/lib/design.ts)
+  - [x] Update function name (`orchestratorCanvas` -> `orchestratorDesign`).
+  - [x] Update all schema validations and entity registry calls.
+- [x] Update Gateways ([functions/src/gateways/choreography.ts](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/functions/src/gateways/choreography.ts), `entityRegistry.ts`, `orchestrator.ts`)
+  - [x] Replace `/canvas/` routes with `/design/` routes.
+  - [x] Update typings and method names.
+- [x] Update [functions/src/rbac/policyEngine.ts](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/functions/src/rbac/policyEngine.ts)
+  - [x] Change `canvas` scope/resource to `design`.
+- [x] Update [functions/src/index.ts](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/functions/src/index.ts)
+  - [x] Export `design` orchestrator and choreography instead of `canvas`.
+
+### Admin App
+- [x] Update `admin/app/pdm/stands/components/StandCanvasEditor.tsx` -> `StandDesignEditor.tsx`.
+- [x] Update `admin/app/pdm/bundles/components/BundleCanvasEditor.tsx` -> `BundleDesignEditor.tsx`.
+- [x] Update `admin/app/pdm/assemblies/components/AssemblyCanvasEditor.tsx` -> `AssemblyDesignEditor.tsx`.
+- [x] Ensure any admin routing or API calls targeting `canvases` are switched to `designs`.
+
+### Frontend App (src)
+- [x] Rename `src/lib/canvas.ts` -> [src/lib/design.ts](file:///Users/cristiankalexai/Development/STANDLO/standlo.com/src/lib/design.ts).
+- [x] Rename folder `src/components/layout/canvas` -> `src/components/layout/design`.
+  - [x] Rename components explicitly with `Canvas` prefix (e.g., `CanvasHeader.tsx` -> `DesignHeader.tsx`, `CanvasTools.tsx` -> `DesignTools.tsx`).
+- [x] Rename API route `src/app/api/canvas/dictionaries/route.ts` -> `api/design/dictionaries/route.ts`.
+- [x] Rename Frontend Pages
+  - [x] `src/app/[locale]/canvas/page.tsx` -> `[locale]/design/page.tsx`
+  - [x] `src/app/[locale]/canvas/layout.tsx` -> `[locale]/design/layout.tsx`
+  - [x] `src/app/[locale]/partner/[roleId]/canvas/page.tsx` -> `[locale]/partner/[roleId]/design/page.tsx`
+  - [x] `src/app/[locale]/canvas/public/[uid]/page.tsx` -> `[locale]/design/public/[uid]/page.tsx`
+- [x] Carefully update React components across the codebase that reference `Canvas` entity without modifying `@react-three/fiber` `<Canvas />` rendering components.
+
+## Part 2: Data-Driven Rendering (v2.0)
+
+### Phase 1: Data Foundations & Caching
+- [x] Implement `GET /api/design/dictionaries` endpoint with `?v=` version caching.
+- [x] Setup `idb-keyval` for async IndexedDB storage.
+- [x] Implement rendering block and offline fallback in `DesignOnboarding.tsx`.
+- [x] Inject registries into Zustand `store.ts` and refactor UI readers.
+- [x] Implement `useDictionarySync` for background updates.
+
+### Phase 2: Communication Proxy
+- [x] Create `useDesignOrchestrator` to hit `/api/gateway?target=orchestrator`.
+- [x] Remove all direct Firestore `onSnapshot` usages in the 3D client.
+- [x] Implement paginated chunking (`listDesignNodesPaginated`) in the Orchestrator.
+- [x] Adapt Zustand store for progressive visual streaming.
+
+### Phase 3: Core 3D Architecture
+- [x] Integrate `three-mesh-bvh` for optimized raycasting geometry octrees.
+- [x] Implement `organizeRenderGroups` in Zustand for `InstancedMesh` / `BatchedMesh` routing.
+- [x] Implement dynamic selection extraction (Instanced -> Mesh + TransformControls -> Instanced).
+- [x] Replace `Rapier` with AABB collision math for drag-and-drop validation.
+
+### Phase 4: Graphics & Photorealism
+- [x] Map PBR metadata (`clearcoat`, `sheen`, `transmission`) to `MeshPhysicalMaterial`.
+- [x] Parameterize texture tiling (`repeatX`, `repeatY`).
+- [x] Setup `@react-three/postprocessing` outline strictly for the selected object.
+- [x] Optimize shadows via `ContactShadows` or static ambient occlusion on heavy geometry.
+- [ ] Develop background Cloud Function for 3-tier LOD mesh generation upon upload.
+
+### Phase 5: PDM Updates
+- [ ] Add `compatibleMaterials` array to `Texture` schema.
+- [ ] Implement multi-selector in `/admin/pdm/textures`.
+- [ ] Add `defaultTextureId` selector in `/admin/pdm/parts`.
+- [ ] Add `ADVANCED PHOTOREALISM` tab in `/admin/pdm/materials` with live sliders.
+
+## Part 3: WebXR (Meta Quest 3) Integration
+- [x] Fix `enterVR` button flow (Consolidated into `DesignTools.tsx`).
+- [x] Setup XR Controllers (Moved `<XR>` wrapper to Scene Root allowing automatic v6 Controllers).
+- [x] Implement Locomotion/Teleportation (`<TeleportTarget>` added to Floor Grid).
+- [ ] Implement Grab & Move mechanics using specific VR raycaster grabs.
+- [ ] Build Spatial UI (3D Dashboards & Wrist-Anchored Menus).
+
+## Part 4: The `Sketch` Entity
+- [x] Create `functions/src/schemas/sketch.ts` and update `entityRegistry.ts`.
+- [x] Fix missing PDM schemas in Visual IDE.
+- [x] Create `DesignTools` constants inside `functions/src/core/constants.ts`.
+- [x] Implement 3D visual representation (`THREE.Group` + Green Box).
+
+## Part 5: Command, Control, and Debugging
+- [x] Rename `DesignAI.tsx` to `DesignTerminal.tsx` and implement CLI node interaction logic.
+- [x] Finalize `DesignCatalogSidebar.tsx` connecting it fully to IndexedDB registries and `DesignTools`.
+- [x] Expand `DesignDebug.tsx` to include an automated sequence testing all spatial actions (Move, Rotate, Snap) recursively.
+- [x] Update `functions/src/core/constants.ts` -> `systemLocales` adding full EU + `gb, ae, cn, tr, in, jp, au, mx, id, my, th, ar, br` (strict ISO Country Codes, `us` fallback).
+- [x] Update admin `http://localhost:3001/i18n` to read `systemLocales` from the new `constants.ts` path.
+
+## Validation
+- [x] Verify Monorepo Builds (`npm run build`).
+- [x] Ensure end-to-end `design` workflow runs cleanly via Emulator without legacy `canvas` references blocking state.
+
+## Part 6: Workspace UI & Tools Expansion
+- [x] Update `functions/src/core/constants.ts` with new tools, `order`, and `guest` fields.
+- [x] Update `src/app/globals.css` for fixed 128px UI positioning and centered layout.
+- [x] Refactor `src/components/layout/design/DesignTools.tsx`:
+  - [x] Implement group-based iteration ordering based on the `order` property.
+  - [x] Extract inline actions into `handleDesignTool...` event functions.
+  - [x] Make the `edit` group visible only when an entity is selected.
+  - [x] Link `ACCOUNT` to guest/user states and profile dashboard.
+- [x] Extract reusable design operations to `src/lib/design.ts`.
+
+## Part 7: Unified Tool & Terminal Logic
+- [x] Add `terminalCommand` string mapping to `DesignTools` inside `functions/src/core/constants.ts` to identify `#move` or `&sketch`.
+- [x] Create `executeToolCommand(toolId)` inside `DesignController` for shared action execution (React -> Zustand).
+- [x] Refactor `DesignTerminal.tsx` to read `PDMTools` dynamically for `&` (group: add) and `#` (group: edit).
+- [x] Implement `--help` replacing `/help` and dynamically list `#` and `&` commands directly from `PDMTools`.
+
+## Part 8: Tool & Terminal Polish (i18n & Semantic CSS)
+- [x] Verify and add missing translation keys for `DesignTools` across `en.json`, `it.json`, `us.json`.
+- [x] Refactor `DesignTerminal.tsx` and `DesignTools.tsx` to replace inline Tailwind utility classes with semantic `ui-design-*` classes in `globals.css`.
+- [x] Validate `#` command behavior to only trigger if an entity is selected.
+- [x] Add the `#delete` action directly to terminal autocomplete mapping.

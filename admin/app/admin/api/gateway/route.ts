@@ -45,7 +45,8 @@ export async function POST(req: NextRequest) {
     try {
         // 0. Extract cookie for env checking robustly using Next.js cookie parser
         // This avoids bugs caused by `.includes()` if multiple cookie paths exist
-        const isEmulator = req.cookies.get("firebase_env")?.value === "emulator";
+        const isEmulatorCookie = req.cookies.get("firebase_env")?.value === "emulator";
+        const isEmulator = isEmulatorCookie || process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
 
         // 1. Verify Authentication Headers existence
         const authHeader = req.headers.get("Authorization");

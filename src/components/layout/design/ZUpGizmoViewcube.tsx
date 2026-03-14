@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { ThreeEvent } from '@react-three/fiber';
-import { useGizmoContext } from '@react-three/drei';
+import { useGizmoContext, Html } from '@react-three/drei';
 import { Vector3, CanvasTexture } from 'three';
+import { Home } from 'lucide-react';
 
 const colors = {
     bg: '#f0f0f0',
@@ -201,9 +202,27 @@ const EdgeCube = ({
 };
 
 export const ZUpGizmoViewcube = (props: Record<string, unknown>) => {
+    const { tweenCamera } = useGizmoContext();
+
+    const handleHomeClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // Match the cc.setLookAt(10, 10, 10, ...) default 3D view
+        tweenCamera(new Vector3(1, 1, 1));
+    };
 
     return (
         <group scale={[60, 60, 60]}>
+            <Html position={[0, 0, 0]} center zIndexRange={[100, 0]}>
+                <div style={{ transform: 'translate(58px, -45px)' }}>
+                    <button 
+                        onClick={handleHomeClick}
+                        className="p-1.5 rounded-full bg-background/80 hover:bg-background border border-border/50 hover:border-border shadow-sm text-foreground/70 hover:text-foreground transition-all flex items-center justify-center cursor-pointer pointer-events-auto backdrop-blur-sm"
+                        title="Home View"
+                    >
+                        <Home className="w-3.5 h-3.5" />
+                    </button>
+                </div>
+            </Html>
             <FaceCube {...props} />
             {edges.map((edge, index) => (
                 <EdgeCube

@@ -2,7 +2,7 @@
 import { useTranslations } from "next-intl";
 
 import { Suspense, useRef, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
     CameraControls,
     Environment,
@@ -35,6 +35,43 @@ import { DesignTools } from "./DesignTools";
 import { DesignTerminal } from "./DesignTerminal";
 import { useDesignDictionaries } from "./DesignDictionaries";
 import { SpatialUI } from "./SpatialUI";
+
+function SmartGizmoHelper({ children }: { children: React.ReactNode }) {
+    const { size } = useThree();
+
+    // The DesignTerminal has max-width 32rem (512px) and is centered.
+    // So its right edge relative to the center is at +256px.
+    // The terminal is absolute bottom-8 (32px from bottom).
+    // The GizmoHelper alignment margin sets its center point. 
+    // The viewcube has a group scale of 60, meaning its visual radius (center to edge) is approx 42-50.
+    // If the terminal's bottom is 32px from the window, and we want the viewcube's bottom to align:
+    // We set marginY to 32px + (60 * ~0.8) to account for center offset. Let's use 80px visual alignment.
+
+    // X Alignment
+    const terminalHalfWidth = Math.min(256, (size.width * 0.9) / 2);
+    // Since the terminal is centered, the space between the screen edge (left or right) and the terminal edge is:
+    const terminalEdgeX = size.width / 2 + terminalHalfWidth;
+    const distFromScreenEdge = size.width - terminalEdgeX;
+
+    // We want to be 32px away from the terminal, minus half the gizmo width (~40px)
+    const marginX = Math.max(16, distFromScreenEdge - 32 - 40);
+
+    // Y Alignment
+    // Terminal bottom edge is at 32px from bottom.
+    // To align the bottom of a 60px scaled cube (roughly ~42 from center to bottom corner) with 32px, 
+    // center should be 32 (terminal bottom) + 50 (radius plus 8px) = 82
+    const marginY = 82;
+
+    return (
+        <GizmoHelper
+            alignment="bottom-left"
+            margin={[marginX, marginY]}
+            renderPriority={2}
+        >
+            {children}
+        </GizmoHelper>
+    );
+}
 
 function ScaledMarker({ type, isActive }: { type: 'corner' | 'origin' | 'midpoint', isActive: boolean }) {
     const ref = useRef<THREE.Mesh>(null!);
@@ -90,7 +127,7 @@ const CanvasEntitiesRenderer = () => {
 
         // Create a visual hash for grouping
         const visualHash = `${entity.baseEntityId}_${entity.metadata?.materialId || 'none'}_${entity.metadata?.textureId || 'none'}_${dimKey}`;
-        
+
         if (!renderGroups[visualHash]) {
             renderGroups[visualHash] = [];
         }
@@ -141,7 +178,7 @@ interface StandloCanvasProps {
 export default function StandloCanvas({ entityId, entityType, active = true, isOverlay = false }: StandloCanvasProps) {
     useDesignDictionaries();
     const { theme: resolvedTheme } = useTheme();
-    const tGizmo = useTranslations("Canvas.tools.gizmo");
+    const tGizmo = useTranslations("Design.tools.gizmo");
     const viewMode = useDesignStore((state) => state.viewMode);
     const cameraControlsRef = useRef<CameraControls>(null);
     const addEntity = useDesignStore((state) => state.addEntity);
@@ -190,7 +227,7 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
             cc.setLookAt(0, 50, 0, 0, 0, 0, true);
         } else if (viewMode === "3D") {
             // Isometric-ish view
-            cc.setLookAt(15, 15, 15, 0, 0, 0, true);
+            cc.setLookAt(10, 10, 10, 0, 0, 0, true);
         }
     }, [viewMode]);
 
@@ -292,7 +329,7 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                                                     cursor: currentCursor
                                                 }
                                             });
-                                            
+
                                             // Safe type unwrapping using any to bypass strict checks that caused build failures
                                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                             let actualList: any[] = [];
@@ -339,7 +376,7 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
                             }
                         }
                     } catch (e) {
-                        console.error("Canvas Initialization fetch failed", e);
+                        console.error("Design Initialization fetch failed", e);
                     }
                 });
             } catch (err) {
@@ -438,85 +475,81 @@ export default function StandloCanvas({ entityId, entityType, active = true, isO
 
                         {/* World Origin Snap Target */}
                         {transformMode === "snap" && (
-                        <group
-                            position={[0, 0, 0]}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if (!hoverSnap) return;
-                                if (!snapSource) {
-                                    setSnapSource(hoverSnap);
-                                } else {
-                                    if (snapSource.id === hoverSnap.id) {
+                            <group
+                                position={[0, 0, 0]}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!hoverSnap) return;
+                                    if (!snapSource) {
+                                        setSnapSource(hoverSnap);
+                                    } else {
+                                        if (snapSource.id === hoverSnap.id) {
+                                            setSnapSource(null);
+                                            return;
+                                        }
+                                        executeSnap(snapSource, hoverSnap);
                                         setSnapSource(null);
-                                        return;
+                                        setHoverSnap(null);
+                                        setTransformMode('translate');
                                     }
-                                    executeSnap(snapSource, hoverSnap);
-                                    setSnapSource(null);
+                                }}
+                                onPointerMove={(e) => {
+                                    e.stopPropagation();
+                                    setHoverSnap({
+                                        id: 'world-origin',
+                                        point: [0, 0, 0],
+                                        normal: [0, 0, 1],
+                                        type: 'origin'
+                                    });
+                                }}
+                                onPointerOver={(e) => {
+                                    e.stopPropagation();
+                                    document.body.style.cursor = 'crosshair';
+                                }}
+                                onPointerOut={() => {
                                     setHoverSnap(null);
-                                    setTransformMode('translate');
-                                }
-                            }}
-                            onPointerMove={(e) => {
-                                e.stopPropagation();
-                                setHoverSnap({
-                                    id: 'world-origin',
-                                    point: [0, 0, 0],
-                                    normal: [0, 0, 1],
-                                    type: 'origin'
-                                });
-                            }}
-                            onPointerOver={(e) => {
-                                e.stopPropagation();
-                                document.body.style.cursor = 'crosshair';
-                            }}
-                            onPointerOut={() => {
-                                setHoverSnap(null);
-                                document.body.style.cursor = 'auto';
-                            }}
-                        >
-                            <mesh visible={false}>
-                                <boxGeometry args={[0.5, 0.5, 0.5]} />
-                                <meshBasicMaterial />
-                            </mesh>
-                        </group>
-                    )}
+                                    document.body.style.cursor = 'auto';
+                                }}
+                            >
+                                <mesh visible={false}>
+                                    <boxGeometry args={[0.5, 0.5, 0.5]} />
+                                    <meshBasicMaterial />
+                                </mesh>
+                            </group>
+                        )}
 
-                    {/* Snap Indicators */}
-                    {transformMode === "snap" && hoverSnap && (
-                        <group position={hoverSnap.point} quaternion={new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...hoverSnap.normal))}>
-                            <ScaledMarker type={hoverSnap.type} isActive={snapSource?.id === hoverSnap.id} />
-                        </group>
-                    )}
-                    {transformMode === "snap" && snapSource && (
-                        <group position={snapSource.point} quaternion={new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...snapSource.normal))}>
-                            <ScaledMarker type={snapSource.type} isActive={true} />
-                        </group>
-                    )}
+                        {/* Snap Indicators */}
+                        {transformMode === "snap" && hoverSnap && (
+                            <group position={hoverSnap.point} quaternion={new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...hoverSnap.normal))}>
+                                <ScaledMarker type={hoverSnap.type} isActive={snapSource?.id === hoverSnap.id} />
+                            </group>
+                        )}
+                        {transformMode === "snap" && snapSource && (
+                            <group position={snapSource.point} quaternion={new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...snapSource.normal))}>
+                                <ScaledMarker type={snapSource.type} isActive={true} />
+                            </group>
+                        )}
 
-                    {/* Interactive Camera Controls */}
-                    <CameraControls
-                        ref={cameraControlsRef}
-                        makeDefault
-                        enabled={!isDragging}
-                        minDistance={2}
-                        maxDistance={100}
-                        maxPolarAngle={viewMode === "2D" ? 0 : Math.PI / 2 + 0.1} // Restrict going below ground in 3D, strict top-down in 2D
-                    />
-
-                    {/* Orientation Gizmo */}
-                    <GizmoHelper
-                        alignment="top-right"
-                        margin={[96, 156]}
-                        renderPriority={2}
-                    >
-                        <ZUpGizmoViewcube
-                            faces={[tGizmo('right'), tGizmo('left'), tGizmo('top'), tGizmo('bottom'), tGizmo('front'), tGizmo('back')]}
-                            color="#f4f4f5"
-                            hoverColor="#e4e4e7"
-                            textColor="#18181b"
-                            strokeColor="#d4d4d8"
+                        {/* Interactive Camera Controls */}
+                        <CameraControls
+                            ref={cameraControlsRef}
+                            makeDefault
+                            enabled={!isDragging}
+                            minDistance={2}
+                            maxDistance={100}
+                            maxPolarAngle={viewMode === "2D" ? 0 : Math.PI / 2 + 0.1} // Restrict going below ground in 3D, strict top-down in 2D
                         />
-                    </GizmoHelper>
+
+                        {/* Orientation Gizmo */}
+                        <SmartGizmoHelper>
+                            <ZUpGizmoViewcube
+                                faces={[tGizmo('right'), tGizmo('left'), tGizmo('top'), tGizmo('bottom'), tGizmo('front'), tGizmo('back')]}
+                                color="#f4f4f5"
+                                hoverColor="#e4e4e7"
+                                textColor="#18181b"
+                                strokeColor="#d4d4d8"
+                            />
+                        </SmartGizmoHelper>
 
                         {/* Entities injected here from Zustand with optimized Raycasting */}
                         <Bvh firstHitOnly>

@@ -39,3 +39,10 @@ The terminal has been fundamentally rewritten with a robust AST (Abstract Syntax
 - The `npm run build` process succeeds cleanly with `0` errors, confirming correct refactoring of Zustand imports and removal of legacy dependencies.
 - The UI maintains strict typing compliance with the newly extended `CanvasMode` union type (`"sketch"` added).
 - The `npx tsc --noEmit` checks passed successfully, confirming correct Typescript alignments for XR and PDM features.
+
+## 6. Dynamic AI Generative Flows (Phase 6.6)
+- **AI Skill Sandbox**: Built a dedicated Genkit testing environment directly inside the `ai-skills` Admin Portal. Admins can tweak the AI logic and test it instantly without triggering real Firestore lifecycle updates.
+- **Mock Context Injection**: Integrated a structural `mockPayloadJson` parameter inside the schema that gets persisted on save. This pre-fills the execution context (`{{ data.document }}`) for immediate testing.
+- **Strict JSON Generation**: Tightened the Zod JSON-schema rules injected into Genkit for arrays and translations ensuring deterministic LLM output parsing.
+- **API Keys & Emulators**: Wired the Genkit `getAi` initialization to the `geminiApiKey` secret, testing it locally via `.secret.local` and `gcloud` while protecting the repository via `.gitignore`.
+- **Validation**: Performed a full-monorepo validation run (`root`, `admin`, `functions`) fixing all transient ESLint errors ensuring 100% `0 vulnerabilities`, `0 warnings`, `0 errors` on build.
