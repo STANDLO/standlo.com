@@ -1,0 +1,79 @@
+[
+  {
+    "id": "sys",
+    "name": "System Utilities",
+    "icon": "Settings",
+    "status": "working",
+    "default": false,
+    "nav": false,
+    "active": true,
+    "public": false,
+    "order": 1
+  },
+  {
+    "id": "home",
+    "name": "STANDLO Home",
+    "icon": "Home",
+    "status": "working",
+    "default": true,
+    "nav": true,
+    "active": true,
+    "public": true,
+    "order": 2
+  },
+  {
+    "id": "das",
+    "name": "Dashboard",
+    "icon": "LayoutDashboard",
+    "status": "working",
+    "default": false,
+    "nav": true,
+    "active": true,
+    "public": false,
+    "order": 3
+  },
+  {
+    "id": "pdm",
+    "name": "Product Data",
+    "icon": "Box",
+    "status": "working",
+    "default": false,
+    "nav": true,
+    "active": true,
+    "public": true,
+    "order": 4
+  },
+  {
+    "id": "mrp",
+    "name": "Manufacturing",
+    "icon": "Factory",
+    "status": "new",
+    "default": false,
+    "nav": true,
+    "active": true,
+    "public": false,
+    "order": 5
+  },
+  {
+    "id": "qav",
+    "name": "Quality Assurance",
+    "icon": "CheckCircle",
+    "status": "new",
+    "default": false,
+    "nav": true,
+    "active": true,
+    "public": false,
+    "order": 6
+  },
+  {
+    "id": "acc",
+    "name": "Accounting",
+    "icon": "Banknote",
+    "status": "new",
+    "default": false,
+    "nav": true,
+    "active": true,
+    "public": false,
+    "order": 7
+  }
+]

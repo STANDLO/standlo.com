@@ -1,5 +1,0 @@
-{
-  "artifactType": "ARTIFACT_TYPE_OTHER",
-  "summary": "Piano architetturale per l'implementazione del Data-Driven Rendering nel Canvas 3D di Standlo, utilizzando BatchedMesh, InstancedMesh e LOD per scalare fino a 10.000+ oggetti.",
-  "updatedAt": "2026-03-11T18:55:28.723273Z"
-}

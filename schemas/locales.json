@@ -1,0 +1,354 @@
+{
+  "us": {
+    "code": "us",
+    "nativeLabel": "United States",
+    "name": "United States",
+    "flag": "🇺🇸",
+    "default": true,
+    "active": true,
+    "taxes": [
+      {
+        "id": "US-TAX-000",
+        "countryCode": "us",
+        "type": "sales",
+        "value": 0,
+        "name": "Sales Tax 0% (Federal)",
+        "default": true,
+        "active": true
+      }
+    ]
+  },
+  "it": {
+    "code": "it",
+    "nativeLabel": "Italia",
+    "name": "Italy",
+    "flag": "🇮🇹",
+    "default": false,
+    "active": true,
+    "taxes": [
+      {
+        "id": "IT-VAT-220",
+        "countryCode": "it",
+        "type": "vat",
+        "value": 22,
+        "name": "IVA 22%",
+        "default": true,
+        "active": true
+      },
+      {
+        "id": "IT-VAT-100",
+        "countryCode": "it",
+        "type": "vat",
+        "value": 10,
+        "name": "IVA 10%",
+        "default": false,
+        "active": true
+      },
+      {
+        "id": "IT-VAT-040",
+        "countryCode": "it",
+        "type": "vat",
+        "value": 4,
+        "name": "IVA 4%",
+        "default": false,
+        "active": true
+      },
+      {
+        "id": "IT-VAT-000",
+        "countryCode": "it",
+        "type": "vat",
+        "value": 0,
+        "name": "IVA 0%",
+        "default": false,
+        "active": true
+      }
+    ]
+  },
+  "es": {
+    "code": "es",
+    "nativeLabel": "España",
+    "name": "Spain",
+    "flag": "🇪🇸",
+    "default": false,
+    "active": true,
+    "taxes": [
+      {
+        "id": "ES-VAT-210",
+        "countryCode": "es",
+        "type": "vat",
+        "value": 21,
+        "name": "IVA 21%",
+        "default": true,
+        "active": true
+      },
+      {
+        "id": "ES-VAT-100",
+        "countryCode": "es",
+        "type": "vat",
+        "value": 10,
+        "name": "IVA 10%",
+        "default": false,
+        "active": true
+      },
+      {
+        "id": "ES-VAT-040",
+        "countryCode": "es",
+        "type": "vat",
+        "value": 4,
+        "name": "IVA 4%",
+        "default": false,
+        "active": true
+      },
+      {
+        "id": "ES-VAT-000",
+        "countryCode": "es",
+        "type": "vat",
+        "value": 0,
+        "name": "IVA 0%",
+        "default": false,
+        "active": true
+      }
+    ]
+  },
+  "de": {
+    "code": "de",
+    "nativeLabel": "Deutschland",
+    "name": "Germany",
+    "flag": "🇩🇪",
+    "default": false,
+    "active": true,
+    "taxes": [
+      {
+        "id": "DE-VAT-190",
+        "countryCode": "de",
+        "type": "vat",
+        "value": 19,
+        "name": "MwSt 19%",
+        "default": true,
+        "active": true
+      },
+      {
+        "id": "DE-VAT-070",
+        "countryCode": "de",
+        "type": "vat",
+        "value": 7,
+        "name": "MwSt 7%",
+        "default": false,
+        "active": true
+      },
+      {
+        "id": "DE-VAT-000",
+        "countryCode": "de",
+        "type": "vat",
+        "value": 0,
+        "name": "MwSt 0%",
+        "default": false,
+        "active": true
+      }
+    ]
+  },
+  "fr": {
+    "code": "fr",
+    "nativeLabel": "France",
+    "name": "France",
+    "flag": "🇫🇷",
+    "default": false,
+    "active": true,
+    "taxes": [
+      {
+        "id": "FR-VAT-200",
+        "countryCode": "fr",
+        "type": "vat",
+        "value": 20,
+        "name": "TVA 20%",
+        "default": true,
+        "active": true
+      },
+      {
+        "id": "FR-VAT-100",
+        "countryCode": "fr",
+        "type": "vat",
+        "value": 10,
+        "name": "TVA 10%",
+        "default": false,
+        "active": true
+      },
+      {
+        "id": "FR-VAT-055",
+        "countryCode": "fr",
+        "type": "vat",
+        "value": 5.5,
+        "name": "TVA 5.5%",
+        "default": false,
+        "active": true
+      },
+      {
+        "id": "FR-VAT-021",
+        "countryCode": "fr",
+        "type": "vat",
+        "value": 2.1,
+        "name": "TVA 2.1%",
+        "default": false,
+        "active": true
+      }
+    ]
+  },
+  "gb": {
+    "code": "gb",
+    "nativeLabel": "United Kingdom",
+    "name": "United Kingdom",
+    "flag": "🇬🇧",
+    "default": false,
+    "active": true,
+    "taxes": [
+      {
+        "id": "GB-VAT-200",
+        "countryCode": "gb",
+        "type": "vat",
+        "value": 20,
+        "name": "VAT 20%",
+        "default": true,
+        "active": true
+      },
+      {
+        "id": "GB-VAT-050",
+        "countryCode": "gb",
+        "type": "vat",
+        "value": 5,
+        "name": "VAT 5%",
+        "default": false,
+        "active": true
+      },
+      {
+        "id": "GB-VAT-000",
+        "countryCode": "gb",
+        "type": "vat",
+        "value": 0,
+        "name": "VAT 0%",
+        "default": false,
+        "active": true
+      }
+    ]
+  },
+  "jp": {
+    "code": "jp",
+    "nativeLabel": "日本",
+    "name": "Japan",
+    "flag": "🇯🇵",
+    "default": false,
+    "active": true,
+    "taxes": [
+      {
+        "id": "JP-JCT-100",
+        "countryCode": "jp",
+        "type": "jct",
+        "value": 10,
+        "name": "JCT 10%",
+        "default": true,
+        "active": true
+      },
+      {
+        "id": "JP-JCT-080",
+        "countryCode": "jp",
+        "type": "jct",
+        "value": 8,
+        "name": "JCT 8%",
+        "default": false,
+        "active": true
+      }
+    ]
+  },
+  "ch": {
+    "code": "ch",
+    "nativeLabel": "Schweiz",
+    "name": "Switzerland",
+    "flag": "🇨🇭",
+    "default": false,
+    "active": true,
+    "taxes": [
+      {
+        "id": "CH-VAT-081",
+        "countryCode": "ch",
+        "type": "vat",
+        "value": 8.1,
+        "name": "MWST 8.1%",
+        "default": true,
+        "active": true
+      },
+      {
+        "id": "CH-VAT-038",
+        "countryCode": "ch",
+        "type": "vat",
+        "value": 3.8,
+        "name": "MWST 3.8%",
+        "default": false,
+        "active": true
+      },
+      {
+        "id": "CH-VAT-026",
+        "countryCode": "ch",
+        "type": "vat",
+        "value": 2.6,
+        "name": "MWST 2.6%",
+        "default": false,
+        "active": true
+      }
+    ]
+  },
+  "ae": {
+    "code": "ae",
+    "nativeLabel": "الإمارات العربية المتحدة",
+    "name": "United Arab Emirates",
+    "flag": "🇦🇪",
+    "default": false,
+    "active": true,
+    "taxes": [
+      {
+        "id": "AE-VAT-050",
+        "countryCode": "ae",
+        "type": "vat",
+        "value": 5,
+        "name": "VAT 5%",
+        "default": true,
+        "active": true
+      },
+      {
+        "id": "AE-VAT-000",
+        "countryCode": "ae",
+        "type": "vat",
+        "value": 0,
+        "name": "VAT 0%",
+        "default": false,
+        "active": true
+      }
+    ]
+  },
+  "au": {
+    "code": "au",
+    "nativeLabel": "Australia",
+    "name": "Australia",
+    "flag": "🇦🇺",
+    "default": false,
+    "active": true,
+    "taxes": [
+      {
+        "id": "AU-GST-100",
+        "countryCode": "au",
+        "type": "gst",
+        "value": 10,
+        "name": "GST 10%",
+        "default": true,
+        "active": true
+      },
+      {
+        "id": "AU-GST-000",
+        "countryCode": "au",
+        "type": "gst",
+        "value": 0,
+        "name": "GST 0%",
+        "default": false,
+        "active": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "guest",
+    "name": "Guest",
+    "icon": "User"
+  },
+  {
+    "id": "pending",
+    "name": "Pending",
+    "icon": "User"
+  },
+  {
+    "id": "customer",
+    "name": "Customer",
+    "icon": "User"
+  },
+  {
+    "id": "provider",
+    "name": "Provider",
+    "icon": "User"
+  },
+  {
+    "id": "manager",
+    "name": "Manager",
+    "icon": "User"
+  },
+  {
+    "id": "architect",
+    "name": "Architect",
+    "icon": "User"
+  },
+  {
+    "id": "engineer",
+    "name": "Engineer",
+    "icon": "User"
+  },
+  {
+    "id": "designer",
+    "name": "Designer",
+    "icon": "User"
+  },
+  {
+    "id": "electrician",
+    "name": "Electrician",
+    "icon": "User"
+  },
+  {
+    "id": "plumber",
+    "name": "Plumber",
+    "icon": "User"
+  },
+  {
+    "id": "carpenter",
+    "name": "Carpenter",
+    "icon": "User"
+  },
+  {
+    "id": "cabinetmaker",
+    "name": "Cabinetmaker",
+    "icon": "User"
+  },
+  {
+    "id": "dryliner",
+    "name": "Dryliner",
+    "icon": "User"
+  },
+  {
+    "id": "ironworker",
+    "name": "Ironworker",
+    "icon": "User"
+  },
+  {
+    "id": "windowfitter",
+    "name": "Windowfitter",
+    "icon": "User"
+  },
+  {
+    "id": "glazier",
+    "name": "Glazier",
+    "icon": "User"
+  },
+  {
+    "id": "riggers",
+    "name": "Riggers",
+    "icon": "User"
+  },
+  {
+    "id": "standbuilder",
+    "name": "Standbuilder",
+    "icon": "User"
+  },
+  {
+    "id": "plasterer",
+    "name": "Plasterer",
+    "icon": "User"
+  },
+  {
+    "id": "painter",
+    "name": "Painter",
+    "icon": "User"
+  },
+  {
+    "id": "tiler",
+    "name": "Tiler",
+    "icon": "User"
+  },
+  {
+    "id": "driver",
+    "name": "Driver",
+    "icon": "User"
+  },
+  {
+    "id": "forkliftdriver",
+    "name": "Forkliftdriver",
+    "icon": "User"
+  },
+  {
+    "id": "promoter",
+    "name": "Promoter",
+    "icon": "User"
+  }
+]

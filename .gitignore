@@ -53,3 +53,7 @@ admin/scripts/
 *.log
 /logs/
 /exports/
+
+# Archivi e temporanei
+backup/
+tmp/

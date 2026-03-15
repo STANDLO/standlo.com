@@ -61,9 +61,7 @@ emu.stdout.on('data', (data) => {
         console.log('=============================================\n');
 
         try {
-            execSync('node scripts/seedLocalAdmin.mjs', { env, stdio: 'inherit' });
-            execSync('node scripts/seedLocalPipelines.mjs', { env, stdio: 'inherit' });
-            execSync('node scripts/seedLocalAISkills.mjs', { env, stdio: 'inherit' });
+            execSync('node scripts/SeedLocal.mjs', { env, stdio: 'inherit' });
             console.log('✅ Custom Data Seeding Complete!');
         } catch (seedErr) {
             console.error('⚠️ Failed to complete seeding, check emulator state.', seedErr.message);

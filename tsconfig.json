@@ -25,6 +25,45 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@core/*": [
+        "./core/*"
+      ],
+      "@app/*": [
+        "./src/app/*"
+      ],
+      "@/lib/*": [
+        "./src/lib/*"
+      ],
+      "@/hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@/components/*": [
+        "./src/components/*"
+      ],
+      "@schemas/*": [
+        "./schemas/*"
+      ],
+      "@ui/*": [
+        "./src/app/components/ui/*"
+      ],
+      "@functions/*": [
+        "./functions/*"
+      ],
+      "@admin/*": [
+        "./admin/*"
+      ],
+      "@logs/*": [
+        "./logs/*"
+      ],
+      "@scripts/*": [
+        "./scripts/*"
+      ],
+      "@tmp/*": [
+        "./tmp/*"
+      ],
+      "@seed/*": [
+        "./seed/*"
       ]
     }
   },
@@ -47,6 +86,10 @@
     "seed",
     "seed/**/*",
     "exports",
-    "exports/**/*"
+    "exports/**/*",
+    "backup",
+    "backup/**/*",
+    "tmp",
+    "tmp/**/*"
   ]
 }

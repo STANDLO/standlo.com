@@ -1,6 +1,0 @@
-{
-  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
-  "summary": "Added requirements to seed all 5 pipelines and implement scripts/seedLocalAISkills.ts directly as code for permanent backup.",
-  "updatedAt": "2026-03-13T06:56:49.000616Z",
-  "version": "1"
-}

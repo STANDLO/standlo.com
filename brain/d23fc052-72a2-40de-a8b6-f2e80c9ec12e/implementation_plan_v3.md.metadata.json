@@ -1,5 +1,0 @@
-{
-  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
-  "summary": "Plan outlining the switch to react-hook-form + Zod for FormOnboarding to enable pure frontend UI validation, and the CSS changes required to make the Canvas onboarding have a distinct full-height side-by-side column layout with alternating backgrounds.",
-  "updatedAt": "2026-03-12T22:30:50.844186Z"
-}

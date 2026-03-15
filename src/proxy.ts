@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import createMiddleware from 'next-intl/middleware';
-import { routing } from './i18n/routing';
+import { routing } from '@/i18n/routing';
 import { authMiddleware } from "next-firebase-auth-edge/lib/next/middleware";
-import { authConfig } from "./core/auth-edge";
+import { authConfig } from "@core/auth";
 
 const intlMiddleware = createMiddleware(routing);
 
-// I file public che non richiedono login (es. /auth/login, landing, etc.)
-const PUBLIC_PATHS = ['/auth/login', '/auth/create', '/auth/action', '/privacy', '/terms', '/design/public'];
+// I file public che non richiedono login (es. /auth/read, landing, etc.)
+const PUBLIC_PATHS = ['/auth/read/default', '/auth/write/default', '/auth/action/default', '/privacy', '/terms', '/design/read/'];
 
 export async function proxy(request: NextRequest) {
+    console.log(`\n[PROXY_TRACE] Incoming request: ${request.nextUrl.pathname}`);
+    
     // 1. JWT Parsing & Role Redirection
     // In assenza di ServiceAccount, Next-Firebase-Auth-Edge verificherà 
     // l'ID Token in Edge usando le JWKS pubbliche di Google API.
@@ -31,7 +33,7 @@ export async function proxy(request: NextRequest) {
             // 0. GESTIONE VERIFICA EMAIL
             if (!isEmailVerified) {
                 if (!pathname.includes('/auth/verify-email') && !pathname.includes('/auth/logout') && !pathname.includes('/auth/action')) {
-                    url.pathname = `/${locale}/auth/verify-email`;
+                    url.pathname = `/${locale}/auth/verify-email/default`;
                     return NextResponse.redirect(url);
                 }
                 // Se è già in verify-email o sta facendo logout, lo lasciamo passare
@@ -44,7 +46,7 @@ export async function proxy(request: NextRequest) {
             if (!isOnboardingCompleted || role === 'pending') {
                 // Se sta cercando di accedere in qualsiasi rotta privata diversa da onboarding, forzalo a onboarding
                 if (!pathname.includes('/onboarding') && !pathname.includes('/auth/logout')) {
-                    url.pathname = `/${locale}/onboarding`;
+                    url.pathname = `/${locale}/onboarding/start/default`;
                     return NextResponse.redirect(url);
                 }
                 // Se è già in /onboarding o sta facendo logout, lo lasciamo passare
@@ -56,7 +58,7 @@ export async function proxy(request: NextRequest) {
             const isInactive = decodedToken.active === false;
             if (isInactive) {
                 if (!pathname.includes('/pending') && !pathname.includes('/auth/logout')) {
-                    url.pathname = `/${locale}/pending`;
+                    url.pathname = `/${locale}/pending/view/default`;
                     return NextResponse.redirect(url);
                 }
                 headers.set('X-Tenant-Role', role);
@@ -65,27 +67,30 @@ export async function proxy(request: NextRequest) {
 
             // 3. GESTIONE UTENTI COMPLETATI (Ruoli Definitivi)
             // Se un utente completato prova ad accedere a rotte pubbliche o root o all'onboarding o verify-email o pending
-            if (pathname === '/' || pathname.includes('/auth/login') || pathname.includes('/auth/create') || pathname.includes('/onboarding') || pathname.includes('/auth/verify-email') || pathname.includes('/pending')) {
-                url.pathname = `/${locale}/partner/${role}`;
+            if (pathname === '/' || pathname.includes('/auth/read') || pathname.includes('/auth/write') || pathname.includes('/onboarding') || pathname.includes('/auth/verify-email') || pathname.includes('/pending')) {
+                url.pathname = `/${locale}/home/read/default`;
                 return NextResponse.redirect(url);
             }
 
-            // 3. VALIDAZIONE PERMESSI DI AREA (es. /en/partner/admin ma è customer)
-            const areaMatch = pathname.match(/^\/(?:it|en|es|us|de|fr)\/([^\/]+)(?:\/([^\/]+))?/);
-            if (areaMatch) {
-                const requestedArea = areaMatch[1];
-                const roleArea = areaMatch[2]; // ex: 'customer' inside /it/partner/customer
+            // 4. PREVENIRE ACCESSO ALLA ROOT DEL LOCALE (es. /it o /en) SENZA UN MODULO ATTIVO
+            const isRootLocale = /^\/(?:it|en|es|us|de|fr)\/?$/.test(pathname);
+            console.log(`[PROXY_TRACE] ValidToken -> isRootLocale: ${isRootLocale}, pathname: ${pathname}`);
+            if (isRootLocale) {
+                 url.pathname = `/${locale}/home/read/default`;
+                 console.log(`[PROXY_TRACE] ValidToken -> Redirecting root to: ${url.pathname}`);
+                 return NextResponse.redirect(url);
+            }
 
-                // If they are accessing a generic area outside partner, only auth, debug, profile, onboarding, pending, users, design are allowed
-                if (requestedArea !== 'partner' && requestedArea !== 'auth' && requestedArea !== 'debug' && requestedArea !== 'onboarding' && requestedArea !== 'profile' && requestedArea !== 'pending' && requestedArea !== 'users' && requestedArea !== 'design') {
-                    url.pathname = `/${locale}/partner/${role}`;
-                    return NextResponse.redirect(url);
-                }
-
-                // If they are inside partner and the role in the URL doesn't match their JWT role or is missing
-                // exception added for 'support' as it's accessible globally across partners
-                if (requestedArea === 'partner' && (!roleArea || (roleArea !== role && roleArea !== 'support'))) {
-                    url.pathname = `/${locale}/partner/${role}`;
+            // 5. AUTO-COMPLETAMENTO ROTTE MOZZATE (es. /it/home -> /it/home/read/default)
+            // L'architettura esige [module]/[action]/[id] strettamente.
+            const shortcutMatch = pathname.match(/^\/(?:it|en|es|us|de|fr)\/([^\/]+)(?:\/([^\/]+))?\/?$/);
+            if (shortcutMatch) {
+                const mod = shortcutMatch[1];
+                const act = shortcutMatch[2];
+                const reserved = ['api', '_next', 'onboarding', 'pending', 'partner', 'images'];
+                
+                if (!reserved.includes(mod)) {
+                    url.pathname = `/${locale}/${mod}/${act || 'read'}/default`;
                     return NextResponse.redirect(url);
                 }
             }
@@ -113,19 +118,53 @@ export async function proxy(request: NextRequest) {
 
             const isPublic = PUBLIC_PATHS.some(p => pathname.includes(p));
             const isRootLocale = /^\/(?:it|en|es|us|de|fr)\/?$/.test(pathname);
+            
+            console.log(`[PROXY_TRACE] InvalidToken -> isPublic: ${isPublic}, isRootLocale: ${isRootLocale}, pathname: ${pathname}`);
+
+            // Se l'utente non è autenticato e va in rotta root/locale (es /it)
+            if (pathname === '/' || isRootLocale) {
+                url.pathname = `/${locale}/auth/read/default`;
+                console.log(`[PROXY_TRACE] InvalidToken -> Redirecting root to login: ${url.pathname}`);
+                return NextResponse.redirect(url);
+            }
+
+            // 5. AUTO-COMPLETAMENTO ROTTE MOZZATE ANCHE PER GUEST
+            // Altrimenti un ospite che va su /it/auth/read becchera' 404 perche' manca l'ID
+            const shortcutMatch = pathname.match(/^\/(?:it|en|es|us|de|fr)\/([^\/]+)(?:\/([^\/]+))?\/?$/);
+            if (shortcutMatch) {
+                const mod = shortcutMatch[1];
+                const act = shortcutMatch[2];
+                const reserved = ['api', '_next', 'images'];
+                
+                if (!reserved.includes(mod)) {
+                    url.pathname = `/${locale}/${mod}/${act || 'read'}/default`;
+                    return NextResponse.redirect(url);
+                }
+            }
+
+            // Ricalcoliamo isPublic casomai il path fosse stato auto-completato virtualmente
+            // Se pathname era /it/auth/read diventerà /it/auth/read/default (ma la stringa url.pathname è aggiornata)
+            const finalPathname = url.pathname;
+            const finalIsPublic = PUBLIC_PATHS.some(p => finalPathname.includes(p));
 
             // Se non è autenticato e cerca di andare in area privata
-            if (!isPublic && pathname !== '/' && !isRootLocale && !pathname.startsWith('/_next') && !pathname.startsWith('/api/')) {
-                url.pathname = `/${locale}/auth/login`;
+            if (!finalIsPublic && !finalPathname.startsWith('/_next') && !finalPathname.startsWith('/api/')) {
+                url.pathname = `/${locale}/auth/read/default`;
+                console.log(`[PROXY_TRACE] InvalidToken -> Redirecting private access to login: ${url.pathname}`);
                 return NextResponse.redirect(url);
             }
 
             // Exclude API routes from next-intl middleware
-            if (pathname.startsWith('/api/')) {
+            if (finalPathname.startsWith('/api/')) {
                 return NextResponse.next();
             }
 
             // Se è su area pubblica, procede tranquillo (mostrando la view non loggata)
+            // request.nextUrl ha ancora il vecchio path originario, quindi dobbiamo passarci l'oggetto `request` con la URL modificata
+            if (url.pathname !== pathname) {
+                return NextResponse.redirect(url);
+            }
+
             return intlMiddleware(request);
         },
         handleError: async (error) => {

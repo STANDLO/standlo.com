@@ -1,0 +1,46 @@
+[
+  {
+    "id": "mat-default-white",
+    "name": "Default White Plastic",
+    "baseColor": "#ffffff",
+    "roughness": 0.5,
+    "metalness": 0.0,
+    "opacity": 1.0,
+    "transparent": false,
+    "envMapIntensity": 1.0,
+    "repeatX": 1.0,
+    "repeatY": 1.0,
+    "friction": 0.5,
+    "restitution": 0.1
+  },
+  {
+    "id": "mat-default-metal",
+    "name": "Default Polished Metal",
+    "baseColor": "#cccccc",
+    "roughness": 0.1,
+    "metalness": 1.0,
+    "opacity": 1.0,
+    "transparent": false,
+    "envMapIntensity": 1.5,
+    "repeatX": 1.0,
+    "repeatY": 1.0,
+    "friction": 0.3,
+    "restitution": 0.2
+  },
+  {
+    "id": "mat-default-glass",
+    "name": "Default Clean Glass",
+    "baseColor": "#ffffff",
+    "roughness": 0.05,
+    "metalness": 0.1,
+    "opacity": 0.3,
+    "transparent": true,
+    "transmission": 0.9,
+    "ior": 1.5,
+    "envMapIntensity": 1.2,
+    "repeatX": 1.0,
+    "repeatY": 1.0,
+    "friction": 0.2,
+    "restitution": 0.0
+  }
+]

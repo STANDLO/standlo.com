@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Project, SyntaxKind } from "ts-morph";
 import path from "path";
-import { SystemRoleOptions } from "@/../functions/src/schemas/primitives"; // Import real objects for GET
+import fs from "fs";
 
 export async function GET() {
-    return NextResponse.json(SystemRoleOptions);
+    // Generate the options UI array dynamically
+    const rolesPath = path.join(process.cwd(), '../schemas/roles.json');
+    const rolesJson = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
+    const options = rolesJson.map((r: {id: string, name: string}) => ({ value: r.id, label: r.name }));
+    return NextResponse.json(options);
 }
 
 export async function POST(req: NextRequest) {

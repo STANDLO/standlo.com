@@ -1,0 +1,216 @@
+{
+  "system": {
+    "base": {
+      "title": {
+        "it": "The Global Factory",
+        "en": "The Global Factory"
+      },
+      "description": {
+        "it": "Piattaforma avanzata per la gestione aziendale",
+        "en": "Advanced platform for business management"
+      }
+    },
+    "auth": {
+      "login_title": {
+        "it": "Accedi",
+        "en": "Log In"
+      },
+      "email_placeholder": {
+        "it": "Indirizzo Email",
+        "en": "Email Address"
+      }
+    },
+    "modules": {
+      "mesh": {
+        "it": "Mesh",
+        "en": "Meshes",
+        "es": "Mallas",
+        "fr": "",
+        "de": ""
+      },
+      "sketch": {
+        "it": "Schizzi",
+        "en": "Sketches",
+        "es": "Bocetos",
+        "fr": "",
+        "de": ""
+      },
+      "part": {
+        "it": "Parti",
+        "en": "Parts",
+        "es": "Partes",
+        "fr": "",
+        "de": ""
+      },
+      "assembly": {
+        "it": "Assiemi",
+        "en": "Assemblies",
+        "es": "Ensamblajes",
+        "fr": "",
+        "de": ""
+      },
+      "bundle": {
+        "it": "Distinte",
+        "en": "Bundles",
+        "es": "Paquetes",
+        "fr": "",
+        "de": ""
+      },
+      "design": {
+        "it": "Progetti",
+        "en": "Designs",
+        "es": "Diseños",
+        "fr": "",
+        "de": ""
+      },
+      "warehouse": {
+        "it": "Magazzini",
+        "en": "Warehouses",
+        "es": "Almacenes",
+        "fr": "",
+        "de": ""
+      },
+      "workcenter": {
+        "it": "Centri Lavoro",
+        "en": "Work Centers",
+        "es": "Centros de Trabajo",
+        "fr": "",
+        "de": ""
+      },
+      "shelve": {
+        "it": "Scaffali",
+        "en": "Shelves",
+        "es": "Estantes",
+        "fr": "",
+        "de": ""
+      },
+      "tool": {
+        "it": "Utensili",
+        "en": "Tools",
+        "es": "Herramientas",
+        "fr": "",
+        "de": ""
+      },
+      "qa": {
+        "it": "Controllo Qualità",
+        "en": "Quality Controls",
+        "es": "Control de Calidad",
+        "fr": "",
+        "de": ""
+      },
+      "validate": {
+        "it": "Validazioni",
+        "en": "Validations",
+        "es": "Validaciones",
+        "fr": "",
+        "de": ""
+      },
+      "slot": {
+        "it": "Fasce Orarie",
+        "en": "Time Slots",
+        "es": "Horarios",
+        "fr": "",
+        "de": ""
+      },
+      "task": {
+        "it": "Attività",
+        "en": "Tasks",
+        "es": "Tareas",
+        "fr": "",
+        "de": ""
+      },
+      "object": {
+        "it": "Oggetti",
+        "en": "Objects",
+        "es": "Objetos",
+        "fr": "",
+        "de": ""
+      },
+      "dcode": {
+        "it": "D-Codes",
+        "en": "D-Codes",
+        "es": "D-Codes",
+        "fr": "",
+        "de": ""
+      },
+      "postit": {
+        "it": "Post-it",
+        "en": "Post-its",
+        "es": "Notas",
+        "fr": "",
+        "de": ""
+      },
+      "organization": {
+        "it": "Organizzazioni",
+        "en": "Organizations",
+        "es": "Organizaciones",
+        "fr": "",
+        "de": ""
+      },
+      "user": {
+        "it": "Utenti",
+        "en": "Users",
+        "es": "Usuarios",
+        "fr": "",
+        "de": ""
+      },
+      "invoice": {
+        "it": "Fatture",
+        "en": "Invoices",
+        "es": "Facturas",
+        "fr": "",
+        "de": ""
+      },
+      "payment": {
+        "it": "Pagamenti",
+        "en": "Payments",
+        "es": "Pagos",
+        "fr": "",
+        "de": ""
+      },
+      "insurance": {
+        "it": "Assicurazioni",
+        "en": "Insurances",
+        "es": "Seguros",
+        "fr": "",
+        "de": ""
+      },
+      "tax": {
+        "it": "Tasse",
+        "en": "Taxes",
+        "es": "Impuestos",
+        "fr": "",
+        "de": ""
+      },
+      "fair": {
+        "it": "Fiere",
+        "en": "Fairs",
+        "es": "Ferias",
+        "fr": "",
+        "de": ""
+      },
+      "exhibition": {
+        "it": "Esibizioni",
+        "en": "Exhibitions",
+        "es": "Exhibiciones",
+        "fr": "",
+        "de": ""
+      },
+      "exhibitor": {
+        "it": "Espositori",
+        "en": "Exhibitors",
+        "es": "Expositores",
+        "fr": "",
+        "de": ""
+      }
+    }
+  },
+  "das": {
+    "overview": {
+      "welcome": {
+        "it": "Benvenuto in Dashboard",
+        "en": "Welcome to Dashboard"
+      }
+    }
+  }
+}

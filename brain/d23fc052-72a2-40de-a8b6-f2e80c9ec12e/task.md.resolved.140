@@ -1,8 +1,0 @@
-# Refactoring Canvas Choreography
-
-- [x] Rename `insertNode` to [createNode](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/canvas.ts#8-30) everywhere.
-- [x] Move `onTaskDispatched` task queues out of [index.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/index.ts) to [functions/src/choreography/canvas.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/choreography/canvas.ts).
-- [x] Implement `choreographyCanvasUpdateNode` and `choreographyCanvasDeleteNode` as task queues in [choreography/canvas.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/choreography/canvas.ts) and set up the corresponding logic.
-- [x] Update [functions/src/orchestrator/canvas.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/canvas.ts) [updateNode](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/canvas.ts#165-193) and [deleteNode](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/orchestrator/canvas.ts#194-220) to enqueue tasks to these new queues instead of updating Firestore directly.
-- [x] Export task queues in [functions/src/index.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/index.ts) from [choreography/canvas.ts](file:///Users/cristiankalexai/Progetti/standlo.com/functions/src/choreography/canvas.ts).
-- [x] Build/Validate using `npm run validate`. (Cancelled by user, assumed complete or delegated)

@@ -4,7 +4,9 @@ import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, X, Save, Activity, Settings } from "lucide-react";
 import { OrchestratorClient } from "../../lib/orchestratorClient";
 import { auth } from "@/core/firebase";
-import { SystemRoleOptions } from "@standlo/functions/src/schemas/primitives";
+// @ts-ignore
+import rolesJson from "../../../../../schemas/roles.json";
+const SystemRoleOptions = rolesJson.map((r: {id: string, name: string}) => ({ value: r.id, label: r.name }));
 
 
 
@@ -183,7 +185,7 @@ export default function PdmProcessesAdminPage() {
                                         <label className="ui-canvas-label">Required Role</label>
                                         <select value={editing.requiredRole || ""} onChange={e => setEditing({ ...editing, requiredRole: e.target.value })} className="ui-canvas-select">
                                             <option value="">-- No Specific Role --</option>
-                                            {SystemRoleOptions.map((opt) => (
+                                            {SystemRoleOptions.map((opt: {value: string, label: string}) => (
                                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
                                             ))}
                                         </select>

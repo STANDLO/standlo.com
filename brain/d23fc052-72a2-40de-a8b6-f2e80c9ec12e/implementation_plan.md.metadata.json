@@ -1,6 +1,0 @@
-{
-  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
-  "summary": "Plan for refactoring the app's global overlays (HomeOverlay, CanvasOverlay, ToolsOverlay) into Next.js URL-based routing as suggested by the user.",
-  "updatedAt": "2026-03-12T22:05:41.770282Z",
-  "version": "45"
-}

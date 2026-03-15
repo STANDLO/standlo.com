@@ -1,0 +1,24 @@
+[
+  {
+    "id": "tex-default-normal",
+    "name": "Default Flat Normal",
+    "type": "normalMap",
+    "valueLight": "#8080ff",
+    "wrapS": "RepeatWrapping",
+    "wrapT": "RepeatWrapping",
+    "repeat": [1, 1],
+    "offset": [0, 0],
+    "rotation": 0
+  },
+  {
+    "id": "tex-default-roughness",
+    "name": "Default Mid Roughness",
+    "type": "roughnessMap",
+    "valueLight": "#808080",
+    "wrapS": "RepeatWrapping",
+    "wrapT": "RepeatWrapping",
+    "repeat": [1, 1],
+    "offset": [0, 0],
+    "rotation": 0
+  }
+]
